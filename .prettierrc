@@ -1,0 +1,19 @@
+{
+  "trailingComma": "es5",
+  "useTabs": false,
+  "singleQuote": false,
+  "jsxSingleQuote": false,
+  "printWidth": 90,
+  "tabWidth": 2,
+  "bracketSpacing": true,
+  "semi": true,
+  "arrowParens": "always",
+  "endOfLine": "auto",
+
+  "plugins": ["@trivago/prettier-plugin-sort-imports"],
+  "importOrder": ["^\\.\\./(?!.+\\.tsx)", "^\\.$", "^\\./(?!.+\\.tsx)", "^.+/.+\\.tsx"],
+  "importOrderSeparation": true,
+  "importOrderSortSpecifiers": true,
+  "importOrderGroupNamespaceSpecifiers": true,
+  "importOrderCaseInsensitive": true
+}
