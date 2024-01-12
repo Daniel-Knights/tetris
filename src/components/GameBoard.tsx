@@ -1,16 +1,90 @@
 import { useEffect, useRef, useState } from "react";
 
+type Tetromino = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
+type TetrominoIndices = [number, number, number, number];
+
 const KEYDOWN_INTERVAL = 100;
+const LOCKDOWN_TIMEOUT = 500;
 
 const TETROMINOES = {
-  I: [3, 4, 5, 6],
-  J: [4, 5, 6, 16],
-  L: [4, 5, 6, 14],
-  O: [4, 5, 14, 15],
-  S: [5, 6, 14, 15],
-  T: [4, 5, 6, 15],
-  Z: [4, 5, 15, 16],
-} as const;
+  I: {
+    initialIndices: [3, 4, 5, 6],
+    rotations: {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+    },
+  },
+  J: {
+    initialIndices: [4, 5, 6, 16],
+    rotations: {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+    },
+  },
+  L: {
+    initialIndices: [4, 5, 6, 14],
+    rotations: {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+    },
+  },
+  O: {
+    initialIndices: [4, 5, 14, 15],
+    rotations: {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+    },
+  },
+  S: {
+    initialIndices: [5, 6, 14, 15],
+    rotations: {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+    },
+  },
+  T: {
+    initialIndices: [4, 5, 6, 15],
+    rotations: {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+    },
+  },
+  Z: {
+    initialIndices: [4, 5, 15, 16],
+    rotations: {
+      1: [],
+      2: [],
+      3: [],
+      4: [],
+    },
+  },
+} satisfies Record<
+  Tetromino,
+  {
+    initialIndices: TetrominoIndices;
+    /**
+     * 4 stages, each stage has a stack of possible rotations based on what's around the tetromino,
+     * in preference order from first to last. For example, if there is nothing blocking the first
+     * rotation, use that, otherwise, try the next entry in the stack, and so on.
+     *
+     * Each entry in the stack is an array of the index differences for each mino from the current
+     * position to the next.
+     */
+    rotations: Record<1 | 2 | 3 | 4, TetrominoIndices[]>;
+  }
+>;
 
 const MOVEMENTS = {
   left: {
@@ -27,16 +101,33 @@ const MOVEMENTS = {
   },
 } as const;
 
-type Tetromino = keyof typeof TETROMINOES;
-type TetrominoIndices = [number, number, number, number];
+/**
+ * Fisher-Yates shuffle. Modifies in place.
+ */
+function shuffle<T>(arr: T[]): T[] {
+  for (let i = arr.length - 1; i > 0; i -= 1) {
+    const randomIndex = Math.floor(Math.random() * (i + 1));
 
-/** Gets a random tetromino and returns its starting indices. */
-function getRandomTetromino(): TetrominoIndices {
-  const randomKey = Object.keys(TETROMINOES)[
-    Math.floor(Math.random() * Object.keys(TETROMINOES).length)
-  ] as Tetromino;
+    [arr[i], arr[randomIndex]] = [arr[randomIndex]!, arr[i]!];
+  }
 
-  return TETROMINOES[randomKey] as TetrominoIndices;
+  return arr;
+}
+
+/**
+ * Yields items from passed array in random order.
+ */
+function* bagShuffle<T>(passedArr: T[]): Generator<T, never, T[]> {
+  const memoArr = [...passedArr];
+  const arr = shuffle(memoArr);
+
+  while (true) {
+    if (!arr.length) {
+      arr.push(...shuffle(memoArr));
+    }
+
+    yield arr.pop()!;
+  }
 }
 
 /** Runs callback instantly as well as at intervals. */
@@ -46,21 +137,25 @@ function setInstantInterval(cb: () => void, interval: number): number {
   return window.setInterval(cb, interval);
 }
 
-function GameBoard(): JSX.Element {
-  const [currentTetrominoIndices, setCurrentTetrominoIndices] =
-    useState(getRandomTetromino());
+const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as Tetromino[]);
 
+function GameBoard(): JSX.Element {
+  const [currentTetrominoIndices, setCurrentTetrominoIndices] = useState(
+    TETROMINOES[randomTetrominoGen.next().value!].initialIndices
+  );
+
+  const dropIntervalId = useRef<number | null>(null);
   const leftRightIntervalId = useRef<number | null>(null);
   const downIntervalId = useRef<number | null>(null);
   const heldKey = useRef<string | null>(null);
+  const isLockingDown = useRef(false);
 
   const activeIndices = useRef<number[]>([]);
 
   // Move the current tetromino
   function moveTetromino(direction: keyof typeof MOVEMENTS) {
-    const movement = MOVEMENTS[direction];
-
     setCurrentTetrominoIndices((indices) => {
+      const movement = MOVEMENTS[direction];
       const isAtBound = indices.some((i) => {
         const newI = i + movement.indexChange;
 
@@ -72,22 +167,41 @@ function GameBoard(): JSX.Element {
 
       if (isAtBound) {
         // Tetromino has hit lower limit
-        if (direction === "down") {
+        if (direction === "down" && !isLockingDown.current) {
           // GAME OVER
           if (indices.some((i) => i <= 9)) {
             console.log("GAME OVER");
+            window.clearInterval(dropIntervalId.current!);
+
+            return indices;
           }
 
-          activeIndices.current.push(...indices);
+          // Lock down
+          isLockingDown.current = true;
 
-          // Get a new tetromino
-          return getRandomTetromino();
+          setTimeout(() => {
+            isLockingDown.current = false;
+
+            activeIndices.current.push(...indices);
+
+            // Set a new tetromino
+            setCurrentTetrominoIndices(
+              TETROMINOES[randomTetrominoGen.next().value!].initialIndices
+            );
+          }, LOCKDOWN_TIMEOUT);
         }
 
         return indices;
       }
 
       return indices.map((i) => i + movement.indexChange) as TetrominoIndices;
+    });
+  }
+
+  function rotateTetromino() {
+    setCurrentTetrominoIndices((indices) => {
+      // TODO: Implement rotation
+      return indices;
     });
   }
 
@@ -126,6 +240,13 @@ function GameBoard(): JSX.Element {
 
         break;
       }
+      case "ArrowUp": {
+        downIntervalId.current = setInstantInterval(() => {
+          rotateTetromino();
+        }, KEYDOWN_INTERVAL);
+
+        break;
+      }
     }
   }
 
@@ -159,13 +280,13 @@ function GameBoard(): JSX.Element {
 
   // Move the tetromino down at regular intervals
   useEffect(() => {
-    const intervalId = setInterval(() => {
+    dropIntervalId.current = window.setInterval(() => {
       if (heldKey.current === "ArrowDown") return;
 
       moveTetromino("down");
     }, 1000);
 
-    return () => window.clearInterval(intervalId);
+    return () => window.clearInterval(dropIntervalId.current!);
   }, []);
 
   return (
