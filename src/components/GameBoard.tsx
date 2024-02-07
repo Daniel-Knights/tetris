@@ -1,7 +1,16 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+
+// TODO: rotate/move/interval race conditions
+// TODO: wall kicks
+// TODO: convert all indices to coords?
+// TODO: lockedIndices useState
+
+type Coord = { x: number; y: number };
 
 type Tetromino = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
 type TetrominoIndices = [number, number, number, number];
+
+type GeneratorYield<T> = Generator<T, never, T[]>;
 
 const KEYDOWN_INTERVAL = 100;
 const LOCKDOWN_TIMEOUT = 500;
@@ -9,95 +18,176 @@ const LOCKDOWN_TIMEOUT = 500;
 const TETROMINOES = {
   I: {
     initialIndices: [3, 4, 5, 6],
-    rotations: {
-      1: [],
-      2: [],
-      3: [],
-      4: [],
-    },
+    rotations: [
+      {
+        coordDiffs: [
+          { x: 2, y: 1 },
+          { x: 1, y: 0 },
+          { x: 0, y: -1 },
+          { x: -1, y: -2 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+      {
+        coordDiffs: [
+          { x: 1, y: -2 },
+          { x: 0, y: -1 },
+          { x: -1, y: 0 },
+          { x: -2, y: 1 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+      {
+        coordDiffs: [
+          { x: -2, y: -1 },
+          { x: -1, y: 0 },
+          { x: 0, y: 1 },
+          { x: 1, y: 2 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+      {
+        coordDiffs: [
+          { x: -1, y: 2 },
+          { x: 0, y: 1 },
+          { x: 1, y: 0 },
+          { x: 2, y: -1 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+    ],
   },
   J: {
     initialIndices: [4, 5, 6, 16],
-    rotations: {
-      1: [],
-      2: [],
-      3: [],
-      4: [],
-    },
+    rotations: [
+      {
+        coordDiffs: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+    ],
   },
   L: {
     initialIndices: [4, 5, 6, 14],
-    rotations: {
-      1: [],
-      2: [],
-      3: [],
-      4: [],
-    },
+    rotations: [
+      {
+        coordDiffs: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+    ],
   },
   O: {
     initialIndices: [4, 5, 14, 15],
-    rotations: {
-      1: [],
-      2: [],
-      3: [],
-      4: [],
-    },
+    rotations: [
+      {
+        coordDiffs: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        wallKicks: [],
+      },
+    ],
   },
   S: {
     initialIndices: [5, 6, 14, 15],
-    rotations: {
-      1: [],
-      2: [],
-      3: [],
-      4: [],
-    },
+    rotations: [
+      {
+        coordDiffs: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+    ],
   },
   T: {
     initialIndices: [4, 5, 6, 15],
-    rotations: {
-      1: [],
-      2: [],
-      3: [],
-      4: [],
-    },
+    rotations: [
+      {
+        coordDiffs: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+    ],
   },
   Z: {
     initialIndices: [4, 5, 15, 16],
-    rotations: {
-      1: [],
-      2: [],
-      3: [],
-      4: [],
-    },
+    rotations: [
+      {
+        coordDiffs: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+    ],
   },
 } satisfies Record<
   Tetromino,
   {
     initialIndices: TetrominoIndices;
-    /**
-     * 4 stages, each stage has a stack of possible rotations based on what's around the tetromino,
-     * in preference order from first to last. For example, if there is nothing blocking the first
-     * rotation, use that, otherwise, try the next entry in the stack, and so on.
-     *
-     * Each entry in the stack is an array of the index differences for each mino from the current
-     * position to the next.
-     */
-    rotations: Record<1 | 2 | 3 | 4, TetrominoIndices[]>;
+    rotations: {
+      coordDiffs: [Coord, Coord, Coord, Coord];
+      wallKicks: Coord[];
+    }[];
   }
 >;
 
 const MOVEMENTS = {
   left: {
-    indexChange: -1,
-    boundCondition: (i: number) => i % 10 === 0,
+    indexDiff: -1,
   },
   right: {
-    indexChange: 1,
-    boundCondition: (i: number) => i % 10 === 9,
+    indexDiff: 1,
   },
   down: {
-    indexChange: 10,
-    boundCondition: (i: number) => i >= 190,
+    indexDiff: 10,
   },
 } as const;
 
@@ -117,13 +207,13 @@ function shuffle<T>(arr: T[]): T[] {
 /**
  * Yields items from passed array in random order.
  */
-function* bagShuffle<T>(passedArr: T[]): Generator<T, never, T[]> {
+function* bagShuffle<T>(passedArr: T[]): GeneratorYield<T> {
   const memoArr = [...passedArr];
-  const arr = shuffle(memoArr);
+  const arr = shuffle([...memoArr]);
 
   while (true) {
     if (!arr.length) {
-      arr.push(...shuffle(memoArr));
+      arr.push(...shuffle([...memoArr]));
     }
 
     yield arr.pop()!;
@@ -137,71 +227,173 @@ function setInstantInterval(cb: () => void, interval: number): number {
   return window.setInterval(cb, interval);
 }
 
-const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as Tetromino[]);
+function getIndexFromCoord({ x, y }: Coord): number {
+  return (19 - y) * 10 + x;
+}
+
+function getCoordFromIndex(index: number): Coord {
+  return {
+    x: index > -1 ? index % 10 : 10 + (index % 10),
+    y: 19 - Math.floor(index / 10),
+  };
+}
+
+function shiftCoord(coord: Coord, ...diffs: Coord[]): Coord {
+  return diffs.reduce(
+    (acc, curr) => ({
+      x: acc.x + curr.x,
+      y: acc.y + curr.y,
+    }),
+    coord
+  );
+}
+
+function useInitRef<T>(valueCb: () => T): React.MutableRefObject<T> {
+  const ref = useRef<T>(null as T);
+
+  if (ref.current === null) {
+    ref.current = valueCb();
+  }
+
+  return ref;
+}
 
 function GameBoard(): JSX.Element {
-  const [currentTetrominoIndices, setCurrentTetrominoIndices] = useState(
-    TETROMINOES[randomTetrominoGen.next().value!].initialIndices
-  );
-
   const dropIntervalId = useRef<number | null>(null);
   const leftRightIntervalId = useRef<number | null>(null);
   const downIntervalId = useRef<number | null>(null);
   const heldKey = useRef<string | null>(null);
   const isLockingDown = useRef(false);
+  const randomTetrominoGen = useInitRef(() => {
+    return bagShuffle(Object.keys(TETROMINOES) as Tetromino[]);
+  });
+  const currentTetrominoType = useInitRef(() => randomTetrominoGen.current.next().value);
+  const currentRotationStage = useRef<0 | 1 | 2 | 3>(0);
 
-  const activeIndices = useRef<number[]>([]);
+  const [tetrominoIndices, setTetrominoIndices] = useState<{
+    active: TetrominoIndices;
+    locked: number[];
+  }>({
+    active: TETROMINOES[currentTetrominoType.current].initialIndices,
+    locked: [],
+  });
+
+  const newTetromino = useCallback(
+    (lockedIndices: number[]) => {
+      currentTetrominoType.current = randomTetrominoGen.current.next().value;
+      currentRotationStage.current = 0;
+
+      setTetrominoIndices({
+        locked: lockedIndices,
+        active: TETROMINOES[currentTetrominoType.current].initialIndices,
+      });
+    },
+    [randomTetrominoGen, currentTetrominoType]
+  );
+
+  const willCollide = useCallback((lockedIndices: number[], coord: Coord): boolean => {
+    return (
+      lockedIndices.includes(getIndexFromCoord(coord)) ||
+      coord.x < 0 ||
+      coord.x > 9 ||
+      coord.y < 0
+    );
+  }, []);
 
   // Move the current tetromino
-  function moveTetromino(direction: keyof typeof MOVEMENTS) {
-    setCurrentTetrominoIndices((indices) => {
-      const movement = MOVEMENTS[direction];
-      const isAtBound = indices.some((i) => {
-        const newI = i + movement.indexChange;
-
-        return (
-          movement.boundCondition?.(i) ||
-          (!indices.includes(newI) && activeIndices.current.includes(newI))
-        );
-      });
-
-      if (isAtBound) {
-        // Tetromino has hit lower limit
-        if (direction === "down" && !isLockingDown.current) {
-          // GAME OVER
-          if (indices.some((i) => i <= 9)) {
-            console.log("GAME OVER");
-            window.clearInterval(dropIntervalId.current!);
-
-            return indices;
-          }
-
-          // Lock down
-          isLockingDown.current = true;
-
-          setTimeout(() => {
-            isLockingDown.current = false;
-
-            activeIndices.current.push(...indices);
-
-            // Set a new tetromino
-            setCurrentTetrominoIndices(
-              TETROMINOES[randomTetrominoGen.next().value!].initialIndices
-            );
-          }, LOCKDOWN_TIMEOUT);
-        }
-
-        return indices;
+  const moveTetromino = useCallback(
+    (direction: keyof typeof MOVEMENTS): void => {
+      if (direction === "down" && isLockingDown.current) {
+        return;
       }
 
-      return indices.map((i) => i + movement.indexChange) as TetrominoIndices;
-    });
-  }
+      const movement = MOVEMENTS[direction];
+
+      setTetrominoIndices((curr) => {
+        const isAtBound = curr.active.some((i) => {
+          const newCoord = getCoordFromIndex(i);
+
+          if (direction === "down") {
+            newCoord.y += -(movement.indexDiff / 10);
+          } else {
+            newCoord.x += movement.indexDiff;
+          }
+
+          return willCollide(curr.locked, newCoord);
+        });
+
+        if (isAtBound) {
+          // Tetromino has hit lower limit
+          if (direction === "down" && !isLockingDown.current) {
+            // GAME OVER
+            if (curr.locked.some((i) => i <= 9)) {
+              console.log("GAME OVER");
+              window.clearInterval(dropIntervalId.current!);
+
+              return curr;
+            }
+
+            // Lock down
+            isLockingDown.current = true;
+
+            setTimeout(() => {
+              isLockingDown.current = false;
+
+              // Set a new tetromino
+              newTetromino([...curr.locked, ...curr.active]);
+            }, LOCKDOWN_TIMEOUT);
+          }
+
+          return curr;
+        }
+
+        return {
+          ...curr,
+          active: curr.active.map((i) => i + movement.indexDiff) as TetrominoIndices,
+        };
+      });
+    },
+    [newTetromino, willCollide]
+  );
 
   function rotateTetromino() {
-    setCurrentTetrominoIndices((indices) => {
-      // TODO: Implement rotation
-      return indices;
+    const currentTetromino = TETROMINOES[currentTetrominoType.current];
+    const currentRotation = currentTetromino.rotations[currentRotationStage.current]!;
+    const memoRotationStage = currentRotationStage.current;
+
+    setTetrominoIndices((curr) => {
+      for (let outerI = 0; outerI < currentRotation.wallKicks.length; outerI += 1) {
+        const wallKick =
+          outerI === 0 ? { x: 0, y: 0 } : currentRotation.wallKicks[outerI]!;
+
+        const newIndices: TetrominoIndices = [...curr.active];
+
+        const newPosWillCollide = currentRotation.coordDiffs.some((diff, i) => {
+          const currCoord = getCoordFromIndex(curr.active[i]!);
+          const newCoord = shiftCoord(currCoord, diff, wallKick);
+          const newIndex = getIndexFromCoord(newCoord);
+
+          if (willCollide(curr.locked, newCoord)) {
+            return true;
+          }
+
+          newIndices[i] = newIndex;
+
+          return false;
+        });
+
+        if (!newPosWillCollide) {
+          currentRotationStage.current =
+            memoRotationStage < 3 ? ((memoRotationStage + 1) as 1 | 2 | 3) : 0;
+
+          return {
+            ...curr,
+            active: newIndices,
+          };
+        }
+      }
+
+      return curr;
     });
   }
 
@@ -241,9 +433,7 @@ function GameBoard(): JSX.Element {
         break;
       }
       case "ArrowUp": {
-        downIntervalId.current = setInstantInterval(() => {
-          rotateTetromino();
-        }, KEYDOWN_INTERVAL);
+        rotateTetromino();
 
         break;
       }
@@ -287,7 +477,7 @@ function GameBoard(): JSX.Element {
     }, 1000);
 
     return () => window.clearInterval(dropIntervalId.current!);
-  }, []);
+  }, [moveTetromino]);
 
   return (
     <div className="grid grid-cols-[repeat(10,20px)] grid-rows-[repeat(20,20px)] gap-1 py-4 border-y border-[#1e2424]">
@@ -297,7 +487,7 @@ function GameBoard(): JSX.Element {
           <span
             key={window.crypto.randomUUID()}
             className={`inline-flex justify-center items-center border border-[#1e2424] before:h-[10px] before:w-[10px] before:bg-[#1e2424] ${
-              activeIndices.current.includes(i) || currentTetrominoIndices.includes(i)
+              tetrominoIndices.active.includes(i) || tetrominoIndices.locked.includes(i)
                 ? ""
                 : "opacity-20"
             }`}
