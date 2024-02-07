@@ -3,7 +3,6 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // TODO: rotate/move/interval race conditions
 // TODO: wall kicks
 // TODO: convert all indices to coords?
-// TODO: lockedIndices useState
 
 type Coord = { x: number; y: number };
 
@@ -20,7 +19,7 @@ const TETROMINOES = {
     initialIndices: [3, 4, 5, 6],
     rotations: [
       {
-        coordDiffs: [
+        diffCoords: [
           { x: 2, y: 1 },
           { x: 1, y: 0 },
           { x: 0, y: -1 },
@@ -32,7 +31,7 @@ const TETROMINOES = {
         ],
       },
       {
-        coordDiffs: [
+        diffCoords: [
           { x: 1, y: -2 },
           { x: 0, y: -1 },
           { x: -1, y: 0 },
@@ -44,7 +43,7 @@ const TETROMINOES = {
         ],
       },
       {
-        coordDiffs: [
+        diffCoords: [
           { x: -2, y: -1 },
           { x: -1, y: 0 },
           { x: 0, y: 1 },
@@ -56,7 +55,7 @@ const TETROMINOES = {
         ],
       },
       {
-        coordDiffs: [
+        diffCoords: [
           { x: -1, y: 2 },
           { x: 0, y: 1 },
           { x: 1, y: 0 },
@@ -73,7 +72,7 @@ const TETROMINOES = {
     initialIndices: [4, 5, 6, 16],
     rotations: [
       {
-        coordDiffs: [
+        diffCoords: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
           { x: 0, y: 0 },
@@ -90,7 +89,7 @@ const TETROMINOES = {
     initialIndices: [4, 5, 6, 14],
     rotations: [
       {
-        coordDiffs: [
+        diffCoords: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
           { x: 0, y: 0 },
@@ -107,7 +106,7 @@ const TETROMINOES = {
     initialIndices: [4, 5, 14, 15],
     rotations: [
       {
-        coordDiffs: [
+        diffCoords: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
           { x: 0, y: 0 },
@@ -121,7 +120,7 @@ const TETROMINOES = {
     initialIndices: [5, 6, 14, 15],
     rotations: [
       {
-        coordDiffs: [
+        diffCoords: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
           { x: 0, y: 0 },
@@ -138,7 +137,7 @@ const TETROMINOES = {
     initialIndices: [4, 5, 6, 15],
     rotations: [
       {
-        coordDiffs: [
+        diffCoords: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
           { x: 0, y: 0 },
@@ -155,7 +154,7 @@ const TETROMINOES = {
     initialIndices: [4, 5, 15, 16],
     rotations: [
       {
-        coordDiffs: [
+        diffCoords: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
           { x: 0, y: 0 },
@@ -173,7 +172,7 @@ const TETROMINOES = {
   {
     initialIndices: TetrominoIndices;
     rotations: {
-      coordDiffs: [Coord, Coord, Coord, Coord];
+      diffCoords: [Coord, Coord, Coord, Coord];
       wallKicks: Coord[];
     }[];
   }
@@ -368,7 +367,7 @@ function GameBoard(): JSX.Element {
 
         const newIndices: TetrominoIndices = [...curr.active];
 
-        const newPosWillCollide = currentRotation.coordDiffs.some((diff, i) => {
+        const newPosWillCollide = currentRotation.diffCoords.some((diff, i) => {
           const currCoord = getCoordFromIndex(curr.active[i]!);
           const newCoord = shiftCoord(currCoord, diff, wallKick);
           const newIndex = getIndexFromCoord(newCoord);
