@@ -69,14 +69,50 @@ const TETROMINOES = {
     ],
   },
   J: {
-    initialIndices: [4, 5, 6, 16],
+    initialIndices: [3, 13, 14, 15],
     rotations: [
       {
         diffCoords: [
+          { x: 2, y: 0 },
+          { x: 1, y: 1 },
+          { x: 0, y: 0 },
+          { x: -1, y: -1 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: 0, y: -2 },
+          { x: 1, y: -1 },
+          { x: 0, y: 0 },
+          { x: -1, y: 1 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: -2, y: 0 },
+          { x: -1, y: -1 },
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: 0, y: 2 },
+          { x: -1, y: 1 },
+          { x: 0, y: 0 },
+          { x: 1, y: -1 },
         ],
         wallKicks: [
           { x: 0, y: 0 },
@@ -86,14 +122,50 @@ const TETROMINOES = {
     ],
   },
   L: {
-    initialIndices: [4, 5, 6, 14],
+    initialIndices: [5, 13, 14, 15],
     rotations: [
       {
         diffCoords: [
+          { x: 0, y: -2 },
+          { x: 1, y: 1 },
+          { x: 0, y: 0 },
+          { x: -1, y: -1 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: -2, y: 0 },
+          { x: 1, y: -1 },
+          { x: 0, y: 0 },
+          { x: -1, y: 1 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: 0, y: 2 },
+          { x: -1, y: -1 },
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: 2, y: 0 },
+          { x: -1, y: 1 },
+          { x: 0, y: 0 },
+          { x: 1, y: -1 },
         ],
         wallKicks: [
           { x: 0, y: 0 },
@@ -104,26 +176,52 @@ const TETROMINOES = {
   },
   O: {
     initialIndices: [4, 5, 14, 15],
+    rotations: [],
+  },
+  S: {
+    initialIndices: [4, 5, 13, 14],
     rotations: [
       {
         diffCoords: [
+          { x: 1, y: -1 },
+          { x: 0, y: -2 },
+          { x: 1, y: 1 },
           { x: 0, y: 0 },
-          { x: 0, y: 0 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
         ],
-        wallKicks: [],
       },
-    ],
-  },
-  S: {
-    initialIndices: [5, 6, 14, 15],
-    rotations: [
       {
         diffCoords: [
+          { x: -1, y: -1 },
+          { x: -2, y: 0 },
+          { x: 1, y: -1 },
+          { x: 0, y: 0 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: -1, y: 1 },
+          { x: 0, y: 2 },
+          { x: -1, y: -1 },
           { x: 0, y: 0 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: 1, y: 1 },
+          { x: 2, y: 0 },
+          { x: -1, y: 1 },
           { x: 0, y: 0 },
         ],
         wallKicks: [
@@ -134,14 +232,50 @@ const TETROMINOES = {
     ],
   },
   T: {
-    initialIndices: [4, 5, 6, 15],
+    initialIndices: [4, 13, 14, 15],
     rotations: [
       {
         diffCoords: [
+          { x: 1, y: -1 },
+          { x: 1, y: 1 },
+          { x: 0, y: 0 },
+          { x: -1, y: -1 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: -1, y: -1 },
+          { x: 1, y: -1 },
+          { x: 0, y: 0 },
+          { x: -1, y: 1 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: -1, y: 1 },
+          { x: -1, y: -1 },
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: 1, y: 1 },
+          { x: -1, y: 1 },
+          { x: 0, y: 0 },
+          { x: 1, y: -1 },
         ],
         wallKicks: [
           { x: 0, y: 0 },
@@ -151,14 +285,50 @@ const TETROMINOES = {
     ],
   },
   Z: {
-    initialIndices: [4, 5, 15, 16],
+    initialIndices: [3, 4, 14, 15],
     rotations: [
       {
         diffCoords: [
+          { x: 2, y: 0 },
+          { x: 1, y: -1 },
+          { x: 0, y: 0 },
+          { x: -1, y: -1 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: 0, y: -2 },
+          { x: -1, y: -1 },
+          { x: 0, y: 0 },
+          { x: -1, y: 1 },
+        ],
+        wallKicks: [
           { x: 0, y: 0 },
           { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: -2, y: 0 },
+          { x: -1, y: 1 },
+          { x: 0, y: 0 },
+          { x: 1, y: 1 },
+        ],
+        wallKicks: [
+          { x: 0, y: 0 },
+          { x: 0, y: 0 },
+        ],
+      },
+      {
+        diffCoords: [
+          { x: 0, y: 2 },
+          { x: 1, y: 1 },
+          { x: 0, y: 0 },
+          { x: 1, y: -1 },
         ],
         wallKicks: [
           { x: 0, y: 0 },
@@ -357,8 +527,10 @@ function GameBoard(): JSX.Element {
 
   function rotateTetromino() {
     const currentTetromino = TETROMINOES[currentTetrominoType.current];
-    const currentRotation = currentTetromino.rotations[currentRotationStage.current]!;
+    const currentRotation = currentTetromino.rotations[currentRotationStage.current];
     const memoRotationStage = currentRotationStage.current;
+
+    if (!currentRotation) return;
 
     setTetrominoIndices((curr) => {
       for (let outerI = 0; outerI < currentRotation.wallKicks.length; outerI += 1) {
