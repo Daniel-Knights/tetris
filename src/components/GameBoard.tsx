@@ -349,15 +349,9 @@ const TETROMINOES = {
 >;
 
 const MOVEMENTS = {
-  left: {
-    indexDiff: -1,
-  },
-  right: {
-    indexDiff: 1,
-  },
-  down: {
-    indexDiff: 10,
-  },
+  left: -1,
+  right: 1,
+  down: 10,
 } as const;
 
 /**
@@ -476,16 +470,16 @@ function GameBoard(): JSX.Element {
         return;
       }
 
-      const movement = MOVEMENTS[direction];
+      const indexDiff = MOVEMENTS[direction];
 
       setTetrominoIndices((curr) => {
         const isAtBound = curr.active.some((i) => {
           const newCoord = getCoordFromIndex(i);
 
           if (direction === "down") {
-            newCoord.y += -(movement.indexDiff / 10);
+            newCoord.y += -(indexDiff / 10);
           } else {
-            newCoord.x += movement.indexDiff;
+            newCoord.x += indexDiff;
           }
 
           return willCollide(curr.locked, newCoord);
@@ -518,7 +512,7 @@ function GameBoard(): JSX.Element {
 
         return {
           ...curr,
-          active: curr.active.map((i) => i + movement.indexDiff) as TetrominoIndices,
+          active: curr.active.map((i) => i + indexDiff) as TetrominoIndices,
         };
       });
     },
