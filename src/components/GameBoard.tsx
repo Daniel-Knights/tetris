@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // TODO: rotate/move/interval race conditions - done?
-// TODO: rotating during lockdown could end up with floating tetromino
-// TODO: sometimes soft drop interval not cleared
+// TODO: rotation breaks sometimes
 // TODO: convert all indices to coords?
 // TODO: t-spin
 
@@ -360,16 +359,6 @@ function GameBoard(): JSX.Element {
     locked: [],
   });
 
-  const newTetromino = useCallback(() => {
-    currentTetrominoType.current = randomTetrominoGen.current.next().value;
-    currentRotationStage.current = 0;
-
-    setTetrominoIndices((curr) => ({
-      locked: [...curr.locked, ...curr.active],
-      active: TETROMINOES[currentTetrominoType.current].initialIndices,
-    }));
-  }, [randomTetrominoGen, currentTetrominoType]);
-
   const willCollide = useCallback((lockedIndices: number[], coord: Coord): boolean => {
     return (
       lockedIndices.includes(getIndexFromCoord(coord)) ||
@@ -378,6 +367,27 @@ function GameBoard(): JSX.Element {
       coord.y < 0
     );
   }, []);
+
+  const newTetromino = useCallback(() => {
+    currentTetrominoType.current = randomTetrominoGen.current.next().value;
+    currentRotationStage.current = 0;
+
+    setTetrominoIndices((curr) => {
+      // Prevent floating pieces
+      const hasHitBottomLimit = curr.active.some((i) => {
+        return willCollide(curr.locked, getCoordFromIndex(i + MOVEMENT.down));
+      });
+
+      if (hasHitBottomLimit) {
+        return {
+          locked: [...curr.locked, ...curr.active],
+          active: TETROMINOES[currentTetrominoType.current].initialIndices,
+        };
+      }
+
+      return curr;
+    });
+  }, [randomTetrominoGen, currentTetrominoType, willCollide]);
 
   // Move the current tetromino
   const moveTetromino = useCallback(
@@ -501,6 +511,10 @@ function GameBoard(): JSX.Element {
 
     switch (ev.key) {
       case "ArrowLeft": {
+        if (leftRightIntervalId.current) {
+          return;
+        }
+
         leftRightIntervalId.current = setInstantInterval(() => {
           moveTetromino("left");
         }, KEYDOWN_INTERVAL);
@@ -508,6 +522,10 @@ function GameBoard(): JSX.Element {
         break;
       }
       case "ArrowRight": {
+        if (leftRightIntervalId.current) {
+          return;
+        }
+
         leftRightIntervalId.current = setInstantInterval(() => {
           moveTetromino("right");
         }, KEYDOWN_INTERVAL);
@@ -515,6 +533,10 @@ function GameBoard(): JSX.Element {
         break;
       }
       case "ArrowDown": {
+        if (downIntervalId.current) {
+          return;
+        }
+
         downIntervalId.current = setInstantInterval(() => {
           moveTetromino("down");
         }, KEYDOWN_INTERVAL);
