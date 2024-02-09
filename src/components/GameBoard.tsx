@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// TODO: rotate/move/interval race conditions
-// TODO: wall kicks
+// TODO: rotate/move/interval race conditions - done?
+// TODO: rotating during lockdown could end up with floating tetromino
+// TODO: sometimes soft drop interval not cleared
 // TODO: convert all indices to coords?
+// TODO: t-spin
 
 type Coord = { x: number; y: number };
 
@@ -17,338 +19,255 @@ const LOCKDOWN_TIMEOUT = 500;
 const TETROMINOES = {
   I: {
     initialIndices: [3, 4, 5, 6],
-    rotations: [
-      {
-        diffCoords: [
-          { x: 2, y: 1 },
-          { x: 1, y: 0 },
-          { x: 0, y: -1 },
-          { x: -1, y: -2 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 1, y: -2 },
-          { x: 0, y: -1 },
-          { x: -1, y: 0 },
-          { x: -2, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -2, y: -1 },
-          { x: -1, y: 0 },
-          { x: 0, y: 1 },
-          { x: 1, y: 2 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -1, y: 2 },
-          { x: 0, y: 1 },
-          { x: 1, y: 0 },
-          { x: 2, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
+    rotationDiffs: [
+      [
+        { x: 2, y: 1 },
+        { x: 1, y: 0 },
+        { x: 0, y: -1 },
+        { x: -1, y: -2 },
+      ],
+      [
+        { x: 1, y: -2 },
+        { x: 0, y: -1 },
+        { x: -1, y: 0 },
+        { x: -2, y: 1 },
+      ],
+      [
+        { x: -2, y: -1 },
+        { x: -1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 1, y: 2 },
+      ],
+      [
+        { x: -1, y: 2 },
+        { x: 0, y: 1 },
+        { x: 1, y: 0 },
+        { x: 2, y: -1 },
+      ],
     ],
   },
   J: {
     initialIndices: [3, 13, 14, 15],
-    rotations: [
-      {
-        diffCoords: [
-          { x: 2, y: 0 },
-          { x: 1, y: 1 },
-          { x: 0, y: 0 },
-          { x: -1, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 0, y: -2 },
-          { x: 1, y: -1 },
-          { x: 0, y: 0 },
-          { x: -1, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -2, y: 0 },
-          { x: -1, y: -1 },
-          { x: 0, y: 0 },
-          { x: 1, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 0, y: 2 },
-          { x: -1, y: 1 },
-          { x: 0, y: 0 },
-          { x: 1, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
+    rotationDiffs: [
+      [
+        { x: 2, y: 0 },
+        { x: 1, y: 1 },
+        { x: 0, y: 0 },
+        { x: -1, y: -1 },
+      ],
+      [
+        { x: 0, y: -2 },
+        { x: 1, y: -1 },
+        { x: 0, y: 0 },
+        { x: -1, y: 1 },
+      ],
+      [
+        { x: -2, y: 0 },
+        { x: -1, y: -1 },
+        { x: 0, y: 0 },
+        { x: 1, y: 1 },
+      ],
+      [
+        { x: 0, y: 2 },
+        { x: -1, y: 1 },
+        { x: 0, y: 0 },
+        { x: 1, y: -1 },
+      ],
     ],
   },
   L: {
     initialIndices: [5, 13, 14, 15],
-    rotations: [
-      {
-        diffCoords: [
-          { x: 0, y: -2 },
-          { x: 1, y: 1 },
-          { x: 0, y: 0 },
-          { x: -1, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -2, y: 0 },
-          { x: 1, y: -1 },
-          { x: 0, y: 0 },
-          { x: -1, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 0, y: 2 },
-          { x: -1, y: -1 },
-          { x: 0, y: 0 },
-          { x: 1, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 2, y: 0 },
-          { x: -1, y: 1 },
-          { x: 0, y: 0 },
-          { x: 1, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
+    rotationDiffs: [
+      [
+        { x: 0, y: -2 },
+        { x: 1, y: 1 },
+        { x: 0, y: 0 },
+        { x: -1, y: -1 },
+      ],
+      [
+        { x: -2, y: 0 },
+        { x: 1, y: -1 },
+        { x: 0, y: 0 },
+        { x: -1, y: 1 },
+      ],
+      [
+        { x: 0, y: 2 },
+        { x: -1, y: -1 },
+        { x: 0, y: 0 },
+        { x: 1, y: 1 },
+      ],
+      [
+        { x: 2, y: 0 },
+        { x: -1, y: 1 },
+        { x: 0, y: 0 },
+        { x: 1, y: -1 },
+      ],
     ],
   },
   O: {
     initialIndices: [4, 5, 14, 15],
-    rotations: [],
+    rotationDiffs: [],
   },
   S: {
     initialIndices: [4, 5, 13, 14],
-    rotations: [
-      {
-        diffCoords: [
-          { x: 1, y: -1 },
-          { x: 0, y: -2 },
-          { x: 1, y: 1 },
-          { x: 0, y: 0 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -1, y: -1 },
-          { x: -2, y: 0 },
-          { x: 1, y: -1 },
-          { x: 0, y: 0 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -1, y: 1 },
-          { x: 0, y: 2 },
-          { x: -1, y: -1 },
-          { x: 0, y: 0 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 1, y: 1 },
-          { x: 2, y: 0 },
-          { x: -1, y: 1 },
-          { x: 0, y: 0 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
+    rotationDiffs: [
+      [
+        { x: 1, y: -1 },
+        { x: 0, y: -2 },
+        { x: 1, y: 1 },
+        { x: 0, y: 0 },
+      ],
+      [
+        { x: -1, y: -1 },
+        { x: -2, y: 0 },
+        { x: 1, y: -1 },
+        { x: 0, y: 0 },
+      ],
+      [
+        { x: -1, y: 1 },
+        { x: 0, y: 2 },
+        { x: -1, y: -1 },
+        { x: 0, y: 0 },
+      ],
+      [
+        { x: 1, y: 1 },
+        { x: 2, y: 0 },
+        { x: -1, y: 1 },
+        { x: 0, y: 0 },
+      ],
     ],
   },
   T: {
     initialIndices: [4, 13, 14, 15],
-    rotations: [
-      {
-        diffCoords: [
-          { x: 1, y: -1 },
-          { x: 1, y: 1 },
-          { x: 0, y: 0 },
-          { x: -1, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -1, y: -1 },
-          { x: 1, y: -1 },
-          { x: 0, y: 0 },
-          { x: -1, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -1, y: 1 },
-          { x: -1, y: -1 },
-          { x: 0, y: 0 },
-          { x: 1, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 1, y: 1 },
-          { x: -1, y: 1 },
-          { x: 0, y: 0 },
-          { x: 1, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
+    rotationDiffs: [
+      [
+        { x: 1, y: -1 },
+        { x: 1, y: 1 },
+        { x: 0, y: 0 },
+        { x: -1, y: -1 },
+      ],
+      [
+        { x: -1, y: -1 },
+        { x: 1, y: -1 },
+        { x: 0, y: 0 },
+        { x: -1, y: 1 },
+      ],
+      [
+        { x: -1, y: 1 },
+        { x: -1, y: -1 },
+        { x: 0, y: 0 },
+        { x: 1, y: 1 },
+      ],
+      [
+        { x: 1, y: 1 },
+        { x: -1, y: 1 },
+        { x: 0, y: 0 },
+        { x: 1, y: -1 },
+      ],
     ],
   },
   Z: {
     initialIndices: [3, 4, 14, 15],
-    rotations: [
-      {
-        diffCoords: [
-          { x: 2, y: 0 },
-          { x: 1, y: -1 },
-          { x: 0, y: 0 },
-          { x: -1, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 0, y: -2 },
-          { x: -1, y: -1 },
-          { x: 0, y: 0 },
-          { x: -1, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: -2, y: 0 },
-          { x: -1, y: 1 },
-          { x: 0, y: 0 },
-          { x: 1, y: 1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
-      {
-        diffCoords: [
-          { x: 0, y: 2 },
-          { x: 1, y: 1 },
-          { x: 0, y: 0 },
-          { x: 1, y: -1 },
-        ],
-        wallKicks: [
-          { x: 0, y: 0 },
-          { x: 0, y: 0 },
-        ],
-      },
+    rotationDiffs: [
+      [
+        { x: 2, y: 0 },
+        { x: 1, y: -1 },
+        { x: 0, y: 0 },
+        { x: -1, y: -1 },
+      ],
+      [
+        { x: 0, y: -2 },
+        { x: -1, y: -1 },
+        { x: 0, y: 0 },
+        { x: -1, y: 1 },
+      ],
+      [
+        { x: -2, y: 0 },
+        { x: -1, y: 1 },
+        { x: 0, y: 0 },
+        { x: 1, y: 1 },
+      ],
+      [
+        { x: 0, y: 2 },
+        { x: 1, y: 1 },
+        { x: 0, y: 0 },
+        { x: 1, y: -1 },
+      ],
     ],
   },
 } satisfies Record<
   Tetromino,
   {
     initialIndices: TetrominoIndices;
-    rotations: {
-      diffCoords: [Coord, Coord, Coord, Coord];
-      wallKicks: Coord[];
-    }[];
+    rotationDiffs: [Coord, Coord, Coord, Coord][];
   }
 >;
 
-const MOVEMENTS = {
+const WALL_KICKS = [
+  {
+    appliesTo: ["J", "L", "S", "T", "Z"],
+    kickDiffs: [
+      [
+        { x: -1, y: 0 },
+        { x: -1, y: 1 },
+        { x: 0, y: -2 },
+        { x: -1, y: -2 },
+      ],
+      [
+        { x: 1, y: 0 },
+        { x: 1, y: -1 },
+        { x: 0, y: 2 },
+        { x: 1, y: 2 },
+      ],
+      [
+        { x: 1, y: 0 },
+        { x: 1, y: 1 },
+        { x: 0, y: -2 },
+        { x: 1, y: -2 },
+      ],
+      [
+        { x: -1, y: 0 },
+        { x: -1, y: -1 },
+        { x: 0, y: 2 },
+        { x: -1, y: 2 },
+      ],
+    ],
+  },
+  {
+    appliesTo: ["I"],
+    kickDiffs: [
+      [
+        { x: -2, y: 0 },
+        { x: 1, y: 0 },
+        { x: -2, y: -1 },
+        { x: 1, y: 2 },
+      ],
+      [
+        { x: -1, y: 0 },
+        { x: 2, y: 0 },
+        { x: -1, y: 2 },
+        { x: 2, y: -1 },
+      ],
+      [
+        { x: 2, y: 0 },
+        { x: -1, y: 0 },
+        { x: 2, y: 1 },
+        { x: -1, y: -2 },
+      ],
+      [
+        { x: 1, y: 0 },
+        { x: -2, y: 0 },
+        { x: 1, y: -2 },
+        { x: -2, y: 1 },
+      ],
+    ],
+  },
+] satisfies {
+  appliesTo: Tetromino[];
+  kickDiffs: [Coord, Coord, Coord, Coord][];
+}[];
+
+const MOVEMENT = {
   left: -1,
   right: 1,
   down: 10,
@@ -441,18 +360,15 @@ function GameBoard(): JSX.Element {
     locked: [],
   });
 
-  const newTetromino = useCallback(
-    (lockedIndices: number[]) => {
-      currentTetrominoType.current = randomTetrominoGen.current.next().value;
-      currentRotationStage.current = 0;
+  const newTetromino = useCallback(() => {
+    currentTetrominoType.current = randomTetrominoGen.current.next().value;
+    currentRotationStage.current = 0;
 
-      setTetrominoIndices({
-        locked: lockedIndices,
-        active: TETROMINOES[currentTetrominoType.current].initialIndices,
-      });
-    },
-    [randomTetrominoGen, currentTetrominoType]
-  );
+    setTetrominoIndices((curr) => ({
+      locked: [...curr.locked, ...curr.active],
+      active: TETROMINOES[currentTetrominoType.current].initialIndices,
+    }));
+  }, [randomTetrominoGen, currentTetrominoType]);
 
   const willCollide = useCallback((lockedIndices: number[], coord: Coord): boolean => {
     return (
@@ -465,12 +381,12 @@ function GameBoard(): JSX.Element {
 
   // Move the current tetromino
   const moveTetromino = useCallback(
-    (direction: keyof typeof MOVEMENTS): void => {
+    (direction: keyof typeof MOVEMENT): void => {
       if (direction === "down" && isLockingDown.current) {
         return;
       }
 
-      const indexDiff = MOVEMENTS[direction];
+      const indexDiff = MOVEMENT[direction];
 
       setTetrominoIndices((curr) => {
         const isAtBound = curr.active.some((i) => {
@@ -503,7 +419,7 @@ function GameBoard(): JSX.Element {
               isLockingDown.current = false;
 
               // Set a new tetromino
-              newTetromino([...curr.locked, ...curr.active]);
+              newTetromino();
             }, LOCKDOWN_TIMEOUT);
           }
 
@@ -521,19 +437,27 @@ function GameBoard(): JSX.Element {
 
   function rotateTetromino() {
     const currentTetromino = TETROMINOES[currentTetrominoType.current];
-    const currentRotation = currentTetromino.rotations[currentRotationStage.current];
-    const memoRotationStage = currentRotationStage.current;
-
+    const currentRotation = currentTetromino.rotationDiffs[currentRotationStage.current];
     if (!currentRotation) return;
 
-    setTetrominoIndices((curr) => {
-      for (let outerI = 0; outerI < currentRotation.wallKicks.length; outerI += 1) {
-        const wallKick =
-          outerI === 0 ? { x: 0, y: 0 } : currentRotation.wallKicks[outerI]!;
+    const wallKicks = WALL_KICKS.find((k) => {
+      return (k.appliesTo as Tetromino[]).includes(currentTetrominoType.current);
+    });
+    if (!wallKicks) return;
 
+    // Setters run twice in dev, so we memoise
+    const memoRotationStage = currentRotationStage.current;
+
+    setTetrominoIndices((curr) => {
+      // Attempt initial rotation then try each wall kick until it doesn't collide
+      for (let outerI = 0; outerI < wallKicks.kickDiffs.length + 1; outerI += 1) {
+        const wallKick =
+          outerI === 0 // 0 = unobstructed rotation
+            ? { x: 0, y: 0 }
+            : wallKicks.kickDiffs[memoRotationStage]![outerI - 1]!;
         const newIndices: TetrominoIndices = [...curr.active];
 
-        const newPosWillCollide = currentRotation.diffCoords.some((diff, i) => {
+        const newPosWillCollide = currentRotation.some((diff, i) => {
           const currCoord = getCoordFromIndex(curr.active[i]!);
           const newCoord = shiftCoord(currCoord, diff, wallKick);
           const newIndex = getIndexFromCoord(newCoord);
