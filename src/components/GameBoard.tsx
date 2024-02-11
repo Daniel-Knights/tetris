@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 // TODO: rotate/move/interval race conditions - done?
-// TODO: rotation breaks sometimes
 // TODO: convert all indices to coords?
 // TODO: t-spin
 
@@ -369,9 +368,6 @@ function GameBoard(): JSX.Element {
   }, []);
 
   const newTetromino = useCallback(() => {
-    currentTetrominoType.current = randomTetrominoGen.current.next().value;
-    currentRotationStage.current = 0;
-
     setTetrominoIndices((curr) => {
       // Prevent floating pieces
       const hasHitBottomLimit = curr.active.some((i) => {
@@ -379,6 +375,9 @@ function GameBoard(): JSX.Element {
       });
 
       if (hasHitBottomLimit) {
+        currentTetrominoType.current = randomTetrominoGen.current.next().value;
+        currentRotationStage.current = 0;
+
         return {
           locked: [...curr.locked, ...curr.active],
           active: TETROMINOES[currentTetrominoType.current].initialIndices,
