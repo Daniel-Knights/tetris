@@ -1,8 +1,11 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// TODO: rotate/move/interval race conditions - done?
-// TODO: convert all indices to coords?
+// TODO: extended placement lockdown
 // TODO: t-spin
+// TODO: ghost tetromino
+// TODO: prevent new tetromino collisions on game over
+// TODO: replace hard coded rotations with formula
+// TODO: line clears
 
 type Coord = { x: number; y: number };
 
@@ -11,8 +14,8 @@ type TetrominoIndices = [number, number, number, number];
 
 type GeneratorYield<T> = Generator<T, never, T[]>;
 
-const KEYDOWN_INTERVAL = 100;
-const LOCKDOWN_TIMEOUT = 500;
+const KEYDOWN_DELAY = 300;
+const LOCK_DOWN_TIMEOUT = 500;
 
 const TETROMINOES = {
   I: {
@@ -265,6 +268,13 @@ const WALL_KICKS = [
   kickDiffs: [Coord, Coord, Coord, Coord][];
 }[];
 
+const INTERVAL = {
+  initialDrop: 1000,
+  softDrop: 100,
+  hardDrop: 0.1,
+  leftRight: 50,
+} as const;
+
 const MOVEMENT = {
   left: -1,
   right: 1,
@@ -339,10 +349,8 @@ function useInitRef<T>(valueCb: () => T): React.MutableRefObject<T> {
 }
 
 function GameBoard(): JSX.Element {
-  const dropIntervalId = useRef<number | null>(null);
+  const leftRightTimeoutId = useRef<number | null>(null);
   const leftRightIntervalId = useRef<number | null>(null);
-  const downIntervalId = useRef<number | null>(null);
-  const heldKey = useRef<string | null>(null);
   const isLockingDown = useRef(false);
   const randomTetrominoGen = useInitRef(() => {
     return bagShuffle(Object.keys(TETROMINOES) as Tetromino[]);
@@ -350,6 +358,7 @@ function GameBoard(): JSX.Element {
   const currentTetrominoType = useInitRef(() => randomTetrominoGen.current.next().value);
   const currentRotationStage = useRef<0 | 1 | 2 | 3>(0);
 
+  const [dropInterval, setDropInterval] = useState<number>(INTERVAL.initialDrop);
   const [tetrominoIndices, setTetrominoIndices] = useState<{
     active: TetrominoIndices;
     locked: number[];
@@ -358,6 +367,7 @@ function GameBoard(): JSX.Element {
     locked: [],
   });
 
+  /** Returns true if passed coords will collide with current locked indices. */
   const willCollide = useCallback((lockedIndices: number[], coord: Coord): boolean => {
     return (
       lockedIndices.includes(getIndexFromCoord(coord)) ||
@@ -367,6 +377,7 @@ function GameBoard(): JSX.Element {
     );
   }, []);
 
+  /** Creates a new tetromino. */
   const newTetromino = useCallback(() => {
     setTetrominoIndices((curr) => {
       // Prevent floating pieces
@@ -388,157 +399,172 @@ function GameBoard(): JSX.Element {
     });
   }, [randomTetrominoGen, currentTetrominoType, willCollide]);
 
-  // Move the current tetromino
+  /** Checks if current tetromino is at the left, right, or bottom bound. */
+  const isAtBound = useCallback(
+    (curr: typeof tetrominoIndices, direction: keyof typeof MOVEMENT): boolean => {
+      return curr.active.some((i) => {
+        const newCoord = getCoordFromIndex(i);
+
+        if (direction === "down") {
+          newCoord.y += -(MOVEMENT[direction] / 10);
+        } else {
+          newCoord.x += MOVEMENT[direction];
+        }
+
+        return willCollide(curr.locked, newCoord);
+      });
+    },
+    [willCollide]
+  );
+
+  /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
     (direction: keyof typeof MOVEMENT): void => {
-      if (direction === "down" && isLockingDown.current) {
-        return;
-      }
-
-      const indexDiff = MOVEMENT[direction];
-
       setTetrominoIndices((curr) => {
-        const isAtBound = curr.active.some((i) => {
-          const newCoord = getCoordFromIndex(i);
-
-          if (direction === "down") {
-            newCoord.y += -(indexDiff / 10);
-          } else {
-            newCoord.x += indexDiff;
-          }
-
-          return willCollide(curr.locked, newCoord);
-        });
-
-        if (isAtBound) {
-          // Tetromino has hit lower limit
-          if (direction === "down" && !isLockingDown.current) {
-            // GAME OVER
-            if (curr.locked.some((i) => i <= 9)) {
-              console.log("GAME OVER");
-              window.clearInterval(dropIntervalId.current!);
-
-              return curr;
-            }
-
-            // Lock down
-            isLockingDown.current = true;
-
-            setTimeout(() => {
-              isLockingDown.current = false;
-
-              // Set a new tetromino
-              newTetromino();
-            }, LOCKDOWN_TIMEOUT);
-          }
-
+        if (isAtBound(curr, direction)) {
           return curr;
         }
 
         return {
           ...curr,
-          active: curr.active.map((i) => i + indexDiff) as TetrominoIndices,
+          active: curr.active.map((i) => i + MOVEMENT[direction]) as TetrominoIndices,
         };
       });
     },
-    [newTetromino, willCollide]
+    [isAtBound]
   );
 
+  /** Rotates the current tetromino. */
   function rotateTetromino() {
     const currentTetromino = TETROMINOES[currentTetrominoType.current];
-    const currentRotation = currentTetromino.rotationDiffs[currentRotationStage.current];
+    const rotationStage = currentRotationStage.current;
+    const currentRotation = currentTetromino.rotationDiffs[rotationStage];
     if (!currentRotation) return;
 
     const wallKicks = WALL_KICKS.find((k) => {
       return (k.appliesTo as Tetromino[]).includes(currentTetrominoType.current);
-    });
-    if (!wallKicks) return;
+    })!;
 
-    // Setters run twice in dev, so we memoise
-    const memoRotationStage = currentRotationStage.current;
+    // Attempt initial rotation then try each wall kick until it doesn't collide
+    for (let outerI = 0; outerI < wallKicks.kickDiffs.length + 1; outerI += 1) {
+      const wallKick =
+        outerI === 0 // 0 = unobstructed rotation
+          ? { x: 0, y: 0 }
+          : wallKicks.kickDiffs[rotationStage]![outerI - 1]!;
+      const newIndices: TetrominoIndices = [...tetrominoIndices.active];
 
-    setTetrominoIndices((curr) => {
-      // Attempt initial rotation then try each wall kick until it doesn't collide
-      for (let outerI = 0; outerI < wallKicks.kickDiffs.length + 1; outerI += 1) {
-        const wallKick =
-          outerI === 0 // 0 = unobstructed rotation
-            ? { x: 0, y: 0 }
-            : wallKicks.kickDiffs[memoRotationStage]![outerI - 1]!;
-        const newIndices: TetrominoIndices = [...curr.active];
+      const newPosWillCollide = currentRotation.some((diff, i) => {
+        const currCoord = getCoordFromIndex(tetrominoIndices.active[i]!);
+        const newCoord = shiftCoord(currCoord, diff, wallKick);
+        const newIndex = getIndexFromCoord(newCoord);
 
-        const newPosWillCollide = currentRotation.some((diff, i) => {
-          const currCoord = getCoordFromIndex(curr.active[i]!);
-          const newCoord = shiftCoord(currCoord, diff, wallKick);
-          const newIndex = getIndexFromCoord(newCoord);
-
-          if (willCollide(curr.locked, newCoord)) {
-            return true;
-          }
-
-          newIndices[i] = newIndex;
-
-          return false;
-        });
-
-        if (!newPosWillCollide) {
-          currentRotationStage.current =
-            memoRotationStage < 3 ? ((memoRotationStage + 1) as 1 | 2 | 3) : 0;
-
-          return {
-            ...curr,
-            active: newIndices,
-          };
+        if (willCollide(tetrominoIndices.locked, newCoord)) {
+          return true;
         }
+
+        newIndices[i] = newIndex;
+
+        return false;
+      });
+
+      if (!newPosWillCollide) {
+        currentRotationStage.current =
+          rotationStage < 3 ? ((rotationStage + 1) as 1 | 2 | 3) : 0;
+
+        setTetrominoIndices((curr) => ({
+          ...curr,
+          active: newIndices,
+        }));
+
+        return;
+      }
+    }
+  }
+
+  /** Event handler for moving the current tetromino left or right. */
+  function moveLeftRight(ev: KeyboardEvent) {
+    const direction = {
+      ArrowLeft: "left",
+      ArrowRight: "right",
+    }[ev.key] as "left" | "right" | undefined;
+
+    if (!direction) return;
+
+    /** Clears left/right keydown timers. */
+    function clearLeftRightTimers() {
+      if (leftRightTimeoutId.current) {
+        window.clearTimeout(leftRightTimeoutId.current);
+
+        leftRightTimeoutId.current = null;
       }
 
-      return curr;
-    });
+      if (leftRightIntervalId.current) {
+        window.clearInterval(leftRightIntervalId.current);
+
+        leftRightIntervalId.current = null;
+      }
+    }
+
+    /** Clear timers on keyup. */
+    function leftRightEndListener(keyupEv: KeyboardEvent) {
+      if (!/Arrow(?:Left|Right)/.test(keyupEv.key)) return;
+
+      clearLeftRightTimers();
+
+      window.removeEventListener("keyup", leftRightEndListener);
+    }
+
+    // Overwrite existing left/right keydown interval
+    clearLeftRightTimers();
+
+    window.addEventListener("keyup", leftRightEndListener);
+
+    // Move
+    moveTetromino(direction);
+
+    leftRightTimeoutId.current = window.setTimeout(() => {
+      leftRightIntervalId.current = setInstantInterval(() => {
+        moveTetromino(direction);
+      }, INTERVAL.leftRight);
+    }, KEYDOWN_DELAY);
+  }
+
+  /** Event handler for resetting drop interval after soft drop. */
+  function softDropEndListener(keyupEv: KeyboardEvent) {
+    if (keyupEv.key !== "ArrowDown") return;
+
+    setDropInterval(INTERVAL.initialDrop);
+
+    window.removeEventListener("keyup", softDropEndListener);
   }
 
   // Keydown
   function handleKeydown(ev: KeyboardEvent) {
     if (ev.repeat) return; // Ignore held key in favour of our interval solution
 
-    heldKey.current = ev.key;
-
     // Overwrite existing left/right keydown interval
-    if (/Arrow(?:Left|Right)/.test(ev.key) && leftRightIntervalId.current) {
-      window.clearInterval(leftRightIntervalId.current);
+    if (/Arrow(?:Left|Right)/.test(ev.key)) {
+      moveLeftRight(ev);
 
-      leftRightIntervalId.current = null;
+      return;
     }
 
     switch (ev.key) {
-      case "ArrowLeft": {
-        if (leftRightIntervalId.current) {
-          return;
-        }
-
-        leftRightIntervalId.current = setInstantInterval(() => {
-          moveTetromino("left");
-        }, KEYDOWN_INTERVAL);
-
-        break;
-      }
-      case "ArrowRight": {
-        if (leftRightIntervalId.current) {
-          return;
-        }
-
-        leftRightIntervalId.current = setInstantInterval(() => {
-          moveTetromino("right");
-        }, KEYDOWN_INTERVAL);
-
-        break;
-      }
       case "ArrowDown": {
-        if (downIntervalId.current) {
-          return;
-        }
+        if (dropInterval === INTERVAL.softDrop) return;
 
-        downIntervalId.current = setInstantInterval(() => {
-          moveTetromino("down");
-        }, KEYDOWN_INTERVAL);
+        setDropInterval(INTERVAL.softDrop);
+        moveTetromino("down");
+
+        window.addEventListener("keyup", softDropEndListener);
+
+        break;
+      }
+      case " ": {
+        if (dropInterval === INTERVAL.hardDrop) return;
+
+        setDropInterval(INTERVAL.hardDrop);
+        moveTetromino("down");
 
         break;
       }
@@ -550,44 +576,47 @@ function GameBoard(): JSX.Element {
     }
   }
 
-  // Keyup
-  function handleKeyUp(ev: KeyboardEvent) {
-    if (ev.key === heldKey.current) {
-      heldKey.current = null;
-    }
+  // Tetromino has hit lower limit
+  if (isAtBound(tetrominoIndices, "down") && !isLockingDown.current) {
+    // GAME OVER
+    if (tetrominoIndices.locked.some((i) => i <= 9)) {
+      window.clearInterval(dropInterval);
 
-    // Clear intervals
-    if (/Arrow(?:Left|Right)/.test(ev.key) && leftRightIntervalId.current) {
-      window.clearInterval(leftRightIntervalId.current);
+      console.log("GAME OVER");
+      // Hard drop
+    } else if (dropInterval === INTERVAL.hardDrop) {
+      setDropInterval(INTERVAL.initialDrop);
 
-      leftRightIntervalId.current = null;
-    } else if (ev.key === "ArrowDown" && downIntervalId.current) {
-      window.clearInterval(downIntervalId.current);
+      newTetromino();
+    } else {
+      // Lock down
+      isLockingDown.current = true;
 
-      downIntervalId.current = null;
+      setTimeout(() => {
+        isLockingDown.current = false;
+
+        newTetromino();
+      }, LOCK_DOWN_TIMEOUT);
     }
   }
 
+  // Drop interval
+  useEffect(() => {
+    const id = window.setInterval(() => {
+      moveTetromino("down");
+    }, dropInterval);
+
+    return () => window.clearInterval(id);
+  }, [moveTetromino, dropInterval]);
+
+  // External listeners
   useEffect(() => {
     window.addEventListener("keydown", handleKeydown);
-    window.addEventListener("keyup", handleKeyUp);
 
     return () => {
       window.removeEventListener("keydown", handleKeydown);
-      window.removeEventListener("keyup", handleKeyUp);
     };
   });
-
-  // Move the tetromino down at regular intervals
-  useEffect(() => {
-    dropIntervalId.current = window.setInterval(() => {
-      if (heldKey.current === "ArrowDown") return;
-
-      moveTetromino("down");
-    }, 1000);
-
-    return () => window.clearInterval(dropIntervalId.current!);
-  }, [moveTetromino]);
 
   return (
     <div className="grid grid-cols-[repeat(10,20px)] grid-rows-[repeat(20,20px)] gap-1 py-4 border-y border-[#1e2424]">
