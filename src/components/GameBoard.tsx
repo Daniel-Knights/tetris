@@ -5,6 +5,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 // TODO: ghost tetromino
 // TODO: prevent new tetromino collisions on game over
 // TODO: line clears
+// TODO: Coord class
+// TODO: Tetromino component/class?
 
 type Coord = { x: number; y: number };
 
@@ -250,7 +252,7 @@ function GameBoard(): JSX.Element {
   const currentRotationStage = useRef<RotationStage>(0);
   const leftRightTimeoutId = useRef<number | null>(null);
   const leftRightIntervalId = useRef<number | null>(null);
-  const isLockingDown = useRef(false);
+  const lockDownTimeoutId = useRef<number | null>(null);
 
   const [dropInterval, setDropInterval] = useState<number>(INTERVAL.initialDrop);
   const [tetrominoIndices, setTetrominoIndices] = useState<{
@@ -291,9 +293,6 @@ function GameBoard(): JSX.Element {
 
   /** Creates a new tetromino. */
   const newTetromino = useCallback(() => {
-    // Prevent floating pieces
-    if (!isAtBound(tetrominoIndices, "down")) return;
-
     currentTetrominoType.current = randomTetrominoGen.current.next().value;
     currentRotationStage.current = 0;
 
@@ -301,7 +300,7 @@ function GameBoard(): JSX.Element {
       locked: [...curr.locked, ...curr.active],
       active: TETROMINOES[currentTetrominoType.current].initialIndices,
     }));
-  }, [currentTetrominoType, isAtBound, tetrominoIndices, randomTetrominoGen]);
+  }, [currentTetrominoType, randomTetrominoGen]);
 
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
@@ -319,6 +318,15 @@ function GameBoard(): JSX.Element {
     },
     [isAtBound]
   );
+
+  /** Locks down active tetromino after timeout. */
+  const lockDown = useCallback(() => {
+    lockDownTimeoutId.current = window.setTimeout(() => {
+      lockDownTimeoutId.current = null;
+
+      newTetromino();
+    }, LOCK_DOWN_TIMEOUT);
+  }, [newTetromino]);
 
   /** Rotates the current tetromino. */
   function rotateTetromino() {
@@ -473,7 +481,7 @@ function GameBoard(): JSX.Element {
 
   // Tetromino has hit lower limit
   useEffect(() => {
-    if (!isAtBound(tetrominoIndices, "down") || isLockingDown.current) return;
+    if (!isAtBound(tetrominoIndices, "down") || lockDownTimeoutId.current) return;
 
     // GAME OVER
     if (tetrominoIndices.locked.some((i) => i <= 9)) {
@@ -486,16 +494,18 @@ function GameBoard(): JSX.Element {
 
       newTetromino();
     } else {
-      // Lock down
-      isLockingDown.current = true;
-
-      setTimeout(() => {
-        isLockingDown.current = false;
-
-        newTetromino();
-      }, LOCK_DOWN_TIMEOUT);
+      lockDown();
     }
-  }, [tetrominoIndices, isAtBound, newTetromino, dropInterval]);
+  }, [tetrominoIndices, isAtBound, newTetromino, dropInterval, lockDown]);
+
+  // Re-initiate lock down if piece is moved
+  useEffect(() => {
+    if (!lockDownTimeoutId.current) return;
+
+    window.clearTimeout(lockDownTimeoutId.current);
+
+    lockDown();
+  }, [tetrominoIndices.active, lockDown]);
 
   // Drop interval
   useEffect(() => {
