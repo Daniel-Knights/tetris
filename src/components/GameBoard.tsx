@@ -243,14 +243,14 @@ function useInitRef<T>(valueCb: () => T): React.MutableRefObject<T> {
 }
 
 function GameBoard(): JSX.Element {
-  const leftRightTimeoutId = useRef<number | null>(null);
-  const leftRightIntervalId = useRef<number | null>(null);
-  const isLockingDown = useRef(false);
   const randomTetrominoGen = useInitRef(() => {
     return bagShuffle(Object.keys(TETROMINOES) as Tetromino[]);
   });
   const currentTetrominoType = useInitRef(() => randomTetrominoGen.current.next().value);
   const currentRotationStage = useRef<RotationStage>(0);
+  const leftRightTimeoutId = useRef<number | null>(null);
+  const leftRightIntervalId = useRef<number | null>(null);
+  const isLockingDown = useRef(false);
 
   const [dropInterval, setDropInterval] = useState<number>(INTERVAL.initialDrop);
   const [tetrominoIndices, setTetrominoIndices] = useState<{
@@ -271,28 +271,6 @@ function GameBoard(): JSX.Element {
     );
   }, []);
 
-  /** Creates a new tetromino. */
-  const newTetromino = useCallback(() => {
-    setTetrominoIndices((curr) => {
-      // Prevent floating pieces
-      const hasHitBottomLimit = curr.active.some((i) => {
-        return willCollide(curr.locked, getCoordFromIndex(i + MOVEMENT.down));
-      });
-
-      if (hasHitBottomLimit) {
-        currentTetrominoType.current = randomTetrominoGen.current.next().value;
-        currentRotationStage.current = 0;
-
-        return {
-          locked: [...curr.locked, ...curr.active],
-          active: TETROMINOES[currentTetrominoType.current].initialIndices,
-        };
-      }
-
-      return curr;
-    });
-  }, [randomTetrominoGen, currentTetrominoType, willCollide]);
-
   /** Checks if current tetromino is at the right, left, or bottom bound. */
   const isAtBound = useCallback(
     (curr: typeof tetrominoIndices, direction: keyof typeof MOVEMENT): boolean => {
@@ -310,6 +288,20 @@ function GameBoard(): JSX.Element {
     },
     [willCollide]
   );
+
+  /** Creates a new tetromino. */
+  const newTetromino = useCallback(() => {
+    // Prevent floating pieces
+    if (!isAtBound(tetrominoIndices, "down")) return;
+
+    currentTetrominoType.current = randomTetrominoGen.current.next().value;
+    currentRotationStage.current = 0;
+
+    setTetrominoIndices((curr) => ({
+      locked: [...curr.locked, ...curr.active],
+      active: TETROMINOES[currentTetrominoType.current].initialIndices,
+    }));
+  }, [currentTetrominoType, isAtBound, tetrominoIndices, randomTetrominoGen]);
 
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
@@ -480,7 +472,9 @@ function GameBoard(): JSX.Element {
   }
 
   // Tetromino has hit lower limit
-  if (isAtBound(tetrominoIndices, "down") && !isLockingDown.current) {
+  useEffect(() => {
+    if (!isAtBound(tetrominoIndices, "down") || isLockingDown.current) return;
+
     // GAME OVER
     if (tetrominoIndices.locked.some((i) => i <= 9)) {
       window.clearInterval(dropInterval);
@@ -501,7 +495,7 @@ function GameBoard(): JSX.Element {
         newTetromino();
       }, LOCK_DOWN_TIMEOUT);
     }
-  }
+  }, [tetrominoIndices, isAtBound, newTetromino, dropInterval]);
 
   // Drop interval
   useEffect(() => {
