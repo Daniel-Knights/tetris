@@ -321,12 +321,19 @@ function GameBoard(): JSX.Element {
 
   /** Locks down active tetromino after timeout. */
   const lockDown = useCallback(() => {
+    if (lockDownTimeoutId.current) {
+      window.clearTimeout(lockDownTimeoutId.current);
+    }
+
     lockDownTimeoutId.current = window.setTimeout(() => {
       lockDownTimeoutId.current = null;
 
+      // Prevent floating tetrominoes
+      if (!isAtBound(tetrominoIndices, "down")) return;
+
       newTetromino();
     }, LOCK_DOWN_TIMEOUT);
-  }, [newTetromino]);
+  }, [newTetromino, isAtBound, tetrominoIndices]);
 
   /** Rotates the current tetromino. */
   function rotateTetromino() {
@@ -500,10 +507,6 @@ function GameBoard(): JSX.Element {
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
-    if (!lockDownTimeoutId.current) return;
-
-    window.clearTimeout(lockDownTimeoutId.current);
-
     lockDown();
   }, [tetrominoIndices.active, lockDown]);
 
