@@ -212,9 +212,11 @@ function GameBoard(): JSX.Element {
   });
   const currentTetrominoType = useInitRef(() => randomTetrominoGen.current.next().value);
   const currentRotationStage = useRef<RotationStage>(0);
+  const dropIntervalId = useRef<number | null>(null);
   const leftRightTimeoutId = useRef<number | null>(null);
   const leftRightIntervalId = useRef<number | null>(null);
   const lockDownTimeoutId = useRef<number | null>(null);
+  const gameOver = useRef(false);
 
   const [dropInterval, setDropInterval] = useState<number>(INTERVAL.initialDrop);
   const [tetrominoIndices, setTetrominoIndices] = useState<{
@@ -447,11 +449,13 @@ function GameBoard(): JSX.Element {
 
   // Tetromino has hit lower limit
   useEffect(() => {
-    if (!isAtBound(tetrominoIndices, "down") || lockDownTimeoutId.current) return;
+    if (!isAtBound(tetrominoIndices, "down")) return;
 
     // GAME OVER
     if (tetrominoIndices.locked.some((i) => i <= 9)) {
-      window.clearInterval(dropInterval);
+      gameOver.current = true;
+
+      window.clearInterval(dropIntervalId.current!);
 
       console.log("GAME OVER");
       // Hard drop
@@ -466,20 +470,26 @@ function GameBoard(): JSX.Element {
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
+    if (gameOver.current) return;
+
     lockDown();
   }, [tetrominoIndices.active, lockDown]);
 
   // Drop interval
   useEffect(() => {
-    const id = window.setInterval(() => {
+    dropIntervalId.current = window.setInterval(() => {
       moveTetromino("down");
     }, dropInterval);
 
-    return () => window.clearInterval(id);
+    return () => {
+      window.clearInterval(dropIntervalId.current!);
+    };
   }, [moveTetromino, dropInterval]);
 
   // External listeners
   useEffect(() => {
+    if (gameOver.current) return;
+
     window.addEventListener("keydown", handleKeydown);
 
     return () => {
