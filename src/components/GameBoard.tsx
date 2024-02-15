@@ -1,14 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
+import { Coord } from "../modules";
+
 // TODO: extended placement lockdown
 // TODO: t-spin
 // TODO: ghost tetromino
 // TODO: prevent new tetromino collisions on game over
 // TODO: line clears
-// TODO: Coord class
 // TODO: Tetromino component/class?
-
-type Coord = { x: number; y: number };
 
 type RotationStage = 0 | 1 | 2 | 3;
 
@@ -62,32 +61,32 @@ const WALL_KICKS = [
     appliesTo: ["J", "L", "S", "T", "Z"],
     offsets: [
       [
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
       ],
       [
-        { x: 0, y: 0 },
-        { x: 1, y: 0 },
-        { x: 1, y: -1 },
-        { x: 0, y: 2 },
-        { x: 1, y: 2 },
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 1, y: 0 }),
+        new Coord({ x: 1, y: -1 }),
+        new Coord({ x: 0, y: 2 }),
+        new Coord({ x: 1, y: 2 }),
       ],
       [
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
       ],
       [
-        { x: 0, y: 0 },
-        { x: -1, y: 0 },
-        { x: -1, y: -1 },
-        { x: 0, y: 2 },
-        { x: -1, y: 2 },
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: -1, y: 0 }),
+        new Coord({ x: -1, y: -1 }),
+        new Coord({ x: 0, y: 2 }),
+        new Coord({ x: -1, y: 2 }),
       ],
     ],
   },
@@ -95,32 +94,32 @@ const WALL_KICKS = [
     appliesTo: ["I"],
     offsets: [
       [
-        { x: 0, y: 0 },
-        { x: -1, y: 0 },
-        { x: 2, y: 0 },
-        { x: -1, y: 0 },
-        { x: 2, y: 0 },
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: -1, y: 0 }),
+        new Coord({ x: 2, y: 0 }),
+        new Coord({ x: -1, y: 0 }),
+        new Coord({ x: 2, y: 0 }),
       ],
       [
-        { x: -1, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 0 },
-        { x: 0, y: 1 },
-        { x: 0, y: -2 },
+        new Coord({ x: -1, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 0 }),
+        new Coord({ x: 0, y: 1 }),
+        new Coord({ x: 0, y: -2 }),
       ],
       [
-        { x: -1, y: 1 },
-        { x: 1, y: 1 },
-        { x: -2, y: 1 },
-        { x: 1, y: 0 },
-        { x: -2, y: 0 },
+        new Coord({ x: -1, y: 1 }),
+        new Coord({ x: 1, y: 1 }),
+        new Coord({ x: -2, y: 1 }),
+        new Coord({ x: 1, y: 0 }),
+        new Coord({ x: -2, y: 0 }),
       ],
       [
-        { x: 0, y: 1 },
-        { x: 0, y: 1 },
-        { x: 0, y: 1 },
-        { x: 0, y: -1 },
-        { x: 0, y: 2 },
+        new Coord({ x: 0, y: 1 }),
+        new Coord({ x: 0, y: 1 }),
+        new Coord({ x: 0, y: 1 }),
+        new Coord({ x: 0, y: -1 }),
+        new Coord({ x: 0, y: 2 }),
       ],
     ],
   },
@@ -193,47 +192,6 @@ function setInstantInterval(cb: () => void, interval: number): number {
   return window.setInterval(cb, interval);
 }
 
-function getIndexFromCoord({ x, y }: Coord): number {
-  return (19 - y) * 10 + x;
-}
-
-function getCoordFromIndex(index: number): Coord {
-  return {
-    x: index > -1 ? index % 10 : 10 + (index % 10),
-    y: 19 - Math.floor(index / 10),
-  };
-}
-
-function addCoords(baseCoord: Coord, ...coords: Coord[]): Coord {
-  return coords.reduce(
-    (acc, curr) => ({
-      x: acc.x + curr.x,
-      y: acc.y + curr.y,
-    }),
-    baseCoord
-  );
-}
-
-function subtractCoords(baseCoord: Coord, ...coords: Coord[]): Coord {
-  return coords.reduce(
-    (acc, curr) => ({
-      x: acc.x - curr.x,
-      y: acc.y - curr.y,
-    }),
-    baseCoord
-  );
-}
-
-/** Rotates coord clockwise 90deg. */
-function rotateCoord(coord: Coord): Coord {
-  // 0 = cos(90deg)
-  // 1 = sin(90deg)
-  return {
-    x: 0 * coord.x + 1 * coord.y,
-    y: -1 * coord.x + 0 * coord.y,
-  };
-}
-
 function useInitRef<T>(valueCb: () => T): React.MutableRefObject<T> {
   const ref = useRef<T>(null as T);
 
@@ -266,10 +224,7 @@ function GameBoard(): JSX.Element {
   /** Returns true if passed coords will collide with current locked indices. */
   const willCollide = useCallback((lockedIndices: number[], coord: Coord): boolean => {
     return (
-      lockedIndices.includes(getIndexFromCoord(coord)) ||
-      coord.x < 0 ||
-      coord.x > 9 ||
-      coord.y < 0
+      lockedIndices.includes(coord.toIndex()) || coord.x < 0 || coord.x > 9 || coord.y < 0
     );
   }, []);
 
@@ -277,7 +232,7 @@ function GameBoard(): JSX.Element {
   const isAtBound = useCallback(
     (curr: typeof tetrominoIndices, direction: keyof typeof MOVEMENT): boolean => {
       return curr.active.some((i) => {
-        const newCoord = getCoordFromIndex(i);
+        const newCoord = Coord.fromIndex(i);
 
         if (direction === "down") {
           newCoord.y += -(MOVEMENT[direction] / 10);
@@ -350,30 +305,30 @@ function GameBoard(): JSX.Element {
     // Attempt initial rotation then try each wall kick until it doesn't collide
     for (let kickI = 0; kickI < wallKicks.offsets.length + 1; kickI += 1) {
       /** See {@link WALL_KICKS} type definition for how this works. */
-      const wallKick = subtractCoords(
-        wallKicks.offsets[rotationStage]![kickI]!,
+      const wallKickClone = wallKicks.offsets[rotationStage]![kickI]!.clone();
+      const adjustedWallKick = wallKickClone.subtract(
         wallKicks.offsets[nextRotationStage]![kickI]!
       );
 
       const newIndices: TetrominoIndices = [...tetrominoIndices.active];
 
       const newPosWillCollide = tetrominoIndices.active.some((tetIndex, i) => {
-        const currCoord = getCoordFromIndex(tetIndex);
-        const pivotCoord = getCoordFromIndex(tetrominoIndices.active[pivotIndex]!);
+        const currCoord = Coord.fromIndex(tetIndex);
+        const pivotCoord = Coord.fromIndex(tetrominoIndices.active[pivotIndex]!);
 
-        const rotatedDiff = rotateCoord({
+        const rotatedDiff = new Coord({
           x: currCoord.x - pivotCoord.x,
           y: currCoord.y - pivotCoord.y,
-        });
+        }).rotate();
 
-        const newCoord = addCoords(pivotCoord, rotatedDiff, wallKick);
+        const newCoord = pivotCoord.add(rotatedDiff, adjustedWallKick);
 
         if (willCollide(tetrominoIndices.locked, newCoord)) {
           // Will collide, so we return and move on to the next wall kick
           return true;
         }
 
-        newIndices[i] = getIndexFromCoord(newCoord);
+        newIndices[i] = newCoord.toIndex();
 
         return false;
       });
