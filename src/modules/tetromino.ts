@@ -2,7 +2,7 @@ import { RepeatingTuple } from "../utils";
 
 import { Coord } from "./coord";
 
-export type Tetromino = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
+export type TetrominoType = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
 export type TetrominoIndices = RepeatingTuple<number, 4>;
 
 export const TETROMINOES = {
@@ -35,7 +35,7 @@ export const TETROMINOES = {
     pivotIndex: 2,
   },
 } satisfies Record<
-  Tetromino,
+  TetrominoType,
   {
     initialIndices: TetrominoIndices;
     pivotIndex: number;
@@ -110,7 +110,7 @@ export const WALL_KICKS = [
     ],
   },
 ] satisfies {
-  appliesTo: Tetromino[];
+  appliesTo: TetrominoType[];
   /**
    * Each coord array represents a stage of the rotation and each coord represents a
    * wall kick offset, with the zeroth coord being unobstructed rotation.

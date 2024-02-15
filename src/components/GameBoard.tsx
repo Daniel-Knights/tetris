@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Coord, TETROMINOES, WALL_KICKS } from "../modules";
-import type { Tetromino, TetrominoIndices } from "../modules";
+import type { TetrominoIndices, TetrominoType } from "../modules";
 import { bagShuffle, setInstantInterval, useInitRef } from "../utils";
 
 type RotationStage = 0 | 1 | 2 | 3;
@@ -24,7 +24,7 @@ const MOVEMENT = {
 
 function GameBoard(): JSX.Element {
   const randomTetrominoGen = useInitRef(() => {
-    return bagShuffle(Object.keys(TETROMINOES) as Tetromino[]);
+    return bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
   });
   const currentTetrominoType = useInitRef(() => randomTetrominoGen.current.next().value);
   const currentRotationStage = useRef<RotationStage>(0);
@@ -121,7 +121,7 @@ function GameBoard(): JSX.Element {
     const { pivotIndex } = TETROMINOES[currentTetrominoType.current];
 
     const wallKicks = WALL_KICKS.find((k) => {
-      return (k.appliesTo as Tetromino[]).includes(currentTetrominoType.current);
+      return (k.appliesTo as TetrominoType[]).includes(currentTetrominoType.current);
     })!;
 
     // Attempt initial rotation then try each wall kick until it doesn't collide
