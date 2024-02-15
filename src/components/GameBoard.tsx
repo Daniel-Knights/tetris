@@ -1,151 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { Coord } from "../modules";
-
-// TODO: extended placement lockdown
-// TODO: t-spin
-// TODO: ghost tetromino
-// TODO: prevent new tetromino collisions on game over
-// TODO: line clears
-// TODO: Tetromino component/class?
-
-type GeneratorYield<T> = Generator<T, never, T[]>;
-type Repeat<T, N extends number, R extends unknown[] = []> = R["length"] extends N
-  ? R
-  : Repeat<T, N, [T, ...R]>;
-type RepeatingTuple<T, N extends number> = Repeat<T, N> extends infer R ? R : never;
+import { Coord, TETROMINOES, WALL_KICKS } from "../modules";
+import type { Tetromino, TetrominoIndices } from "../modules";
+import { bagShuffle, setInstantInterval, useInitRef } from "../utils";
 
 type RotationStage = 0 | 1 | 2 | 3;
 
-type Tetromino = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
-type TetrominoIndices = RepeatingTuple<number, 4>;
-
 const KEYDOWN_DELAY = 300;
 const LOCK_DOWN_TIMEOUT = 500;
-
-const TETROMINOES = {
-  I: {
-    initialIndices: [3, 4, 5, 6],
-    pivotIndex: 1,
-  },
-  J: {
-    initialIndices: [3, 13, 14, 15],
-    pivotIndex: 2,
-  },
-  L: {
-    initialIndices: [5, 13, 14, 15],
-    pivotIndex: 2,
-  },
-  O: {
-    initialIndices: [4, 5, 14, 15],
-    pivotIndex: 2,
-  },
-  S: {
-    initialIndices: [4, 5, 13, 14],
-    pivotIndex: 3,
-  },
-  T: {
-    initialIndices: [4, 13, 14, 15],
-    pivotIndex: 2,
-  },
-  Z: {
-    initialIndices: [3, 4, 14, 15],
-    pivotIndex: 2,
-  },
-} satisfies Record<
-  Tetromino,
-  {
-    initialIndices: TetrominoIndices;
-    pivotIndex: number;
-  }
->;
-
-const WALL_KICKS = [
-  {
-    appliesTo: ["J", "L", "S", "T", "Z"],
-    offsets: [
-      [
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-      ],
-      [
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 1, y: 0 }),
-        new Coord({ x: 1, y: -1 }),
-        new Coord({ x: 0, y: 2 }),
-        new Coord({ x: 1, y: 2 }),
-      ],
-      [
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-      ],
-      [
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: -1, y: 0 }),
-        new Coord({ x: -1, y: -1 }),
-        new Coord({ x: 0, y: 2 }),
-        new Coord({ x: -1, y: 2 }),
-      ],
-    ],
-  },
-  {
-    appliesTo: ["I"],
-    offsets: [
-      [
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: -1, y: 0 }),
-        new Coord({ x: 2, y: 0 }),
-        new Coord({ x: -1, y: 0 }),
-        new Coord({ x: 2, y: 0 }),
-      ],
-      [
-        new Coord({ x: -1, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 0 }),
-        new Coord({ x: 0, y: 1 }),
-        new Coord({ x: 0, y: -2 }),
-      ],
-      [
-        new Coord({ x: -1, y: 1 }),
-        new Coord({ x: 1, y: 1 }),
-        new Coord({ x: -2, y: 1 }),
-        new Coord({ x: 1, y: 0 }),
-        new Coord({ x: -2, y: 0 }),
-      ],
-      [
-        new Coord({ x: 0, y: 1 }),
-        new Coord({ x: 0, y: 1 }),
-        new Coord({ x: 0, y: 1 }),
-        new Coord({ x: 0, y: -1 }),
-        new Coord({ x: 0, y: 2 }),
-      ],
-    ],
-  },
-] satisfies {
-  appliesTo: Tetromino[];
-  /**
-   * Each coord array represents a stage of the rotation and each coord represents a
-   * wall kick offset, with the zeroth coord being unobstructed rotation.
-   *
-   * Wall kicks are calculated by subtracting 'b' from 'a', where 'a' is the coord from
-   * the current rotation stage, and 'b' is the same indexed coord for the next
-   * rotation stage. For counter-clockwise rotations, subtracting 'a' from 'b' should
-   * be equivalent.
-   *
-   * **Note:** the 'I' tetromino has offsets for unobstructed rotations, because its
-   * pivot point isn't aligned centrally. Same with the 'O' tetromino, but, as rotating
-   * it doesn't make a difference visually, we ignore it.
-   *
-   * See here for more details: https://tetris.wiki/Super_Rotation_System
-   */
-  offsets: RepeatingTuple<Coord[], 4>;
-}[];
 
 const INTERVAL = {
   initialDrop: 1000,
@@ -159,52 +21,6 @@ const MOVEMENT = {
   right: 1,
   down: 10,
 } as const;
-
-/**
- * Fisher-Yates shuffle. Modifies in place.
- */
-function shuffle<T>(arr: T[]): T[] {
-  for (let i = arr.length - 1; i > 0; i -= 1) {
-    const randomIndex = Math.floor(Math.random() * (i + 1));
-
-    [arr[i], arr[randomIndex]] = [arr[randomIndex]!, arr[i]!];
-  }
-
-  return arr;
-}
-
-/**
- * Yields items from passed array in random order.
- */
-function* bagShuffle<T>(passedArr: T[]): GeneratorYield<T> {
-  const memoArr = [...passedArr];
-  const arr = shuffle([...memoArr]);
-
-  while (true) {
-    if (!arr.length) {
-      arr.push(...shuffle([...memoArr]));
-    }
-
-    yield arr.pop()!;
-  }
-}
-
-/** Runs callback instantly as well as at intervals. */
-function setInstantInterval(cb: () => void, interval: number): number {
-  cb();
-
-  return window.setInterval(cb, interval);
-}
-
-function useInitRef<T>(valueCb: () => T): React.MutableRefObject<T> {
-  const ref = useRef<T>(null as T);
-
-  if (ref.current === null) {
-    ref.current = valueCb();
-  }
-
-  return ref;
-}
 
 function GameBoard(): JSX.Element {
   const randomTetrominoGen = useInitRef(() => {

@@ -6,5 +6,3 @@ export default {
   },
   plugins: [],
 };
-
-// Alt theme #000 + #45ff6d
