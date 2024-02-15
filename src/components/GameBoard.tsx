@@ -314,13 +314,13 @@ function GameBoard(): JSX.Element {
   });
 
   return (
-    <div className="grid grid-cols-[repeat(10,20px)] grid-rows-[repeat(20,20px)] gap-1 py-4 border-y border-[#1e2424]">
+    <div className="grid grid-cols-[repeat(10,20px)] grid-rows-[repeat(20,20px)] gap-1 py-4 border-y border-primary">
       {Array(200)
         .fill(null)
         .map((_, i) => (
           <span
             key={window.crypto.randomUUID()}
-            className={`inline-flex justify-center items-center border border-[#1e2424] before:h-[10px] before:w-[10px] before:bg-[#1e2424] ${
+            className={`inline-flex justify-center items-center border border-primary before:h-[10px] before:w-[10px] before:bg-primary ${
               tetrominoIndices.active.includes(i) || tetrominoIndices.locked.includes(i)
                 ? ""
                 : "opacity-20"
