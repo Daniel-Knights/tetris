@@ -9,12 +9,16 @@ import { Coord } from "../modules";
 // TODO: line clears
 // TODO: Tetromino component/class?
 
+type GeneratorYield<T> = Generator<T, never, T[]>;
+type Repeat<T, N extends number, R extends unknown[] = []> = R["length"] extends N
+  ? R
+  : Repeat<T, N, [T, ...R]>;
+type RepeatingTuple<T, N extends number> = Repeat<T, N> extends infer R ? R : never;
+
 type RotationStage = 0 | 1 | 2 | 3;
 
 type Tetromino = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
-type TetrominoIndices = [number, number, number, number];
-
-type GeneratorYield<T> = Generator<T, never, T[]>;
+type TetrominoIndices = RepeatingTuple<number, 4>;
 
 const KEYDOWN_DELAY = 300;
 const LOCK_DOWN_TIMEOUT = 500;
@@ -140,7 +144,7 @@ const WALL_KICKS = [
    *
    * See here for more details: https://tetris.wiki/Super_Rotation_System
    */
-  offsets: [Coord[], Coord[], Coord[], Coord[]];
+  offsets: RepeatingTuple<Coord[], 4>;
 }[];
 
 const INTERVAL = {
