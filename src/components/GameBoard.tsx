@@ -90,12 +90,12 @@ function GameBoard(): JSX.Element {
     const allTetrominoIndices = [
       ...tetrominoIndices.active,
       ...tetrominoIndices.locked,
-    ].sort();
+    ].sort((a, b) => b - a);
     const rows: number[][] = [];
 
     let lineClearCount = 0;
 
-    for (let i = allTetrominoIndices.length - 1; i >= 0; i -= 1) {
+    for (let i = 0; i < allTetrominoIndices.length; i += 1) {
       const row = Math.floor(allTetrominoIndices[i]! / 10);
       const adjustedIndex = allTetrominoIndices[i]! + lineClearCount * 10;
 
