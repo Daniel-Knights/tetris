@@ -68,17 +68,6 @@ function GameBoard(): JSX.Element {
     [willCollide]
   );
 
-  /** Creates a new tetromino. */
-  const newTetromino = useCallback(() => {
-    currentTetrominoType.current = randomTetrominoGen.current.next().value;
-    currentRotationStage.current = 0;
-
-    setTetrominoIndices((curr) => ({
-      locked: [...curr.locked, ...curr.active],
-      active: TETROMINOES[currentTetrominoType.current].initialIndices,
-    }));
-  }, [currentTetrominoType, randomTetrominoGen]);
-
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
     (direction: keyof typeof MOVEMENT): void => {
@@ -96,21 +85,69 @@ function GameBoard(): JSX.Element {
     [isAtBound]
   );
 
-  /** Locks down active tetromino after timeout. */
-  const lockDown = useCallback(() => {
-    if (lockDownTimeoutId.current) {
-      window.clearTimeout(lockDownTimeoutId.current);
+  /** Clears full lines and sets new tetromino. */
+  const handleLineClears = useCallback(() => {
+    const allTetrominoIndices = [
+      ...tetrominoIndices.active,
+      ...tetrominoIndices.locked,
+    ].sort();
+    const rows: number[][] = [];
+
+    let lineClearCount = 0;
+
+    for (let i = allTetrominoIndices.length - 1; i >= 0; i -= 1) {
+      const row = Math.floor(allTetrominoIndices[i]! / 10);
+      const adjustedIndex = allTetrominoIndices[i]! + lineClearCount * 10;
+
+      if (rows[row]) {
+        rows[row]!.push(adjustedIndex);
+
+        if (rows[row]!.length === 10) {
+          rows.splice(row, 1);
+
+          lineClearCount += 1;
+        }
+      } else {
+        rows[row] = [adjustedIndex];
+      }
     }
 
-    lockDownTimeoutId.current = window.setTimeout(() => {
-      lockDownTimeoutId.current = null;
+    currentTetrominoType.current = randomTetrominoGen.current.next().value;
+    currentRotationStage.current = 0;
 
-      // Prevent floating tetrominoes
-      if (!isAtBound(tetrominoIndices, "down")) return;
+    const newTetromino = TETROMINOES[currentTetrominoType.current].initialIndices;
 
-      newTetromino();
-    }, LOCK_DOWN_TIMEOUT);
-  }, [newTetromino, isAtBound, tetrominoIndices]);
+    setTetrominoIndices((curr) => ({
+      ...curr,
+      active: newTetromino,
+      locked: rows.flat(),
+    }));
+  }, [tetrominoIndices, randomTetrominoGen, currentTetrominoType]);
+
+  /** Locks down active tetromino. */
+  const lockDown = useCallback(
+    (instant?: boolean) => {
+      if (lockDownTimeoutId.current) {
+        window.clearTimeout(lockDownTimeoutId.current);
+      }
+
+      function commitLockDown() {
+        lockDownTimeoutId.current = null;
+
+        // Prevent floating tetrominoes
+        if (!isAtBound(tetrominoIndices, "down")) return;
+
+        handleLineClears();
+      }
+
+      if (instant) {
+        commitLockDown();
+      } else {
+        lockDownTimeoutId.current = window.setTimeout(commitLockDown, LOCK_DOWN_TIMEOUT);
+      }
+    },
+    [isAtBound, tetrominoIndices, handleLineClears]
+  );
 
   /** Rotates the current tetromino. */
   function rotateTetromino() {
@@ -277,12 +314,11 @@ function GameBoard(): JSX.Element {
       // Hard drop
     } else if (dropInterval === INTERVAL.hardDrop) {
       setDropInterval(INTERVAL.initialDrop);
-
-      newTetromino();
+      lockDown(true);
     } else {
       lockDown();
     }
-  }, [tetrominoIndices, isAtBound, newTetromino, dropInterval, lockDown]);
+  }, [tetrominoIndices, isAtBound, dropInterval, lockDown, handleLineClears]);
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
