@@ -36,7 +36,7 @@ function GameBoard(): JSX.Element {
 
   const [dropInterval, setDropInterval] = useState<number>(INTERVAL.initialDrop);
   const [tetrominoIndices, setTetrominoIndices] = useState<{
-    active: TetrominoIndices;
+    active: TetrominoIndices | [];
     locked: number[];
   }>({
     active: TETROMINOES[currentTetrominoType.current].initialIndices,
@@ -85,6 +85,14 @@ function GameBoard(): JSX.Element {
     [isAtBound]
   );
 
+  /** Sets new tetromino. */
+  const newTetromino = useCallback(() => {
+    currentTetrominoType.current = randomTetrominoGen.current.next().value;
+    currentRotationStage.current = 0;
+
+    return TETROMINOES[currentTetrominoType.current].initialIndices;
+  }, [currentTetrominoType, randomTetrominoGen]);
+
   /** Clears full lines and sets new tetromino. */
   const handleLineClears = useCallback(() => {
     const allTetrominoIndices = [
@@ -92,37 +100,50 @@ function GameBoard(): JSX.Element {
       ...tetrominoIndices.locked,
     ].sort((a, b) => b - a);
     const rows: number[][] = [];
+    const linesToClear = new Set<number>();
 
-    let lineClearCount = 0;
-
-    for (let i = 0; i < allTetrominoIndices.length; i += 1) {
-      const row = Math.floor(allTetrominoIndices[i]! / 10);
-      const adjustedIndex = allTetrominoIndices[i]! + lineClearCount * 10;
+    allTetrominoIndices.forEach((tetIndex) => {
+      const row = Math.floor(tetIndex / 10);
+      const adjustedIndex = tetIndex + linesToClear.size * 10;
 
       if (rows[row]) {
         rows[row]!.push(adjustedIndex);
 
         if (rows[row]!.length === 10) {
           rows.splice(row, 1);
-
-          lineClearCount += 1;
+          linesToClear.add(row);
         }
       } else {
         rows[row] = [adjustedIndex];
       }
+    });
+
+    // Clear lines
+    if (linesToClear.size > 0) {
+      setTetrominoIndices((curr) => ({
+        ...curr,
+        active: [],
+        locked: [...curr.active, ...curr.locked].filter(
+          (i) => !linesToClear.has(Math.floor(i / 10))
+        ),
+      }));
+
+      // Leave delay before new tetromino and remaining rows shift
+      setTimeout(() => {
+        setTetrominoIndices((curr) => ({
+          ...curr,
+          active: newTetromino(),
+          locked: rows.flat(),
+        }));
+      }, 500);
+    } else {
+      setTetrominoIndices((curr) => ({
+        ...curr,
+        active: newTetromino(),
+        locked: [...curr.active, ...curr.locked],
+      }));
     }
-
-    currentTetrominoType.current = randomTetrominoGen.current.next().value;
-    currentRotationStage.current = 0;
-
-    const newTetromino = TETROMINOES[currentTetrominoType.current].initialIndices;
-
-    setTetrominoIndices((curr) => ({
-      ...curr,
-      active: newTetromino,
-      locked: rows.flat(),
-    }));
-  }, [tetrominoIndices, randomTetrominoGen, currentTetrominoType]);
+  }, [tetrominoIndices, newTetromino]);
 
   /** Locks down active tetromino. */
   const lockDown = useCallback(
@@ -169,7 +190,7 @@ function GameBoard(): JSX.Element {
         wallKicks.offsets[nextRotationStage]![kickI]!
       );
 
-      const newIndices: TetrominoIndices = [...tetrominoIndices.active];
+      const newIndices: TetrominoIndices | [] = [...tetrominoIndices.active];
 
       const newPosWillCollide = tetrominoIndices.active.some((tetIndex, i) => {
         const currCoord = Coord.fromIndex(tetIndex);
@@ -318,7 +339,7 @@ function GameBoard(): JSX.Element {
     } else {
       lockDown();
     }
-  }, [tetrominoIndices, isAtBound, dropInterval, lockDown, handleLineClears]);
+  }, [tetrominoIndices, isAtBound, dropInterval, lockDown]);
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
@@ -357,7 +378,8 @@ function GameBoard(): JSX.Element {
           <span
             key={window.crypto.randomUUID()}
             className={`inline-flex justify-center items-center border border-primary before:h-[10px] before:w-[10px] before:bg-primary ${
-              tetrominoIndices.active.includes(i) || tetrominoIndices.locked.includes(i)
+              (tetrominoIndices.active as TetrominoIndices).includes(i) ||
+              tetrominoIndices.locked.includes(i)
                 ? ""
                 : "opacity-20"
             }`}
