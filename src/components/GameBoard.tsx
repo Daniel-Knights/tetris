@@ -6,6 +6,11 @@ import { bagShuffle, setCustomInterval, useInitRef } from "../utils";
 
 type RotationStage = 0 | 1 | 2 | 3;
 
+type TetrominoIndicesState = {
+  active: TetrominoIndices | [];
+  locked: number[];
+};
+
 const KEYDOWN_DELAY = 300;
 const LOCK_DOWN_TIMEOUT = 500;
 
@@ -22,6 +27,31 @@ const MOVEMENT = {
   down: 10,
 } as const;
 
+/** Returns true if passed coords will collide with current locked indices. */
+function willCollide(lockedIndices: number[], coord: Coord): boolean {
+  return (
+    lockedIndices.includes(coord.toIndex()) || coord.x < 0 || coord.x > 9 || coord.y < 0
+  );
+}
+
+/** Checks if current tetromino is at the right, left, or bottom bound. */
+function isAtBound(
+  curr: TetrominoIndicesState,
+  direction: keyof typeof MOVEMENT
+): boolean {
+  return curr.active.some((i) => {
+    const newCoord = Coord.fromIndex(i);
+
+    if (direction === "down") {
+      newCoord.y += -(MOVEMENT[direction] / 10);
+    } else {
+      newCoord.x += MOVEMENT[direction];
+    }
+
+    return willCollide(curr.locked, newCoord);
+  });
+}
+
 function GameBoard(): JSX.Element {
   const randomTetrominoGen = useInitRef(() => {
     return bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
@@ -35,55 +65,24 @@ function GameBoard(): JSX.Element {
   const gameOver = useRef(false);
 
   const [dropInterval, setDropInterval] = useState<number | null>(INTERVAL.initialDrop);
-  const [tetrominoIndices, setTetrominoIndices] = useState<{
-    active: TetrominoIndices | [];
-    locked: number[];
-  }>({
+  const [tetrominoIndices, setTetrominoIndices] = useState<TetrominoIndicesState>({
     active: TETROMINOES[currentTetrominoType.current].initialIndices,
     locked: [],
   });
 
-  /** Returns true if passed coords will collide with current locked indices. */
-  const willCollide = useCallback((lockedIndices: number[], coord: Coord): boolean => {
-    return (
-      lockedIndices.includes(coord.toIndex()) || coord.x < 0 || coord.x > 9 || coord.y < 0
-    );
-  }, []);
-
-  /** Checks if current tetromino is at the right, left, or bottom bound. */
-  const isAtBound = useCallback(
-    (curr: typeof tetrominoIndices, direction: keyof typeof MOVEMENT): boolean => {
-      return curr.active.some((i) => {
-        const newCoord = Coord.fromIndex(i);
-
-        if (direction === "down") {
-          newCoord.y += -(MOVEMENT[direction] / 10);
-        } else {
-          newCoord.x += MOVEMENT[direction];
-        }
-
-        return willCollide(curr.locked, newCoord);
-      });
-    },
-    [willCollide]
-  );
-
   /** Moves the current tetromino in the passed direction. */
-  const moveTetromino = useCallback(
-    (direction: keyof typeof MOVEMENT): void => {
-      setTetrominoIndices((curr) => {
-        if (isAtBound(curr, direction)) {
-          return curr;
-        }
+  const moveTetromino = useCallback((direction: keyof typeof MOVEMENT): void => {
+    setTetrominoIndices((curr) => {
+      if (isAtBound(curr, direction)) {
+        return curr;
+      }
 
-        return {
-          ...curr,
-          active: curr.active.map((i) => i + MOVEMENT[direction]) as TetrominoIndices,
-        };
-      });
-    },
-    [isAtBound]
-  );
+      return {
+        ...curr,
+        active: curr.active.map((i) => i + MOVEMENT[direction]) as TetrominoIndices,
+      };
+    });
+  }, []);
 
   /** Sets new tetromino. */
   const newTetromino = useCallback(() => {
@@ -187,7 +186,7 @@ function GameBoard(): JSX.Element {
         lockDownTimeoutId.current = window.setTimeout(commitLockDown, LOCK_DOWN_TIMEOUT);
       }
     },
-    [isAtBound, tetrominoIndices, handleLineClears]
+    [tetrominoIndices, handleLineClears]
   );
 
   /** Rotates the current tetromino. */
@@ -356,7 +355,7 @@ function GameBoard(): JSX.Element {
     } else {
       lockDown();
     }
-  }, [tetrominoIndices, isAtBound, dropInterval, lockDown]);
+  }, [tetrominoIndices, dropInterval, lockDown]);
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
