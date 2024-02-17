@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Coord, TETROMINOES, WALL_KICKS } from "../modules";
 import type { TetrominoIndices, TetrominoType } from "../modules";
-import { bagShuffle, setInstantInterval, useInitRef } from "../utils";
+import { bagShuffle, setCustomInterval, useInitRef } from "../utils";
 
 type RotationStage = 0 | 1 | 2 | 3;
 
@@ -30,11 +30,11 @@ function GameBoard(): JSX.Element {
   const currentRotationStage = useRef<RotationStage>(0);
   const dropIntervalId = useRef<number | null>(null);
   const leftRightTimeoutId = useRef<number | null>(null);
-  const leftRightIntervalId = useRef<number | null>(null);
+  const leftRightIntervalClear = useRef<(() => void) | null>(null);
   const lockDownTimeoutId = useRef<number | null>(null);
   const gameOver = useRef(false);
 
-  const [dropInterval, setDropInterval] = useState<number>(INTERVAL.initialDrop);
+  const [dropInterval, setDropInterval] = useState<number | null>(INTERVAL.initialDrop);
   const [tetrominoIndices, setTetrominoIndices] = useState<{
     active: TetrominoIndices | [];
     locked: number[];
@@ -118,28 +118,47 @@ function GameBoard(): JSX.Element {
       }
     });
 
+    const nextTetromino = newTetromino();
+
     // Clear lines
     if (linesToClear.size > 0) {
-      setTetrominoIndices((curr) => ({
-        ...curr,
-        active: [],
-        locked: [...curr.active, ...curr.locked].filter(
-          (i) => !linesToClear.has(Math.floor(i / 10))
-        ),
-      }));
+      // Prevent drop interval running during animation
+      setDropInterval(null);
 
-      // Leave delay before new tetromino and remaining rows shift
-      setTimeout(() => {
-        setTetrominoIndices((curr) => ({
-          ...curr,
-          active: newTetromino(),
-          locked: rows.flat(),
-        }));
-      }, 500);
+      setCustomInterval(
+        ({ count }) => {
+          // Clear animation
+          if (count < 5) {
+            setTetrominoIndices((curr) => ({
+              ...curr,
+              active: [],
+              locked: [...curr.active, ...curr.locked].filter((i) => {
+                const { x, row } = Coord.fromIndex(i);
+
+                return !linesToClear.has(row) || (x !== 4 - count && x !== 5 + count);
+              }),
+            }));
+
+            return;
+          }
+
+          // Push rows down and set new tetromino
+          setTetrominoIndices((curr) => ({
+            ...curr,
+            active: nextTetromino,
+            locked: rows.flat(),
+          }));
+
+          // Reset drop interval
+          setDropInterval(INTERVAL.initialDrop);
+        },
+        60,
+        { limit: 5 }
+      );
     } else {
       setTetrominoIndices((curr) => ({
         ...curr,
-        active: newTetromino(),
+        active: nextTetromino,
         locked: [...curr.active, ...curr.locked],
       }));
     }
@@ -243,11 +262,8 @@ function GameBoard(): JSX.Element {
         leftRightTimeoutId.current = null;
       }
 
-      if (leftRightIntervalId.current) {
-        window.clearInterval(leftRightIntervalId.current);
-
-        leftRightIntervalId.current = null;
-      }
+      leftRightIntervalClear.current?.();
+      leftRightIntervalClear.current = null;
     }
 
     /** Clear timers on keyup. */
@@ -268,9 +284,9 @@ function GameBoard(): JSX.Element {
     moveTetromino(direction);
 
     leftRightTimeoutId.current = window.setTimeout(() => {
-      leftRightIntervalId.current = setInstantInterval(() => {
+      leftRightIntervalClear.current = setCustomInterval(() => {
         moveTetromino(direction);
-      }, INTERVAL.leftRight);
+      }, INTERVAL.leftRight).clear;
     }, KEYDOWN_DELAY);
   }
 
@@ -350,6 +366,8 @@ function GameBoard(): JSX.Element {
 
   // Drop interval
   useEffect(() => {
+    if (dropInterval === null) return;
+
     dropIntervalId.current = window.setInterval(() => {
       moveTetromino("down");
     }, dropInterval);

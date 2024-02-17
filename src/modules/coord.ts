@@ -2,6 +2,10 @@ export class Coord {
   x;
   y;
 
+  get row(): number {
+    return 19 - this.y;
+  }
+
   constructor({ x, y }: { x: number; y: number }) {
     this.x = x;
     this.y = y;
