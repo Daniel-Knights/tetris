@@ -135,6 +135,7 @@ function GameBoard(): JSX.Element {
               locked: [...curr.active, ...curr.locked].filter((i) => {
                 const { x, row } = Coord.fromIndex(i);
 
+                // With each iteration we clear the two innermost minos
                 return !linesToClear.has(row) || (x !== 4 - count && x !== 5 + count);
               }),
             }));
