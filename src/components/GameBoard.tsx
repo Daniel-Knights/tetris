@@ -2,9 +2,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 
 import { Coord, TETROMINOES, WALL_KICKS } from "../modules";
 import type { TetrominoIndices, TetrominoType } from "../modules";
-import { bagShuffle, setCustomInterval, useInitRef } from "../utils";
-
-type RotationStage = 0 | 1 | 2 | 3;
+import { RotationStage } from "../modules/tetromino";
+import { setCustomInterval } from "../utils";
 
 type TetrominoIndicesState = {
   active: TetrominoIndices | [];
@@ -54,12 +53,17 @@ function isAtBound(
   });
 }
 
-function GameBoard(): JSX.Element {
-  const randomTetrominoGen = useInitRef(() => {
-    return bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
-  });
-  const currentTetrominoType = useInitRef(() => randomTetrominoGen.current.next().value);
-  const currentRotationStage = useRef<RotationStage>(0);
+function GameBoard({
+  currentTetrominoType,
+  rotationStage,
+  setRotationStage,
+  newTetromino,
+}: {
+  currentTetrominoType: TetrominoType;
+  rotationStage: RotationStage;
+  setRotationStage: (stage: RotationStage) => void;
+  newTetromino: () => TetrominoIndices;
+}): JSX.Element {
   const dropIntervalId = useRef<number | null>(null);
   const leftRightTimeoutId = useRef<number | null>(null);
   const leftRightIntervalClear = useRef<(() => void) | null>(null);
@@ -68,7 +72,7 @@ function GameBoard(): JSX.Element {
 
   const [dropInterval, setDropInterval] = useState<number | null>(INTERVAL.initialDrop);
   const [tetrominoIndices, setTetrominoIndices] = useState<TetrominoIndicesState>({
-    active: TETROMINOES[currentTetrominoType.current].initialIndices,
+    active: TETROMINOES[currentTetrominoType].initialIndices,
     ghost: [],
     locked: [],
   });
@@ -86,14 +90,6 @@ function GameBoard(): JSX.Element {
       };
     });
   }, []);
-
-  /** Sets new tetromino. */
-  const newTetromino = useCallback(() => {
-    currentTetrominoType.current = randomTetrominoGen.current.next().value;
-    currentRotationStage.current = 0;
-
-    return TETROMINOES[currentTetrominoType.current].initialIndices;
-  }, [currentTetrominoType, randomTetrominoGen]);
 
   /** Clears full lines and sets new tetromino. */
   const handleLineClears = useCallback(() => {
@@ -194,14 +190,13 @@ function GameBoard(): JSX.Element {
 
   /** Rotates the current tetromino. */
   function rotateTetromino() {
-    if (currentTetrominoType.current === "O") return;
+    if (currentTetrominoType === "O") return;
 
-    const rotationStage = currentRotationStage.current;
     const nextRotationStage = ((rotationStage + 1) % 4) as RotationStage;
-    const { pivotIndex } = TETROMINOES[currentTetrominoType.current];
+    const { pivotIndex } = TETROMINOES[currentTetrominoType];
 
     const wallKicks = WALL_KICKS.find((k) => {
-      return (k.appliesTo as TetrominoType[]).includes(currentTetrominoType.current);
+      return (k.appliesTo as TetrominoType[]).includes(currentTetrominoType);
     })!;
 
     // Attempt initial rotation then try each wall kick until it doesn't collide
@@ -236,7 +231,7 @@ function GameBoard(): JSX.Element {
       });
 
       if (!newPosWillCollide) {
-        currentRotationStage.current = nextRotationStage;
+        setRotationStage(nextRotationStage);
 
         setTetrominoIndices((curr) => ({
           ...curr,
@@ -370,7 +365,7 @@ function GameBoard(): JSX.Element {
   // Ghost tetromino
   useEffect(() => {
     setTetrominoIndices((curr) => {
-      if (tetrominoIndices.active.length === 0) {
+      if (curr.active.length === 0) {
         return {
           ...curr,
           ghost: [],
@@ -390,7 +385,7 @@ function GameBoard(): JSX.Element {
         if (isAtBottom) {
           return {
             ...curr,
-            ghost: tetrominoIndices.active.map((j) => j + i * 10) as TetrominoIndices,
+            ghost: curr.active.map((j) => j + i * 10) as TetrominoIndices,
           };
         }
       }

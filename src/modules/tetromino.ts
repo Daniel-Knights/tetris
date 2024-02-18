@@ -5,6 +5,8 @@ import { Coord } from "./coord";
 export type TetrominoType = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
 export type TetrominoIndices = RepeatingTuple<number, 4>;
 
+export type RotationStage = 0 | 1 | 2 | 3;
+
 export const TETROMINOES = {
   I: {
     initialIndices: [3, 4, 5, 6],
