@@ -8,6 +8,7 @@ type RotationStage = 0 | 1 | 2 | 3;
 
 type TetrominoIndicesState = {
   active: TetrominoIndices | [];
+  ghost: TetrominoIndices | [];
   locked: number[];
 };
 
@@ -36,10 +37,11 @@ function willCollide(lockedIndices: number[], coord: Coord): boolean {
 
 /** Checks if current tetromino is at the right, left, or bottom bound. */
 function isAtBound(
-  curr: TetrominoIndicesState,
+  active: TetrominoIndicesState["active"],
+  locked: TetrominoIndicesState["locked"],
   direction: keyof typeof MOVEMENT
 ): boolean {
-  return curr.active.some((i) => {
+  return active.some((i) => {
     const newCoord = Coord.fromIndex(i);
 
     if (direction === "down") {
@@ -48,7 +50,7 @@ function isAtBound(
       newCoord.x += MOVEMENT[direction];
     }
 
-    return willCollide(curr.locked, newCoord);
+    return willCollide(locked, newCoord);
   });
 }
 
@@ -67,13 +69,14 @@ function GameBoard(): JSX.Element {
   const [dropInterval, setDropInterval] = useState<number | null>(INTERVAL.initialDrop);
   const [tetrominoIndices, setTetrominoIndices] = useState<TetrominoIndicesState>({
     active: TETROMINOES[currentTetrominoType.current].initialIndices,
+    ghost: [],
     locked: [],
   });
 
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback((direction: keyof typeof MOVEMENT): void => {
     setTetrominoIndices((curr) => {
-      if (isAtBound(curr, direction)) {
+      if (isAtBound(curr.active, curr.locked, direction)) {
         return curr;
       }
 
@@ -175,7 +178,7 @@ function GameBoard(): JSX.Element {
         lockDownTimeoutId.current = null;
 
         // Prevent floating tetrominoes
-        if (!isAtBound(tetrominoIndices, "down")) return;
+        if (!isAtBound(tetrominoIndices.active, tetrominoIndices.locked, "down")) return;
 
         handleLineClears();
       }
@@ -339,7 +342,7 @@ function GameBoard(): JSX.Element {
 
   // Tetromino has hit lower limit
   useEffect(() => {
-    if (!isAtBound(tetrominoIndices, "down")) return;
+    if (!isAtBound(tetrominoIndices.active, tetrominoIndices.locked, "down")) return;
 
     // GAME OVER
     if (tetrominoIndices.locked.some((i) => i <= 9)) {
@@ -359,10 +362,42 @@ function GameBoard(): JSX.Element {
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
-    if (gameOver.current) return;
+    if (gameOver.current || !lockDownTimeoutId.current) return;
 
     lockDown();
   }, [tetrominoIndices.active, lockDown]);
+
+  // Ghost tetromino
+  useEffect(() => {
+    setTetrominoIndices((curr) => {
+      if (tetrominoIndices.active.length === 0) {
+        return {
+          ...curr,
+          ghost: [],
+        };
+      }
+
+      // Search each row until bottom bound is found
+      const callLimit = 20;
+
+      for (let i = 0; i <= callLimit; i += 1) {
+        const isAtBottom = isAtBound(
+          curr.active.map((j) => j + i * 10) as TetrominoIndices,
+          curr.locked,
+          "down"
+        );
+
+        if (isAtBottom) {
+          return {
+            ...curr,
+            ghost: tetrominoIndices.active.map((j) => j + i * 10) as TetrominoIndices,
+          };
+        }
+      }
+
+      return curr;
+    });
+  }, [tetrominoIndices.active, tetrominoIndices.locked]);
 
   // Drop interval
   useEffect(() => {
@@ -395,9 +430,17 @@ function GameBoard(): JSX.Element {
         .map((_, i) => (
           <span
             key={window.crypto.randomUUID()}
-            className={`inline-flex justify-center items-center border border-primary before:h-[10px] before:w-[10px] before:bg-primary ${
-              (tetrominoIndices.active as TetrominoIndices).includes(i) ||
-              tetrominoIndices.locked.includes(i)
+            className={`inline-flex justify-center items-center border border-primary before:h-[10px] before:w-[10px] ${
+              (tetrominoIndices.ghost as TetrominoIndices).includes(i) &&
+              !(tetrominoIndices.active as TetrominoIndices).includes(i)
+                ? ""
+                : "before:bg-primary"
+            } ${
+              [
+                ...tetrominoIndices.active,
+                ...tetrominoIndices.ghost,
+                ...tetrominoIndices.locked,
+              ].includes(i)
                 ? ""
                 : "opacity-20"
             }`}
