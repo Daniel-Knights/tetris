@@ -1,6 +1,7 @@
 import { useRef } from "react";
 
 import GameBoard from "./components/GameBoard";
+import QueueBoard from "./components/QueueBoard";
 import StatBoard from "./components/StatBoard";
 import { useTetromino } from "./modules/tetromino";
 
@@ -16,7 +17,8 @@ function App(): JSX.Element {
   } = useTetromino(gameOver);
 
   return (
-    <div className="grid grid-cols-[2fr_1fr] items-center justify-items-center h-full w-full bg-secondary text-primary">
+    <div className="flex justify-evenly items-center h-full w-full bg-secondary text-primary">
+      <StatBoard />
       <GameBoard
         gameOver={gameOver}
         dropInterval={dropInterval}
@@ -25,7 +27,7 @@ function App(): JSX.Element {
         moveTetromino={moveTetromino}
         rotateTetromino={rotateTetromino}
       />
-      <StatBoard />
+      <QueueBoard />
     </div>
   );
 }

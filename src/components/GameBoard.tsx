@@ -1,8 +1,9 @@
 import { useEffect, useRef } from "react";
 
-import type { TetrominoIndices } from "../modules";
 import { INTERVAL, MOVEMENT, TetrominoIndicesState } from "../modules/tetromino";
 import { setCustomInterval } from "../utils";
+
+import Matrix from "./Matrix";
 
 const KEYDOWN_DELAY = 300;
 
@@ -128,29 +129,12 @@ function GameBoard({
   });
 
   return (
-    <div className="grid grid-cols-[repeat(10,20px)] grid-rows-[repeat(20,20px)] gap-1 py-4 border-y border-primary">
-      {Array(200)
-        .fill(null)
-        .map((_, i) => (
-          <span
-            key={window.crypto.randomUUID()}
-            className={`inline-flex justify-center items-center border border-primary before:h-[10px] before:w-[10px] ${
-              (tetrominoIndices.ghost as TetrominoIndices).includes(i) &&
-              !(tetrominoIndices.active as TetrominoIndices).includes(i)
-                ? ""
-                : "before:bg-primary"
-            } ${
-              [
-                ...tetrominoIndices.active,
-                ...tetrominoIndices.ghost,
-                ...tetrominoIndices.locked,
-              ].includes(i)
-                ? ""
-                : "opacity-20"
-            }`}
-          />
-        ))}
-    </div>
+    <Matrix
+      rows={20}
+      columns={10}
+      highlightedIndices={[...tetrominoIndices.active, ...tetrominoIndices.locked]}
+      outlinedIndices={tetrominoIndices.ghost}
+    />
   );
 }
 
