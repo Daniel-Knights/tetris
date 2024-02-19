@@ -1,2 +1,1 @@
-export * from "./coord";
 export * from "./tetromino";
