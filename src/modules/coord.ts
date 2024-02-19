@@ -13,7 +13,7 @@ export class Coord {
 
   static fromIndex(index: number): Coord {
     return new this({
-      x: index > -1 ? index % 10 : 10 + (index % 10),
+      x: ((index % 10) + 10) % 10,
       y: 19 - Math.floor(index / 10),
     });
   }
