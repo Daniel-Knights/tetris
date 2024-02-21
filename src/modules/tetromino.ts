@@ -6,11 +6,11 @@ import { bagShuffle, RepeatingTuple, setCustomInterval, useInitRef } from "../ut
 import { Coord } from "./coord";
 
 export type TetrominoType = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
-export type TetrominoIndices = RepeatingTuple<number, 4>;
-export type TetrominoIndicesState = {
-  active: TetrominoIndices | [];
-  ghost: TetrominoIndices | [];
-  locked: number[];
+export type TetrominoCoords = RepeatingTuple<Coord, 4>;
+export type TetrominoCoordsState = {
+  active: TetrominoCoords | [];
+  ghost: TetrominoCoords | [];
+  locked: Coord[];
 };
 
 type RotationStage = 0 | 1 | 2 | 3;
@@ -24,43 +24,27 @@ export const INTERVAL = {
   leftRight: 50,
 } as const;
 
-export const MOVEMENT = {
-  left: -1,
-  right: 1,
-  down: 10,
-} as const;
-
-/** Returns true if passed coords will collide with current locked indices. */
-function willCollide(lockedIndices: number[], coord: Coord): boolean {
-  return (
-    lockedIndices.includes(coord.toIndex()) || coord.x < 0 || coord.x > 9 || coord.y < 0
-  );
+/** Returns true if passed coord will collide with current locked coords. */
+function willCollide(lockedCoords: Coord[], coord: Coord): boolean {
+  return coord.isIn(lockedCoords) || coord.x < 0 || coord.x > 9 || coord.y < 0;
 }
 
 /** Checks if current tetromino is at the right, left, or bottom bound. */
 function isAtBound(
-  active: TetrominoIndicesState["active"],
-  locked: TetrominoIndicesState["locked"],
-  direction: keyof typeof MOVEMENT
+  active: TetrominoCoordsState["active"],
+  locked: TetrominoCoordsState["locked"],
+  coord: Partial<Coord>
 ): boolean {
-  return active.some((i) => {
-    const newCoord = Coord.fromIndex(i);
-
-    if (direction === "down") {
-      newCoord.y += -(MOVEMENT[direction] / 10);
-    } else {
-      newCoord.x += MOVEMENT[direction];
-    }
-
-    return willCollide(locked, newCoord);
+  return active.some((c) => {
+    return willCollide(locked, c.clone().add(coord));
   });
 }
 
 export function useTetromino(gameOver: { current: boolean }): {
   dropInterval: number | null;
   setDropInterval: (interval: number | null) => void;
-  tetrominoIndices: TetrominoIndicesState;
-  moveTetromino: (direction: keyof typeof MOVEMENT) => void;
+  tetrominoCoords: TetrominoCoordsState;
+  moveTetromino: (coord: Partial<Coord>) => void;
   rotateTetromino: () => void;
 } {
   const dropIntervalId = useRef<number | null>(null);
@@ -73,33 +57,43 @@ export function useTetromino(gameOver: { current: boolean }): {
 
   const [dropInterval, setDropInterval] = useState<number | null>(INTERVAL.initialDrop);
   const [rotationStage, setRotationStage] = useState<RotationStage>(0);
-  const [tetrominoIndices, setTetrominoIndices] = useState<TetrominoIndicesState>({
-    active: TETROMINOES[currentTetrominoType.current].initialIndices,
+  const [tetrominoCoords, setTetrominoCoords] = useState<TetrominoCoordsState>({
+    active: TETROMINOES[currentTetrominoType.current].coords.map((c) => {
+      return c.clone().add({
+        x: TETROMINOES[currentTetrominoType.current].startX,
+        y: 19,
+      });
+    }) as TetrominoCoords,
     ghost: [],
     locked: [],
   });
 
   /** Sets new tetromino. */
-  const newTetromino = useCallback(() => {
+  const newTetromino = useCallback((): TetrominoCoords => {
     currentTetrominoType.current = randomTetrominoGen.current.next().value;
 
     setRotationStage(0);
 
-    return TETROMINOES[currentTetrominoType.current].initialIndices;
+    return TETROMINOES[currentTetrominoType.current].coords.map((c) => {
+      return c.clone().add({
+        x: TETROMINOES[currentTetrominoType.current].startX,
+        y: 19,
+      });
+    }) as TetrominoCoords;
   }, [currentTetrominoType, randomTetrominoGen]);
 
   /** Clears full lines and sets new tetromino. */
   const handleLineClears = useCallback(() => {
-    const allTetrominoIndices = [
-      ...tetrominoIndices.active,
-      ...tetrominoIndices.locked,
-    ].sort((a, b) => b - a);
-    const rows: number[][] = [];
+    const allTetrominoCoords = [
+      ...tetrominoCoords.active,
+      ...tetrominoCoords.locked,
+    ].sort((a, b) => b.toIndex() - a.toIndex());
+    const rows: Coord[][] = [];
     const linesToClear = new Set<number>();
 
-    allTetrominoIndices.forEach((tetIndex) => {
-      const row = Math.floor(tetIndex / 10);
-      const adjustedIndex = tetIndex + linesToClear.size * 10;
+    allTetrominoCoords.forEach((coord) => {
+      const { row } = coord;
+      const adjustedIndex = coord.clone().add({ y: -linesToClear.size });
 
       if (rows[row]) {
         rows[row]!.push(adjustedIndex);
@@ -124,11 +118,11 @@ export function useTetromino(gameOver: { current: boolean }): {
         ({ count }) => {
           // Clear animation
           if (count < 5) {
-            setTetrominoIndices((curr) => ({
+            setTetrominoCoords((curr) => ({
               ...curr,
               active: [],
-              locked: [...curr.active, ...curr.locked].filter((i) => {
-                const { x, row } = Coord.fromIndex(i);
+              locked: [...curr.active, ...curr.locked].filter((coord) => {
+                const { x, row } = coord;
 
                 // With each iteration we clear the two innermost minos
                 return !linesToClear.has(row) || (x !== 4 - count && x !== 5 + count);
@@ -139,7 +133,7 @@ export function useTetromino(gameOver: { current: boolean }): {
           }
 
           // Push rows down and set new tetromino
-          setTetrominoIndices((curr) => ({
+          setTetrominoCoords((curr) => ({
             ...curr,
             active: nextTetromino,
             locked: rows.flat(),
@@ -152,13 +146,13 @@ export function useTetromino(gameOver: { current: boolean }): {
         { limit: 5 }
       );
     } else {
-      setTetrominoIndices((curr) => ({
+      setTetrominoCoords((curr) => ({
         ...curr,
         active: nextTetromino,
         locked: [...curr.active, ...curr.locked],
       }));
     }
-  }, [tetrominoIndices, newTetromino]);
+  }, [tetrominoCoords, newTetromino]);
 
   /** Locks down active tetromino. */
   const lockDown = useCallback(
@@ -171,7 +165,7 @@ export function useTetromino(gameOver: { current: boolean }): {
         lockDownTimeoutId.current = null;
 
         // Prevent floating tetrominoes
-        if (!isAtBound(tetrominoIndices.active, tetrominoIndices.locked, "down")) return;
+        if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
 
         handleLineClears();
       }
@@ -182,19 +176,19 @@ export function useTetromino(gameOver: { current: boolean }): {
         lockDownTimeoutId.current = window.setTimeout(commitLockDown, LOCK_DOWN_TIMEOUT);
       }
     },
-    [tetrominoIndices, handleLineClears]
+    [tetrominoCoords, handleLineClears]
   );
 
   /** Moves the current tetromino in the passed direction. */
-  const moveTetromino = useCallback((direction: keyof typeof MOVEMENT): void => {
-    setTetrominoIndices((curr) => {
-      if (isAtBound(curr.active, curr.locked, direction)) {
+  const moveTetromino = useCallback((coord: Partial<Coord>): void => {
+    setTetrominoCoords((curr) => {
+      if (isAtBound(curr.active, curr.locked, coord)) {
         return curr;
       }
 
       return {
         ...curr,
-        active: curr.active.map((i) => i + MOVEMENT[direction]) as TetrominoIndices,
+        active: curr.active.map((c) => c.clone().add(coord)) as TetrominoCoords,
       };
     });
   }, []);
@@ -218,25 +212,24 @@ export function useTetromino(gameOver: { current: boolean }): {
         wallKicks.offsets[nextRotationStage]![kickI]!
       );
 
-      const newIndices: TetrominoIndices | [] = [...tetrominoIndices.active];
+      const newCoords: TetrominoCoords | [] = [...tetrominoCoords.active];
 
-      const newPosWillCollide = tetrominoIndices.active.some((tetIndex, i) => {
-        const currCoord = Coord.fromIndex(tetIndex);
-        const pivotCoord = Coord.fromIndex(tetrominoIndices.active[pivotIndex]!);
+      const newPosWillCollide = tetrominoCoords.active.some((coord, i) => {
+        const pivotCoord = tetrominoCoords.active[pivotIndex]!.clone();
 
         const rotatedDiff = new Coord({
-          x: currCoord.x - pivotCoord.x,
-          y: currCoord.y - pivotCoord.y,
+          x: coord.x - pivotCoord.x,
+          y: coord.y - pivotCoord.y,
         }).rotate();
 
         const newCoord = pivotCoord.add(rotatedDiff, adjustedWallKick);
 
-        if (willCollide(tetrominoIndices.locked, newCoord)) {
+        if (willCollide(tetrominoCoords.locked, newCoord)) {
           // Will collide, so we return and move on to the next wall kick
           return true;
         }
 
-        newIndices[i] = newCoord.toIndex();
+        newCoords[i] = newCoord;
 
         return false;
       });
@@ -244,9 +237,9 @@ export function useTetromino(gameOver: { current: boolean }): {
       if (!newPosWillCollide) {
         setRotationStage(nextRotationStage);
 
-        setTetrominoIndices((curr) => ({
+        setTetrominoCoords((curr) => ({
           ...curr,
-          active: newIndices,
+          active: newCoords,
         }));
 
         return;
@@ -256,10 +249,10 @@ export function useTetromino(gameOver: { current: boolean }): {
 
   // Tetromino has hit lower limit
   useEffect(() => {
-    if (!isAtBound(tetrominoIndices.active, tetrominoIndices.locked, "down")) return;
+    if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
 
     // GAME OVER
-    if (tetrominoIndices.locked.some((i) => i <= 9)) {
+    if (tetrominoCoords.locked.some((c) => c.y >= 19)) {
       gameOver.current = true;
 
       window.clearInterval(dropIntervalId.current!);
@@ -272,18 +265,18 @@ export function useTetromino(gameOver: { current: boolean }): {
     } else {
       lockDown();
     }
-  }, [tetrominoIndices, dropInterval, lockDown, gameOver]);
+  }, [tetrominoCoords, dropInterval, lockDown, gameOver]);
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
     if (gameOver.current || !lockDownTimeoutId.current) return;
 
     lockDown();
-  }, [tetrominoIndices.active, lockDown, gameOver]);
+  }, [tetrominoCoords.active, lockDown, gameOver]);
 
   // Ghost tetromino
   useEffect(() => {
-    setTetrominoIndices((curr) => {
+    setTetrominoCoords((curr) => {
       if (curr.active.length === 0) {
         return {
           ...curr,
@@ -295,30 +288,29 @@ export function useTetromino(gameOver: { current: boolean }): {
       const callLimit = 20;
 
       for (let i = 0; i <= callLimit; i += 1) {
-        const isAtBottom = isAtBound(
-          curr.active.map((j) => j + i * 10) as TetrominoIndices,
-          curr.locked,
-          "down"
-        );
+        const nextCoords = curr.active.map((c) => {
+          return c.clone().add({ y: -i });
+        }) as TetrominoCoords;
+        const isAtBottom = isAtBound(nextCoords, curr.locked, { y: -1 });
 
         if (isAtBottom) {
           return {
             ...curr,
-            ghost: curr.active.map((j) => j + i * 10) as TetrominoIndices,
+            ghost: nextCoords,
           };
         }
       }
 
       return curr;
     });
-  }, [tetrominoIndices.active, tetrominoIndices.locked]);
+  }, [tetrominoCoords.active, tetrominoCoords.locked]);
 
   // Drop interval
   useEffect(() => {
     if (dropInterval === null) return;
 
     dropIntervalId.current = window.setInterval(() => {
-      moveTetromino("down");
+      moveTetromino({ y: -1 });
     }, dropInterval);
 
     return () => {
@@ -329,7 +321,7 @@ export function useTetromino(gameOver: { current: boolean }): {
   return {
     dropInterval,
     setDropInterval,
-    tetrominoIndices,
+    tetrominoCoords,
     moveTetromino,
     rotateTetromino,
   };

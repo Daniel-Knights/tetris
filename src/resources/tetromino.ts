@@ -1,39 +1,74 @@
-import { Coord, TetrominoIndices, TetrominoType } from "../modules";
+import { Coord, TetrominoCoords, TetrominoType } from "../modules";
 import { RepeatingTuple } from "../utils";
 
 export const TETROMINOES = {
   I: {
-    initialIndices: [3, 4, 5, 6],
+    coords: [
+      new Coord({ x: 0, y: 0 }),
+      new Coord({ x: 1, y: 0 }),
+      new Coord({ x: 2, y: 0 }),
+      new Coord({ x: 3, y: 0 }),
+    ],
     pivotIndex: 1,
   },
   J: {
-    initialIndices: [3, 13, 14, 15],
+    coords: [
+      new Coord({ x: 0, y: 0 }),
+      new Coord({ x: 0, y: -1 }),
+      new Coord({ x: 1, y: -1 }),
+      new Coord({ x: 2, y: -1 }),
+    ],
     pivotIndex: 2,
   },
   L: {
-    initialIndices: [5, 13, 14, 15],
+    coords: [
+      new Coord({ x: 2, y: 0 }),
+      new Coord({ x: 0, y: -1 }),
+      new Coord({ x: 1, y: -1 }),
+      new Coord({ x: 2, y: -1 }),
+    ],
     pivotIndex: 2,
   },
   O: {
-    initialIndices: [4, 5, 14, 15],
+    coords: [
+      new Coord({ x: 0, y: 0 }),
+      new Coord({ x: 1, y: 0 }),
+      new Coord({ x: 0, y: -1 }),
+      new Coord({ x: 1, y: -1 }),
+    ],
     pivotIndex: 2,
   },
   S: {
-    initialIndices: [4, 5, 13, 14],
+    coords: [
+      new Coord({ x: 1, y: 0 }),
+      new Coord({ x: 2, y: 0 }),
+      new Coord({ x: 0, y: -1 }),
+      new Coord({ x: 1, y: -1 }),
+    ],
     pivotIndex: 3,
   },
   T: {
-    initialIndices: [4, 13, 14, 15],
+    coords: [
+      new Coord({ x: 1, y: 0 }),
+      new Coord({ x: 0, y: -1 }),
+      new Coord({ x: 1, y: -1 }),
+      new Coord({ x: 2, y: -1 }),
+    ],
     pivotIndex: 2,
   },
   Z: {
-    initialIndices: [3, 4, 14, 15],
+    coords: [
+      new Coord({ x: 0, y: 0 }),
+      new Coord({ x: 1, y: 0 }),
+      new Coord({ x: 1, y: -1 }),
+      new Coord({ x: 2, y: -1 }),
+    ],
     pivotIndex: 2,
   },
 } satisfies Record<
   TetrominoType,
   {
-    initialIndices: TetrominoIndices;
+    coords: TetrominoCoords;
     pivotIndex: number;
   }
 >;

@@ -11,7 +11,7 @@ function App(): JSX.Element {
   const {
     dropInterval,
     setDropInterval,
-    tetrominoIndices,
+    tetrominoCoords,
     moveTetromino,
     rotateTetromino,
   } = useTetromino(gameOver);
@@ -23,7 +23,7 @@ function App(): JSX.Element {
         gameOver={gameOver}
         dropInterval={dropInterval}
         setDropInterval={setDropInterval}
-        tetrominoIndices={tetrominoIndices}
+        tetrominoCoords={tetrominoCoords}
         moveTetromino={moveTetromino}
         rotateTetromino={rotateTetromino}
       />

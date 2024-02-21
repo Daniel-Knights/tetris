@@ -22,20 +22,28 @@ export class Coord {
     return (19 - this.y) * 10 + this.x;
   }
 
+  isEqual(coord: Coord): boolean {
+    return this.x === coord.x && this.y === coord.y;
+  }
+
+  isIn(coords: Coord[]): boolean {
+    return coords.some((c) => c.isEqual(this));
+  }
+
   clone(): Coord {
     return new Coord({ x: this.x, y: this.y });
   }
 
-  add(...coords: Coord[]): Coord {
-    this.x += coords.reduce((acc, curr) => acc + curr.x, 0);
-    this.y += coords.reduce((acc, curr) => acc + curr.y, 0);
+  add(...coords: Partial<Coord>[]): Coord {
+    this.x += coords.reduce((acc, curr) => acc + (curr.x ?? 0), 0);
+    this.y += coords.reduce((acc, curr) => acc + (curr.y ?? 0), 0);
 
     return this;
   }
 
-  subtract(...coords: Coord[]): Coord {
-    this.x += coords.reduce((acc, curr) => acc - curr.x, 0);
-    this.y += coords.reduce((acc, curr) => acc - curr.y, 0);
+  subtract(...coords: Partial<Coord>[]): Coord {
+    this.x += coords.reduce((acc, curr) => acc - (curr.x ?? 0), 0);
+    this.y += coords.reduce((acc, curr) => acc - (curr.y ?? 0), 0);
 
     return this;
   }

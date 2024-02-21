@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 
-import { INTERVAL, MOVEMENT, TetrominoIndicesState } from "../modules/tetromino";
+import { Coord } from "../modules";
+import { INTERVAL, TetrominoCoordsState } from "../modules/tetromino";
 import { setCustomInterval } from "../utils";
 
 import Matrix from "./Matrix";
@@ -11,15 +12,15 @@ function GameBoard({
   gameOver,
   dropInterval,
   setDropInterval,
-  tetrominoIndices,
+  tetrominoCoords,
   moveTetromino,
   rotateTetromino,
 }: {
   gameOver: { current: boolean };
   dropInterval: number | null;
   setDropInterval: (interval: number | null) => void;
-  tetrominoIndices: TetrominoIndicesState;
-  moveTetromino: (direction: keyof typeof MOVEMENT) => void;
+  tetrominoCoords: TetrominoCoordsState;
+  moveTetromino: (coord: Partial<Coord>) => void;
   rotateTetromino: () => void;
 }): JSX.Element {
   const leftRightTimeoutId = useRef<number | null>(null);
@@ -36,13 +37,6 @@ function GameBoard({
 
   /** Event handler for moving the current tetromino left or right. */
   function keyLeftRight(ev: KeyboardEvent) {
-    const direction = {
-      ArrowLeft: "left",
-      ArrowRight: "right",
-    }[ev.key] as "left" | "right" | undefined;
-
-    if (!direction) return;
-
     /** Clears left/right keydown timers. */
     function clearLeftRightTimers() {
       if (leftRightTimeoutId.current) {
@@ -70,11 +64,13 @@ function GameBoard({
     window.addEventListener("keyup", leftRightEndListener);
 
     // Move
-    moveTetromino(direction);
+    const x = ev.key === "ArrowLeft" ? -1 : 1;
+
+    moveTetromino({ x });
 
     leftRightTimeoutId.current = window.setTimeout(() => {
       leftRightIntervalClear.current = setCustomInterval(() => {
-        moveTetromino(direction);
+        moveTetromino({ x });
       }, INTERVAL.leftRight).clear;
     }, KEYDOWN_DELAY);
   }
@@ -95,7 +91,7 @@ function GameBoard({
         if (dropInterval === INTERVAL.softDrop) return;
 
         setDropInterval(INTERVAL.softDrop);
-        moveTetromino("down");
+        moveTetromino({ y: -1 });
 
         window.addEventListener("keyup", softDropEndListener);
 
@@ -105,7 +101,7 @@ function GameBoard({
         if (dropInterval === INTERVAL.hardDrop) return;
 
         setDropInterval(INTERVAL.hardDrop);
-        moveTetromino("down");
+        moveTetromino({ y: -1 });
 
         break;
       }
@@ -132,8 +128,8 @@ function GameBoard({
     <Matrix
       rows={20}
       columns={10}
-      highlightedIndices={[...tetrominoIndices.active, ...tetrominoIndices.locked]}
-      outlinedIndices={tetrominoIndices.ghost}
+      highlightedCoords={[...tetrominoCoords.active, ...tetrominoCoords.locked]}
+      outlinedCoords={tetrominoCoords.ghost}
     />
   );
 }
