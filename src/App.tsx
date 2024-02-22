@@ -9,6 +9,7 @@ function App(): JSX.Element {
   const gameOver = useRef(false);
 
   const {
+    currentTetrominoQueue,
     dropInterval,
     setDropInterval,
     tetrominoCoords,
@@ -17,7 +18,7 @@ function App(): JSX.Element {
   } = useTetromino(gameOver);
 
   return (
-    <div className="flex justify-evenly items-center h-full w-full bg-secondary text-primary">
+    <div className="grid grid-cols-3 place-items-center h-full w-full bg-secondary text-primary">
       <StatBoard />
       <GameBoard
         gameOver={gameOver}
@@ -27,7 +28,7 @@ function App(): JSX.Element {
         moveTetromino={moveTetromino}
         rotateTetromino={rotateTetromino}
       />
-      <QueueBoard />
+      <QueueBoard queue={currentTetrominoQueue.current.bag} />
     </div>
   );
 }

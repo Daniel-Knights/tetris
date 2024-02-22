@@ -16,15 +16,19 @@ function shuffle<T>(arr: T[]): T[] {
 /**
  * Yields items from passed array in random order.
  */
-export function* bagShuffle<T>(passedArr: T[]): GeneratorYield<T> {
+export function* bagShuffle<T>(passedArr: T[]): GeneratorYield<{ bag: T[]; next: T }> {
   const memoArr = [...passedArr];
-  const arr = shuffle([...memoArr]);
+  const arr = [...shuffle([...memoArr]), ...shuffle([...memoArr])];
 
   while (true) {
-    if (!arr.length) {
+    // Always keep one bag ahead
+    if (arr.length === memoArr.length) {
       arr.push(...shuffle([...memoArr]));
     }
 
-    yield arr.pop()!;
+    yield {
+      bag: arr,
+      next: arr.shift()!,
+    };
   }
 }

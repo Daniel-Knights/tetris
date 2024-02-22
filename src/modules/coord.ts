@@ -2,24 +2,27 @@ export class Coord {
   x;
   y;
 
-  get row(): number {
-    return 19 - this.y;
-  }
-
   constructor({ x, y }: { x: number; y: number }) {
     this.x = x;
     this.y = y;
   }
 
-  static fromIndex(index: number): Coord {
+  static fromIndex(
+    index: number,
+    { rows, columns }: { rows: number; columns: number }
+  ): Coord {
     return new this({
-      x: ((index % 10) + 10) % 10,
-      y: 19 - Math.floor(index / 10),
+      x: ((index % columns) + columns) % columns,
+      y: rows - 1 - Math.floor(index / columns),
     });
   }
 
-  toIndex(): number {
-    return (19 - this.y) * 10 + this.x;
+  getRow(rows: number): number {
+    return rows - 1 - this.y;
+  }
+
+  toIndex({ rows, columns }: { rows: number; columns: number }): number {
+    return (rows - 1 - this.y) * columns + this.x;
   }
 
   isEqual(coord: Coord): boolean {

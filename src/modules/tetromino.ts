@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 
 import { TETROMINOES, WALL_KICKS } from "../resources";
 import { bagShuffle, RepeatingTuple, setCustomInterval, useInitRef } from "../utils";
@@ -16,6 +16,10 @@ export type TetrominoCoordsState = {
 type RotationStage = 0 | 1 | 2 | 3;
 
 const LOCK_DOWN_TIMEOUT = 500;
+const MATRIX = {
+  rows: 20,
+  columns: 10,
+};
 
 export const INTERVAL = {
   initialDrop: 1000,
@@ -41,6 +45,10 @@ function isAtBound(
 }
 
 export function useTetromino(gameOver: { current: boolean }): {
+  currentTetrominoQueue: React.MutableRefObject<{
+    bag: TetrominoType[];
+    next: TetrominoType;
+  }>;
   dropInterval: number | null;
   setDropInterval: (interval: number | null) => void;
   tetrominoCoords: TetrominoCoordsState;
@@ -53,15 +61,15 @@ export function useTetromino(gameOver: { current: boolean }): {
   const randomTetrominoGen = useInitRef(() => {
     return bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
   });
-  const currentTetrominoType = useInitRef(() => randomTetrominoGen.current.next().value);
+  const currentTetrominoQueue = useInitRef(() => randomTetrominoGen.current.next().value);
 
   const [dropInterval, setDropInterval] = useState<number | null>(INTERVAL.initialDrop);
   const [rotationStage, setRotationStage] = useState<RotationStage>(0);
   const [tetrominoCoords, setTetrominoCoords] = useState<TetrominoCoordsState>({
-    active: TETROMINOES[currentTetrominoType.current].coords.map((c) => {
+    active: TETROMINOES[currentTetrominoQueue.current.next].coords.map((c) => {
       return c.clone().add({
-        x: TETROMINOES[currentTetrominoType.current].startX,
-        y: 19,
+        x: TETROMINOES[currentTetrominoQueue.current.next].startX,
+        y: MATRIX.rows - 1,
       });
     }) as TetrominoCoords,
     ghost: [],
@@ -70,35 +78,35 @@ export function useTetromino(gameOver: { current: boolean }): {
 
   /** Sets new tetromino. */
   const newTetromino = useCallback((): TetrominoCoords => {
-    currentTetrominoType.current = randomTetrominoGen.current.next().value;
+    currentTetrominoQueue.current = randomTetrominoGen.current.next().value;
 
     setRotationStage(0);
 
-    return TETROMINOES[currentTetrominoType.current].coords.map((c) => {
+    return TETROMINOES[currentTetrominoQueue.current.next].coords.map((c) => {
       return c.clone().add({
-        x: TETROMINOES[currentTetrominoType.current].startX,
-        y: 19,
+        x: TETROMINOES[currentTetrominoQueue.current.next].startX,
+        y: MATRIX.rows - 1,
       });
     }) as TetrominoCoords;
-  }, [currentTetrominoType, randomTetrominoGen]);
+  }, [currentTetrominoQueue, randomTetrominoGen]);
 
   /** Clears full lines and sets new tetromino. */
   const handleLineClears = useCallback(() => {
     const allTetrominoCoords = [
       ...tetrominoCoords.active,
       ...tetrominoCoords.locked,
-    ].sort((a, b) => b.toIndex() - a.toIndex());
+    ].sort((a, b) => b.toIndex(MATRIX) - a.toIndex(MATRIX));
     const rows: Coord[][] = [];
     const linesToClear = new Set<number>();
 
     allTetrominoCoords.forEach((coord) => {
-      const { row } = coord;
+      const row = coord.getRow(MATRIX.rows);
       const adjustedIndex = coord.clone().add({ y: -linesToClear.size });
 
       if (rows[row]) {
         rows[row]!.push(adjustedIndex);
 
-        if (rows[row]!.length === 10) {
+        if (rows[row]!.length === MATRIX.columns) {
           rows.splice(row, 1);
           linesToClear.add(row);
         }
@@ -122,10 +130,13 @@ export function useTetromino(gameOver: { current: boolean }): {
               ...curr,
               active: [],
               locked: [...curr.active, ...curr.locked].filter((coord) => {
-                const { x, row } = coord;
+                const { x } = coord;
 
                 // With each iteration we clear the two innermost minos
-                return !linesToClear.has(row) || (x !== 4 - count && x !== 5 + count);
+                return (
+                  !linesToClear.has(coord.getRow(MATRIX.rows)) ||
+                  (x !== 4 - count && x !== 5 + count)
+                );
               }),
             }));
 
@@ -195,13 +206,15 @@ export function useTetromino(gameOver: { current: boolean }): {
 
   /** Rotates the current tetromino. */
   function rotateTetromino() {
-    if (currentTetrominoType.current === "O") return;
+    if (currentTetrominoQueue.current.next === "O") return;
 
     const nextRotationStage = ((rotationStage + 1) % 4) as RotationStage;
-    const { pivotIndex } = TETROMINOES[currentTetrominoType.current];
+    const { pivotIndex } = TETROMINOES[currentTetrominoQueue.current.next];
 
     const wallKicks = WALL_KICKS.find((k) => {
-      return (k.appliesTo as TetrominoType[]).includes(currentTetrominoType.current);
+      return (k.appliesTo as TetrominoType[]).includes(
+        currentTetrominoQueue.current.next
+      );
     })!;
 
     // Attempt initial rotation then try each wall kick until it doesn't collide
@@ -252,7 +265,7 @@ export function useTetromino(gameOver: { current: boolean }): {
     if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
 
     // GAME OVER
-    if (tetrominoCoords.locked.some((c) => c.y >= 19)) {
+    if (tetrominoCoords.locked.some((c) => c.y >= MATRIX.rows - 1)) {
       gameOver.current = true;
 
       window.clearInterval(dropIntervalId.current!);
@@ -285,9 +298,7 @@ export function useTetromino(gameOver: { current: boolean }): {
       }
 
       // Search each row until bottom bound is found
-      const callLimit = 20;
-
-      for (let i = 0; i <= callLimit; i += 1) {
+      for (let i = 0; i <= MATRIX.rows; i += 1) {
         const nextCoords = curr.active.map((c) => {
           return c.clone().add({ y: -i });
         }) as TetrominoCoords;
@@ -319,6 +330,7 @@ export function useTetromino(gameOver: { current: boolean }): {
   }, [moveTetromino, dropInterval]);
 
   return {
+    currentTetrominoQueue,
     dropInterval,
     setDropInterval,
     tetrominoCoords,

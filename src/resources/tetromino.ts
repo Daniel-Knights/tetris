@@ -9,6 +9,7 @@ export const TETROMINOES = {
       new Coord({ x: 2, y: 0 }),
       new Coord({ x: 3, y: 0 }),
     ],
+    startX: 3,
     pivotIndex: 1,
   },
   J: {
@@ -18,6 +19,7 @@ export const TETROMINOES = {
       new Coord({ x: 1, y: -1 }),
       new Coord({ x: 2, y: -1 }),
     ],
+    startX: 3,
     pivotIndex: 2,
   },
   L: {
@@ -27,6 +29,7 @@ export const TETROMINOES = {
       new Coord({ x: 1, y: -1 }),
       new Coord({ x: 2, y: -1 }),
     ],
+    startX: 3,
     pivotIndex: 2,
   },
   O: {
@@ -36,6 +39,7 @@ export const TETROMINOES = {
       new Coord({ x: 0, y: -1 }),
       new Coord({ x: 1, y: -1 }),
     ],
+    startX: 4,
     pivotIndex: 2,
   },
   S: {
@@ -45,6 +49,7 @@ export const TETROMINOES = {
       new Coord({ x: 0, y: -1 }),
       new Coord({ x: 1, y: -1 }),
     ],
+    startX: 3,
     pivotIndex: 3,
   },
   T: {
@@ -54,6 +59,7 @@ export const TETROMINOES = {
       new Coord({ x: 1, y: -1 }),
       new Coord({ x: 2, y: -1 }),
     ],
+    startX: 3,
     pivotIndex: 2,
   },
   Z: {
@@ -63,12 +69,16 @@ export const TETROMINOES = {
       new Coord({ x: 1, y: -1 }),
       new Coord({ x: 2, y: -1 }),
     ],
+    startX: 3,
     pivotIndex: 2,
   },
 } satisfies Record<
   TetrominoType,
   {
     coords: TetrominoCoords;
+    /** Starting adjustment for the x-axis. */
+    startX: number;
+    /** Index of the coord to pivot around. */
     pivotIndex: number;
   }
 >;

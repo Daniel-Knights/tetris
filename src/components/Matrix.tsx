@@ -1,36 +1,42 @@
+import { Coord } from "../modules";
+
 function Matrix({
   rows,
   columns,
-  highlightedIndices = [],
-  outlinedIndices = [],
+  bg,
+  highlightedCoords = [],
+  outlinedCoords = [],
 }: {
   rows: number;
   columns: number;
-  highlightedIndices: number[];
-  outlinedIndices: number[];
+  bg?: boolean;
+  highlightedCoords?: Coord[];
+  outlinedCoords?: Coord[];
 }): JSX.Element {
+  const bgOpacity = bg ? "opacity-20" : "opacity-0";
+
   return (
     <div
-      className="grid gap-1 py-4 border-y border-primary"
+      className="grid gap-1"
       style={{
         gridTemplateRows: `repeat(${rows},20px)`,
         gridTemplateColumns: `repeat(${columns},20px)`,
       }}
     >
-      {Array(rows * columns)
-        .fill(null)
-        .map((_, i) => (
+      {Array.from({ length: rows * columns }, (_, i) => {
+        const coord = Coord.fromIndex(i, { rows, columns });
+
+        return (
           <span
             key={window.crypto.randomUUID()}
             className={`inline-flex justify-center items-center border border-primary before:h-[10px] before:w-[10px] ${
-              outlinedIndices.includes(i) && !highlightedIndices.includes(i)
+              coord.isIn(outlinedCoords) && !coord.isIn(highlightedCoords)
                 ? ""
                 : "before:bg-primary"
-            } ${
-              [...highlightedIndices, ...outlinedIndices].includes(i) ? "" : "opacity-20"
-            }`}
+            } ${coord.isIn([...highlightedCoords, ...outlinedCoords]) ? "" : bgOpacity}`}
           />
-        ))}
+        );
+      })}
     </div>
   );
 }
