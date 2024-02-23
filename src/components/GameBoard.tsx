@@ -125,10 +125,9 @@ function GameBoard({
   });
 
   return (
-    <div className="py-4 border-y border-primary">
+    <div className="py-4 border-y-4 border-double border-primary/30">
       <Matrix
-        rows={20}
-        columns={10}
+        dimensions={{ rows: 20, columns: 10 }}
         highlightedCoords={[...tetrominoCoords.active, ...tetrominoCoords.locked]}
         outlinedCoords={tetrominoCoords.ghost}
         bg
