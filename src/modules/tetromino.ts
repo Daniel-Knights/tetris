@@ -23,7 +23,6 @@ const MATRIX = {
 };
 
 export const INTERVAL = {
-  hardDrop: 0.1,
   leftRight: 50,
 } as const;
 
@@ -43,6 +42,25 @@ function isAtBound(
   });
 }
 
+/**
+ * Checks each row, top to bottom, and returns the lowest point the passed coords
+ * can sit without colliding.
+ */
+export function getDropPoint(coords: TetrominoCoords, lockedCoords: Coord[]) {
+  for (let i = 0; i <= MATRIX.rows; i += 1) {
+    const nextCoords = coords.map((c) => {
+      return c.clone().add({ y: -i });
+    }) as TetrominoCoords;
+    const isAtBottom = isAtBound(nextCoords, lockedCoords, { y: -1 });
+
+    if (isAtBottom) {
+      return nextCoords;
+    }
+  }
+
+  return coords;
+}
+
 export function useTetromino(
   gameOver: { current: boolean },
   currentLevel: ReturnType<typeof useScore>["currentLevel"],
@@ -50,6 +68,7 @@ export function useTetromino(
 ) {
   const dropIntervalId = useRef<number | null>(null);
   const lockDownTimeoutId = useRef<number | null>(null);
+  const isHardDrop = useRef(false);
 
   const randomTetrominoGen = useInitRef(() => {
     return bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
@@ -266,10 +285,10 @@ export function useTetromino(
       window.clearInterval(dropIntervalId.current!);
 
       console.log("GAME OVER");
-      // Hard drop
-    } else if (dropInterval === INTERVAL.hardDrop) {
+    } else if (isHardDrop.current) {
       lockDown(true);
-      setDropInterval(getDropInterval(currentLevel));
+
+      isHardDrop.current = false;
     } else {
       lockDown();
     }
@@ -284,31 +303,10 @@ export function useTetromino(
 
   // Ghost tetromino
   useEffect(() => {
-    setTetrominoCoords((curr) => {
-      if (curr.active.length === 0) {
-        return {
-          ...curr,
-          ghost: [],
-        };
-      }
-
-      // Search each row until bottom bound is found
-      for (let i = 0; i <= MATRIX.rows; i += 1) {
-        const nextCoords = curr.active.map((c) => {
-          return c.clone().add({ y: -i });
-        }) as TetrominoCoords;
-        const isAtBottom = isAtBound(nextCoords, curr.locked, { y: -1 });
-
-        if (isAtBottom) {
-          return {
-            ...curr,
-            ghost: nextCoords,
-          };
-        }
-      }
-
-      return curr;
-    });
+    setTetrominoCoords((curr) => ({
+      ...curr,
+      ghost: curr.active.length === 0 ? [] : getDropPoint(curr.active, curr.locked),
+    }));
   }, [tetrominoCoords.active, tetrominoCoords.locked]);
 
   // Drop interval
@@ -332,6 +330,7 @@ export function useTetromino(
   }, [currentLevel]);
 
   return {
+    isHardDrop,
     currentTetrominoQueue,
     dropInterval,
     setDropInterval,

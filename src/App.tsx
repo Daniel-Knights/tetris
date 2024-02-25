@@ -11,6 +11,7 @@ function App(): JSX.Element {
 
   const { currentLevel, currentScore, lineClearCount, scoreLineClear } = useScore();
   const {
+    isHardDrop,
     currentTetrominoQueue,
     dropInterval,
     setDropInterval,
@@ -24,6 +25,7 @@ function App(): JSX.Element {
       <GameBoard
         gameOver={gameOver}
         currentLevel={currentLevel}
+        isHardDrop={isHardDrop}
         dropInterval={dropInterval}
         setDropInterval={setDropInterval}
         tetrominoCoords={tetrominoCoords}

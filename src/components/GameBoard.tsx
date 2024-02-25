@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { MutableRefObject, useEffect, useRef } from "react";
 
 import { Coord, getDropInterval, SOFT_DROP_SPEED_MULTIPLIER } from "../modules";
-import { INTERVAL, TetrominoCoordsState } from "../modules/tetromino";
+import { getDropPoint, INTERVAL, TetrominoCoordsState } from "../modules/tetromino";
 import { setCustomInterval } from "../utils";
 
 import Matrix from "./Matrix";
@@ -10,6 +10,7 @@ const KEYDOWN_DELAY = 300;
 
 function GameBoard({
   gameOver,
+  isHardDrop,
   currentLevel,
   dropInterval,
   setDropInterval,
@@ -18,6 +19,7 @@ function GameBoard({
   rotateTetromino,
 }: {
   gameOver: { current: boolean };
+  isHardDrop: MutableRefObject<boolean>;
   currentLevel: number;
   dropInterval: number | null;
   setDropInterval: (interval: number | null) => void;
@@ -89,6 +91,7 @@ function GameBoard({
     }
 
     switch (ev.key) {
+      // Soft drop
       case "ArrowDown": {
         const softDropInterval =
           getDropInterval(currentLevel) / SOFT_DROP_SPEED_MULTIPLIER;
@@ -102,11 +105,16 @@ function GameBoard({
 
         break;
       }
+      // Hard drop
       case " ": {
-        if (dropInterval === INTERVAL.hardDrop) return;
+        if (tetrominoCoords.active.length === 0) return;
 
-        setDropInterval(INTERVAL.hardDrop);
-        moveTetromino({ y: -1 });
+        isHardDrop.current = true;
+
+        const dropPoint = getDropPoint(tetrominoCoords.active, tetrominoCoords.locked);
+        const y = -(tetrominoCoords.active[0].y - dropPoint[0].y);
+
+        moveTetromino({ y });
 
         break;
       }
