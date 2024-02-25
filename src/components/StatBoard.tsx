@@ -1,12 +1,14 @@
+import { useStore } from "../store";
+
 function StatBoard({
-  currentLevel,
   currentScore,
   lineClearCount,
 }: {
-  currentLevel: number;
   currentScore: number;
   lineClearCount: number;
 }): JSX.Element {
+  const currentLevel = useStore((state) => state.currentLevel);
+
   return (
     <dl>
       <dt>Level:</dt>

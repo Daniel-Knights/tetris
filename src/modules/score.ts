@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useStore } from "../store";
+
 export const MAX_LEVEL = 15;
 export const SOFT_DROP_SPEED_MULTIPLIER = 20;
 
@@ -20,7 +22,9 @@ export function getDropInterval(level: number): number {
 }
 
 export function useScore() {
-  const [currentLevel, setCurrentLevel] = useState(1);
+  const currentLevel = useStore((state) => state.currentLevel);
+  const setCurrentLevel = useStore((state) => state.setCurrentLevel);
+
   const [currentScore, setCurrentScore] = useState(0);
   const [lineClearCount, setLineClearCount] = useState(0);
 

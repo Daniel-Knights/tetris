@@ -1,5 +1,3 @@
-import { useRef } from "react";
-
 import GameBoard from "./components/GameBoard";
 import QueueBoard from "./components/QueueBoard";
 import StatBoard from "./components/StatBoard";
@@ -7,9 +5,7 @@ import { useScore } from "./modules";
 import { useTetromino } from "./modules/tetromino";
 
 function App(): JSX.Element {
-  const gameOver = useRef(false);
-
-  const { currentLevel, currentScore, lineClearCount, scoreLineClear } = useScore();
+  const { currentScore, lineClearCount, scoreLineClear } = useScore();
   const {
     isHardDrop,
     currentTetrominoQueue,
@@ -18,13 +14,11 @@ function App(): JSX.Element {
     tetrominoCoords,
     moveTetromino,
     rotateTetromino,
-  } = useTetromino(gameOver, currentLevel, scoreLineClear);
+  } = useTetromino(scoreLineClear);
 
   return (
     <div className="flex justify-evenly items-center h-full w-full bg-secondary text-primary">
       <GameBoard
-        gameOver={gameOver}
-        currentLevel={currentLevel}
         isHardDrop={isHardDrop}
         dropInterval={dropInterval}
         setDropInterval={setDropInterval}
@@ -33,11 +27,7 @@ function App(): JSX.Element {
         rotateTetromino={rotateTetromino}
       />
       <div className="flex flex-col justify-between py-16 h-full">
-        <StatBoard
-          currentLevel={currentLevel}
-          currentScore={currentScore}
-          lineClearCount={lineClearCount}
-        />
+        <StatBoard currentScore={currentScore} lineClearCount={lineClearCount} />
         <QueueBoard queue={currentTetrominoQueue.current.bag} />
       </div>
     </div>

@@ -2,6 +2,7 @@ import { MutableRefObject, useEffect, useRef } from "react";
 
 import { Coord, getDropInterval, SOFT_DROP_SPEED_MULTIPLIER } from "../modules";
 import { getDropPoint, INTERVAL, TetrominoCoordsState } from "../modules/tetromino";
+import { useStore } from "../store";
 import { setCustomInterval } from "../utils";
 
 import Matrix from "./Matrix";
@@ -9,24 +10,23 @@ import Matrix from "./Matrix";
 const KEYDOWN_DELAY = 300;
 
 function GameBoard({
-  gameOver,
   isHardDrop,
-  currentLevel,
   dropInterval,
   setDropInterval,
   tetrominoCoords,
   moveTetromino,
   rotateTetromino,
 }: {
-  gameOver: { current: boolean };
   isHardDrop: MutableRefObject<boolean>;
-  currentLevel: number;
   dropInterval: number | null;
   setDropInterval: (interval: number | null) => void;
   tetrominoCoords: TetrominoCoordsState;
   moveTetromino: (coord: Partial<Coord>) => void;
   rotateTetromino: () => void;
 }): JSX.Element {
+  const currentLevel = useStore((state) => state.currentLevel);
+  const gameOver = useStore((state) => state.gameOver);
+
   const leftRightTimeoutId = useRef<number | null>(null);
   const leftRightIntervalClear = useRef<(() => void) | null>(null);
 
@@ -128,7 +128,7 @@ function GameBoard({
 
   // External listeners
   useEffect(() => {
-    if (gameOver.current) return;
+    if (gameOver) return;
 
     window.addEventListener("keydown", handleKeydown);
 

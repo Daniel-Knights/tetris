@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
 import { TETROMINOES, WALL_KICKS } from "../resources";
+import { useStore } from "../store";
 import { bagShuffle, RepeatingTuple, setCustomInterval, useInitRef } from "../utils";
 
 import { Coord } from "./coord";
@@ -62,10 +63,12 @@ export function getDropPoint(coords: TetrominoCoords, lockedCoords: Coord[]) {
 }
 
 export function useTetromino(
-  gameOver: { current: boolean },
-  currentLevel: ReturnType<typeof useScore>["currentLevel"],
   scoreLineClear: ReturnType<typeof useScore>["scoreLineClear"]
 ) {
+  const currentLevel = useStore((state) => state.currentLevel);
+  const gameOver = useStore((state) => state.gameOver);
+  const setGameOver = useStore((state) => state.setGameOver);
+
   const dropIntervalId = useRef<number | null>(null);
   const lockDownTimeoutId = useRef<number | null>(null);
   const isHardDrop = useRef(false);
@@ -280,7 +283,7 @@ export function useTetromino(
 
     // GAME OVER
     if (tetrominoCoords.locked.some((c) => c.y >= MATRIX.rows - 1)) {
-      gameOver.current = true;
+      setGameOver(true);
 
       window.clearInterval(dropIntervalId.current!);
 
@@ -292,11 +295,11 @@ export function useTetromino(
     } else {
       lockDown();
     }
-  }, [tetrominoCoords, dropInterval, lockDown, gameOver, currentLevel]);
+  }, [tetrominoCoords, dropInterval, lockDown, currentLevel, setGameOver]);
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
-    if (gameOver.current || !lockDownTimeoutId.current) return;
+    if (gameOver || !lockDownTimeoutId.current) return;
 
     lockDown();
   }, [tetrominoCoords.active, lockDown, gameOver]);
