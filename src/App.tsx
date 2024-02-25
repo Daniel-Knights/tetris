@@ -20,12 +20,7 @@ function App(): JSX.Element {
   } = useTetromino(gameOver, currentLevel, scoreLineClear);
 
   return (
-    <div className="grid grid-cols-3 place-items-center h-full w-full bg-secondary text-primary">
-      <StatBoard
-        currentLevel={currentLevel}
-        currentScore={currentScore}
-        lineClearCount={lineClearCount}
-      />
+    <div className="flex justify-evenly items-center h-full w-full bg-secondary text-primary">
       <GameBoard
         gameOver={gameOver}
         currentLevel={currentLevel}
@@ -35,7 +30,14 @@ function App(): JSX.Element {
         moveTetromino={moveTetromino}
         rotateTetromino={rotateTetromino}
       />
-      <QueueBoard queue={currentTetrominoQueue.current.bag} />
+      <div className="flex flex-col justify-between py-16 h-full">
+        <StatBoard
+          currentLevel={currentLevel}
+          currentScore={currentScore}
+          lineClearCount={lineClearCount}
+        />
+        <QueueBoard queue={currentTetrominoQueue.current.bag} />
+      </div>
     </div>
   );
 }

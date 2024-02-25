@@ -33,7 +33,7 @@
         "title": "Tetris",
         "fullscreen": false,
         "resizable": false,
-        "width": 800,
+        "width": 700,
         "height": 600,
         "alwaysOnTop": true
       }
