@@ -1,9 +1,10 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { TETROMINOES, WALL_KICKS } from "../resources";
 import { bagShuffle, RepeatingTuple, setCustomInterval, useInitRef } from "../utils";
 
 import { Coord } from "./coord";
+import { getDropInterval, useScore } from "./score";
 
 export type TetrominoType = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
 export type TetrominoCoords = RepeatingTuple<Coord, 4>;
@@ -22,8 +23,6 @@ const MATRIX = {
 };
 
 export const INTERVAL = {
-  initialDrop: 1000,
-  softDrop: 100,
   hardDrop: 0.1,
   leftRight: 50,
 } as const;
@@ -44,17 +43,11 @@ function isAtBound(
   });
 }
 
-export function useTetromino(gameOver: { current: boolean }): {
-  currentTetrominoQueue: React.MutableRefObject<{
-    bag: TetrominoType[];
-    next: TetrominoType;
-  }>;
-  dropInterval: number | null;
-  setDropInterval: (interval: number | null) => void;
-  tetrominoCoords: TetrominoCoordsState;
-  moveTetromino: (coord: Partial<Coord>) => void;
-  rotateTetromino: () => void;
-} {
+export function useTetromino(
+  gameOver: { current: boolean },
+  currentLevel: ReturnType<typeof useScore>["currentLevel"],
+  scoreLineClear: ReturnType<typeof useScore>["scoreLineClear"]
+) {
   const dropIntervalId = useRef<number | null>(null);
   const lockDownTimeoutId = useRef<number | null>(null);
 
@@ -63,7 +56,9 @@ export function useTetromino(gameOver: { current: boolean }): {
   });
   const currentTetrominoQueue = useInitRef(() => randomTetrominoGen.current.next().value);
 
-  const [dropInterval, setDropInterval] = useState<number | null>(INTERVAL.initialDrop);
+  const [dropInterval, setDropInterval] = useState<number | null>(
+    getDropInterval(currentLevel)
+  );
   const [rotationStage, setRotationStage] = useState<RotationStage>(0);
   const [tetrominoCoords, setTetrominoCoords] = useState<TetrominoCoordsState>({
     active: TETROMINOES[currentTetrominoQueue.current.next].coords.map((c) => {
@@ -150,8 +145,8 @@ export function useTetromino(gameOver: { current: boolean }): {
             locked: rows.flat(),
           }));
 
-          // Reset drop interval
-          setDropInterval(INTERVAL.initialDrop);
+          scoreLineClear(linesToClear.size as 1 | 2 | 3 | 4);
+          setDropInterval(getDropInterval(currentLevel));
         },
         60,
         { limit: 5 }
@@ -163,7 +158,7 @@ export function useTetromino(gameOver: { current: boolean }): {
         locked: [...curr.active, ...curr.locked],
       }));
     }
-  }, [tetrominoCoords, newTetromino]);
+  }, [tetrominoCoords, newTetromino, scoreLineClear, currentLevel]);
 
   /** Locks down active tetromino. */
   const lockDown = useCallback(
@@ -273,12 +268,12 @@ export function useTetromino(gameOver: { current: boolean }): {
       console.log("GAME OVER");
       // Hard drop
     } else if (dropInterval === INTERVAL.hardDrop) {
-      setDropInterval(INTERVAL.initialDrop);
       lockDown(true);
+      setDropInterval(getDropInterval(currentLevel));
     } else {
       lockDown();
     }
-  }, [tetrominoCoords, dropInterval, lockDown, gameOver]);
+  }, [tetrominoCoords, dropInterval, lockDown, gameOver, currentLevel]);
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
@@ -320,6 +315,8 @@ export function useTetromino(gameOver: { current: boolean }): {
   useEffect(() => {
     if (dropInterval === null) return;
 
+    console.log("dropInterval", dropInterval);
+
     dropIntervalId.current = window.setInterval(() => {
       moveTetromino({ y: -1 });
     }, dropInterval);
@@ -328,6 +325,11 @@ export function useTetromino(gameOver: { current: boolean }): {
       window.clearInterval(dropIntervalId.current!);
     };
   }, [moveTetromino, dropInterval]);
+
+  // Update drop interval on level change
+  useEffect(() => {
+    setDropInterval(getDropInterval(currentLevel));
+  }, [currentLevel]);
 
   return {
     currentTetrominoQueue,

@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 
-import { Coord } from "../modules";
+import { Coord, getDropInterval, SOFT_DROP_SPEED_MULTIPLIER } from "../modules";
 import { INTERVAL, TetrominoCoordsState } from "../modules/tetromino";
 import { setCustomInterval } from "../utils";
 
@@ -10,6 +10,7 @@ const KEYDOWN_DELAY = 300;
 
 function GameBoard({
   gameOver,
+  currentLevel,
   dropInterval,
   setDropInterval,
   tetrominoCoords,
@@ -17,6 +18,7 @@ function GameBoard({
   rotateTetromino,
 }: {
   gameOver: { current: boolean };
+  currentLevel: number;
   dropInterval: number | null;
   setDropInterval: (interval: number | null) => void;
   tetrominoCoords: TetrominoCoordsState;
@@ -30,7 +32,7 @@ function GameBoard({
   function softDropEndListener(keyupEv: KeyboardEvent) {
     if (keyupEv.key !== "ArrowDown") return;
 
-    setDropInterval(INTERVAL.initialDrop);
+    setDropInterval(getDropInterval(currentLevel));
 
     window.removeEventListener("keyup", softDropEndListener);
   }
@@ -88,9 +90,12 @@ function GameBoard({
 
     switch (ev.key) {
       case "ArrowDown": {
-        if (dropInterval === INTERVAL.softDrop) return;
+        const softDropInterval =
+          getDropInterval(currentLevel) / SOFT_DROP_SPEED_MULTIPLIER;
 
-        setDropInterval(INTERVAL.softDrop);
+        if (dropInterval === softDropInterval) return;
+
+        setDropInterval(softDropInterval);
         moveTetromino({ y: -1 });
 
         window.addEventListener("keyup", softDropEndListener);
