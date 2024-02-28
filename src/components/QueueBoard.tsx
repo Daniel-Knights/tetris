@@ -1,12 +1,14 @@
-import { TetrominoType } from "../modules";
 import { TETROMINOES } from "../resources";
+import { useStore } from "../store";
 
 import Matrix from "./Matrix";
 
-function QueueBoard({ queue }: { queue: TetrominoType[] }): JSX.Element {
+function QueueBoard(): JSX.Element {
+  const tetrominoQueue = useStore((state) => state.tetrominoQueue).bag;
+
   return (
     <div className="grid gap-12 justify-items-center content-center w-36 h-72 bg-primary/5">
-      {queue.slice(0, 3).map((tetrominoType) => {
+      {tetrominoQueue.slice(0, 3).map((tetrominoType) => {
         return (
           <Matrix
             key={crypto.randomUUID()}

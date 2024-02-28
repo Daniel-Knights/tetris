@@ -1,31 +1,36 @@
 import { MutableRefObject, useEffect, useRef } from "react";
 
-import { Coord, getDropInterval, SOFT_DROP_SPEED_MULTIPLIER } from "../modules";
-import { getDropPoint, INTERVAL, TetrominoCoordsState } from "../modules/tetromino";
+import {
+  Coord,
+  getDropInterval,
+  getDropPoint,
+  SOFT_DROP_SPEED_MULTIPLIER,
+  useRotate,
+} from "../modules";
 import { useStore } from "../store";
 import { setCustomInterval } from "../utils";
 
 import Matrix from "./Matrix";
 
 const KEYDOWN_DELAY = 300;
+const LEFT_RIGHT_INTERVAL = 50;
 
 function GameBoard({
   isHardDrop,
   dropInterval,
   setDropInterval,
-  tetrominoCoords,
   moveTetromino,
-  rotateTetromino,
 }: {
   isHardDrop: MutableRefObject<boolean>;
   dropInterval: number | null;
   setDropInterval: (interval: number | null) => void;
-  tetrominoCoords: TetrominoCoordsState;
   moveTetromino: (coord: Partial<Coord>) => void;
-  rotateTetromino: () => void;
 }): JSX.Element {
   const currentLevel = useStore((state) => state.currentLevel);
   const gameOver = useStore((state) => state.gameOver);
+  const tetrominoCoords = useStore((state) => state.tetrominoCoords);
+
+  const rotateTetromino = useRotate();
 
   const leftRightTimeoutId = useRef<number | null>(null);
   const leftRightIntervalClear = useRef<(() => void) | null>(null);
@@ -75,7 +80,7 @@ function GameBoard({
     leftRightTimeoutId.current = window.setTimeout(() => {
       leftRightIntervalClear.current = setCustomInterval(() => {
         moveTetromino({ x });
-      }, INTERVAL.leftRight).clear;
+      }, LEFT_RIGHT_INTERVAL).clear;
     }, KEYDOWN_DELAY);
   }
 
