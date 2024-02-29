@@ -26,6 +26,15 @@ type GameState = {
 
   rotationStage: number;
   setRotationStage: (rotationStage: RotationStage) => void;
+
+  dropInterval: number | null;
+  setDropInterval: (dropInterval: number | null) => void;
+
+  dropIntervalId: number | null;
+  setDropIntervalId: (dropIntervalId: number | null) => void;
+
+  isHardDrop: boolean;
+  setIsHardDrop: (isHardDrop: boolean) => void;
 };
 
 export const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
@@ -57,4 +66,13 @@ export const useStore = create<GameState>((set) => ({
 
   rotationStage: 0,
   setRotationStage: (rotationStage) => set({ rotationStage }),
+
+  dropInterval: null,
+  setDropInterval: (dropInterval) => set({ dropInterval }),
+
+  dropIntervalId: null,
+  setDropIntervalId: (dropIntervalId) => set({ dropIntervalId }),
+
+  isHardDrop: false,
+  setIsHardDrop: (isHardDrop) => set({ isHardDrop }),
 }));

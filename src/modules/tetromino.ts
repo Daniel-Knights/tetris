@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { TETROMINOES } from "../resources";
 import { useStore } from "../store";
-import { RepeatingTuple, setCustomInterval } from "../utils";
+import { RepeatingTuple } from "../utils";
 
 import { Coord } from "./coord";
-import { getDropInterval, useScore } from "./score";
+import { getDropInterval } from "./score";
 
 export type TetrominoType = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
 export type TetrominoCoords = RepeatingTuple<Coord, 4>;
@@ -15,8 +15,7 @@ export type TetrominoCoordsState = {
   locked: Coord[];
 };
 
-const LOCK_DOWN_TIMEOUT = 500;
-const MATRIX = {
+export const MATRIX = {
   rows: 20,
   columns: 10,
 };
@@ -27,7 +26,7 @@ export function willCollide(lockedCoords: Coord[], coord: Coord): boolean {
 }
 
 /** Checks if current tetromino is at the right, left, or bottom bound. */
-function isAtBound(
+export function isAtBound(
   active: TetrominoCoordsState["active"],
   locked: TetrominoCoordsState["locked"],
   coord: Partial<Coord>
@@ -66,131 +65,14 @@ export function plotTetromino(tetromino: TetrominoType) {
   }) as TetrominoCoords;
 }
 
-export function useTetromino(
-  scoreLineClear: ReturnType<typeof useScore>["scoreLineClear"]
-) {
+export function useTetromino() {
   const currentLevel = useStore((state) => state.currentLevel);
-  const gameOver = useStore((state) => state.gameOver);
-  const setGameOver = useStore((state) => state.setGameOver);
   const tetrominoQueue = useStore((state) => state.tetrominoQueue);
-  const nextTetromino = useStore((state) => state.nextTetromino);
   const tetrominoCoords = useStore((state) => state.tetrominoCoords);
   const setTetrominoCoords = useStore((state) => state.setTetrominoCoords);
-  const setRotationStage = useStore((state) => state.setRotationStage);
-
-  const dropIntervalId = useRef<number | null>(null);
-  const lockDownTimeoutId = useRef<number | null>(null);
-  const isHardDrop = useRef(false);
-
-  const [dropInterval, setDropInterval] = useState<number | null>(
-    getDropInterval(currentLevel)
-  );
-
-  /** Clears full lines and sets new tetromino. */
-  const handleLineClears = useCallback(
-    (nextTetrominoType: TetrominoType) => {
-      const allTetrominoCoords = [
-        ...tetrominoCoords.active,
-        ...tetrominoCoords.locked,
-      ].sort((a, b) => b.toIndex(MATRIX) - a.toIndex(MATRIX));
-      const rows: Coord[][] = [];
-      const linesToClear = new Set<number>();
-
-      allTetrominoCoords.forEach((coord) => {
-        const row = coord.getRow(MATRIX.rows);
-        const adjustedIndex = coord.clone().add({ y: -linesToClear.size });
-
-        if (rows[row]) {
-          rows[row]!.push(adjustedIndex);
-
-          if (rows[row]!.length === MATRIX.columns) {
-            rows.splice(row, 1);
-            linesToClear.add(row);
-          }
-        } else {
-          rows[row] = [adjustedIndex];
-        }
-      });
-
-      const nextTetrominoCoords = plotTetromino(nextTetrominoType);
-
-      // Clear lines
-      if (linesToClear.size > 0) {
-        // Prevent drop interval running during animation
-        setDropInterval(null);
-
-        setCustomInterval(
-          ({ count }) => {
-            // Clear animation
-            if (count < 5) {
-              setTetrominoCoords((curr) => ({
-                ...curr,
-                active: [],
-                locked: [...curr.active, ...curr.locked].filter((coord) => {
-                  const { x } = coord;
-
-                  // With each iteration we clear the two innermost minos
-                  return (
-                    !linesToClear.has(coord.getRow(MATRIX.rows)) ||
-                    (x !== 4 - count && x !== 5 + count)
-                  );
-                }),
-              }));
-
-              return;
-            }
-
-            // Push rows down and set new tetromino
-            setTetrominoCoords((curr) => ({
-              ...curr,
-              active: nextTetrominoCoords,
-              locked: rows.flat(),
-            }));
-
-            scoreLineClear(linesToClear.size as 1 | 2 | 3 | 4);
-            setDropInterval(getDropInterval(currentLevel));
-          },
-          60,
-          { limit: 5 }
-        );
-      } else {
-        setTetrominoCoords((curr) => ({
-          ...curr,
-          active: nextTetrominoCoords,
-          locked: [...curr.active, ...curr.locked],
-        }));
-      }
-    },
-    [tetrominoCoords, scoreLineClear, currentLevel, setTetrominoCoords]
-  );
-
-  /** Locks down active tetromino. */
-  const lockDown = useCallback(
-    (instant?: boolean) => {
-      if (lockDownTimeoutId.current) {
-        window.clearTimeout(lockDownTimeoutId.current);
-      }
-
-      function commitLockDown() {
-        lockDownTimeoutId.current = null;
-
-        // Prevent floating tetrominoes
-        if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
-
-        const { next } = nextTetromino();
-
-        setRotationStage(0);
-        handleLineClears(next);
-      }
-
-      if (instant) {
-        commitLockDown();
-      } else {
-        lockDownTimeoutId.current = window.setTimeout(commitLockDown, LOCK_DOWN_TIMEOUT);
-      }
-    },
-    [tetrominoCoords, nextTetromino, setRotationStage, handleLineClears]
-  );
+  const dropInterval = useStore((state) => state.dropInterval);
+  const setDropInterval = useStore((state) => state.setDropInterval);
+  const setDropIntervalId = useStore((state) => state.setDropIntervalId);
 
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
@@ -219,35 +101,6 @@ export function useTetromino(
     }));
   }, [setTetrominoCoords]);
 
-  // Tetromino has hit lower limit
-  useEffect(() => {
-    if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
-
-    const allCoords = [...tetrominoCoords.active, ...tetrominoCoords.locked];
-
-    // GAME OVER
-    if (allCoords.some((c) => c.y >= MATRIX.rows - 1)) {
-      setGameOver(true);
-
-      window.clearInterval(dropIntervalId.current!);
-
-      console.log("GAME OVER");
-    } else if (isHardDrop.current) {
-      lockDown(true);
-
-      isHardDrop.current = false;
-    } else {
-      lockDown();
-    }
-  }, [tetrominoCoords, lockDown, setGameOver]);
-
-  // Re-initiate lock down if piece is moved
-  useEffect(() => {
-    if (gameOver || !lockDownTimeoutId.current) return;
-
-    lockDown();
-  }, [tetrominoCoords.active, lockDown, gameOver]);
-
   // Ghost tetromino
   useEffect(() => {
     setTetrominoCoords((curr) => ({
@@ -262,24 +115,23 @@ export function useTetromino(
 
     console.log("dropInterval", dropInterval);
 
-    dropIntervalId.current = window.setInterval(() => {
+    const intervalId = window.setInterval(() => {
       moveTetromino({ y: -1 });
     }, dropInterval);
 
+    setDropIntervalId(intervalId);
+
     return () => {
-      window.clearInterval(dropIntervalId.current!);
+      window.clearInterval(intervalId);
     };
-  }, [moveTetromino, dropInterval, tetrominoQueue.next]);
+  }, [moveTetromino, dropInterval, setDropIntervalId, tetrominoQueue.next]);
 
   // Update drop interval on level change
   useEffect(() => {
     setDropInterval(getDropInterval(currentLevel));
-  }, [currentLevel]);
+  }, [setDropInterval, currentLevel]);
 
   return {
-    isHardDrop,
-    dropInterval,
-    setDropInterval,
     moveTetromino,
   };
 }

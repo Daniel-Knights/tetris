@@ -41,7 +41,6 @@ export function useScore() {
   }
 
   return {
-    currentLevel,
     currentScore,
     lineClearCount,
     scoreLineClear,

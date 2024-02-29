@@ -1,4 +1,4 @@
-import { MutableRefObject, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import {
   Coord,
@@ -16,19 +16,16 @@ const KEYDOWN_DELAY = 300;
 const LEFT_RIGHT_INTERVAL = 50;
 
 function GameBoard({
-  isHardDrop,
-  dropInterval,
-  setDropInterval,
   moveTetromino,
 }: {
-  isHardDrop: MutableRefObject<boolean>;
-  dropInterval: number | null;
-  setDropInterval: (interval: number | null) => void;
   moveTetromino: (coord: Partial<Coord>) => void;
 }): JSX.Element {
   const currentLevel = useStore((state) => state.currentLevel);
   const gameOver = useStore((state) => state.gameOver);
   const tetrominoCoords = useStore((state) => state.tetrominoCoords);
+  const dropInterval = useStore((state) => state.dropInterval);
+  const setDropInterval = useStore((state) => state.setDropInterval);
+  const setIsHardDrop = useStore((state) => state.setIsHardDrop);
 
   const rotateTetromino = useRotate();
 
@@ -114,7 +111,7 @@ function GameBoard({
       case " ": {
         if (tetrominoCoords.active.length === 0) return;
 
-        isHardDrop.current = true;
+        setIsHardDrop(true);
 
         const dropPoint = getDropPoint(tetrominoCoords.active, tetrominoCoords.locked);
         const y = -(tetrominoCoords.active[0].y - dropPoint[0].y);
