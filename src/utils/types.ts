@@ -4,6 +4,5 @@ type Repeat<T, N extends number, R extends unknown[] = []> = R["length"] extends
   ? R
   : Repeat<T, N, [T, ...R]>;
 
-export type RepeatingTuple<T, N extends number> = Repeat<T, N> extends infer R
-  ? R
-  : never;
+export type RepeatingTuple<T, N extends number> =
+  Repeat<T, N> extends infer R ? R : never;
