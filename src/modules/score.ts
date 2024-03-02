@@ -1,5 +1,3 @@
-import { useState } from "react";
-
 import { useStore } from "./store";
 
 export const MAX_LEVEL = 15;
@@ -26,8 +24,8 @@ export function useScore() {
   const setCurrentLevel = useStore((state) => state.setCurrentLevel);
   const currentScore = useStore((state) => state.currentScore);
   const setScore = useStore((state) => state.setScore);
-
-  const [lineClearCount, setLineClearCount] = useState(0);
+  const lineClearCount = useStore((state) => state.lineClearCount);
+  const setLineClearCount = useStore((state) => state.setLineClearCount);
 
   /** Updates score and level based on passed line clear count. */
   function scoreLineClear(clearCount: keyof typeof SCORES) {
@@ -42,7 +40,6 @@ export function useScore() {
   }
 
   return {
-    lineClearCount,
     scoreLineClear,
   };
 }

@@ -1,9 +1,10 @@
 import { useStore } from "../modules";
 
-function StatBoard({ lineClearCount }: { lineClearCount: number }): JSX.Element {
+function StatBoard(): JSX.Element {
   const currentLevel = useStore((state) => state.currentLevel);
   const currentScore = useStore((state) => state.currentScore);
   const highScore = useStore((state) => state.highScore);
+  const lineClearCount = useStore((state) => state.lineClearCount);
 
   return (
     <dl className="w-full text-sm">

@@ -10,6 +10,7 @@ import {
 } from "../modules";
 import { setCustomInterval } from "../utils";
 
+import GameOver from "./GameOver";
 import Matrix from "./Matrix";
 
 const KEYDOWN_DELAY = 300;
@@ -140,13 +141,14 @@ function GameBoard({
   });
 
   return (
-    <div className="py-4 border-y-4 border-double border-primary/30">
+    <div className="relative py-4 border-y-4 border-double border-primary/30">
       <Matrix
         dimensions={{ rows: 20, columns: 10 }}
         highlightedCoords={[...tetrominoCoords.active, ...tetrominoCoords.locked]}
         outlinedCoords={tetrominoCoords.ghost}
         bg
       />
+      {gameOver && <GameOver />}
     </div>
   );
 }

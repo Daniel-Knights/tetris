@@ -4,11 +4,13 @@ import { TETROMINOES } from "../resources";
 import { bagShuffle } from "../utils";
 
 import { RotationStage } from "./rotate";
+import { getDropInterval } from "./score";
 import { TetrominoCoordsState, TetrominoType } from "./tetromino";
 
 type TetrominoQueue = {
   bag: TetrominoType[];
   next: TetrominoType;
+  reset: () => void;
 };
 
 type GameState = {
@@ -18,6 +20,9 @@ type GameState = {
   currentScore: number;
   highScore: number;
   setScore: (score: number) => void;
+
+  lineClearCount: number;
+  setLineClearCount: (lineClearCount: number) => void;
 
   gameOver: boolean;
   setGameOver: (gameOver: boolean) => void;
@@ -43,10 +48,12 @@ type GameState = {
   setIsHardDrop: (isHardDrop: boolean) => void;
 };
 
+const INITIAL_LEVEL = 1;
+
 export const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
 
 export const useStore = create<GameState>((set, get) => ({
-  currentLevel: 1,
+  currentLevel: INITIAL_LEVEL,
   setCurrentLevel: (currentLevel) => set({ currentLevel }),
 
   currentScore: 0,
@@ -60,6 +67,9 @@ export const useStore = create<GameState>((set, get) => ({
       localStorage.setItem("highScore", currentScore.toString());
     }
   },
+
+  lineClearCount: 0,
+  setLineClearCount: (lineClearCount) => set({ lineClearCount }),
 
   gameOver: false,
   setGameOver: (gameOver) => set({ gameOver }),
@@ -85,7 +95,7 @@ export const useStore = create<GameState>((set, get) => ({
   rotationStage: 0,
   setRotationStage: (rotationStage) => set({ rotationStage }),
 
-  dropInterval: null,
+  dropInterval: getDropInterval(INITIAL_LEVEL),
   setDropInterval: (dropInterval) => set({ dropInterval }),
 
   dropIntervalId: null,

@@ -16,9 +16,12 @@ function shuffle<T>(arr: T[]): T[] {
 /**
  * Yields items from passed array in random order.
  */
-export function* bagShuffle<T>(passedArr: T[]): GeneratorYield<{ bag: T[]; next: T }> {
+export function* bagShuffle<T>(
+  passedArr: T[]
+): GeneratorYield<{ bag: T[]; next: T; reset: () => void }> {
   const memoArr = [...passedArr];
-  const arr = [...shuffle([...memoArr]), ...shuffle([...memoArr])];
+
+  let arr = [...shuffle([...memoArr]), ...shuffle([...memoArr])];
 
   while (true) {
     // Always keep one bag ahead
@@ -29,6 +32,9 @@ export function* bagShuffle<T>(passedArr: T[]): GeneratorYield<{ bag: T[]; next:
     yield {
       bag: arr,
       next: arr.shift()!,
+      reset: () => {
+        arr = [...shuffle([...memoArr]), ...shuffle([...memoArr])];
+      },
     };
   }
 }
