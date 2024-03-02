@@ -15,6 +15,10 @@ type GameState = {
   currentLevel: number;
   setCurrentLevel: (level: number) => void;
 
+  currentScore: number;
+  highScore: number;
+  setScore: (score: number) => void;
+
   gameOver: boolean;
   setGameOver: (gameOver: boolean) => void;
 
@@ -41,9 +45,21 @@ type GameState = {
 
 export const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
 
-export const useStore = create<GameState>((set) => ({
+export const useStore = create<GameState>((set, get) => ({
   currentLevel: 1,
   setCurrentLevel: (currentLevel) => set({ currentLevel }),
+
+  currentScore: 0,
+  highScore: Number(localStorage.getItem("highScore")) || 0,
+  setScore: (currentScore) => {
+    set({ currentScore });
+
+    if (currentScore > get().highScore) {
+      set({ highScore: currentScore });
+
+      localStorage.setItem("highScore", currentScore.toString());
+    }
+  },
 
   gameOver: false,
   setGameOver: (gameOver) => set({ gameOver }),
