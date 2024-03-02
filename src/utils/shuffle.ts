@@ -21,7 +21,13 @@ export function* bagShuffle<T>(
 ): GeneratorYield<{ bag: T[]; next: T; reset: () => void }> {
   const memoArr = [...passedArr];
 
-  let arr = [...shuffle([...memoArr]), ...shuffle([...memoArr])];
+  let arr: T[] = [];
+
+  function reset() {
+    arr = [...shuffle([...memoArr]), ...shuffle([...memoArr])];
+  }
+
+  reset();
 
   while (true) {
     // Always keep one bag ahead
@@ -32,9 +38,7 @@ export function* bagShuffle<T>(
     yield {
       bag: arr,
       next: arr.shift()!,
-      reset: () => {
-        arr = [...shuffle([...memoArr]), ...shuffle([...memoArr])];
-      },
+      reset,
     };
   }
 }
