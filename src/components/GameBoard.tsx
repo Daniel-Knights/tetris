@@ -21,12 +21,12 @@ function GameBoard({
 }: {
   moveTetromino: (coord: Partial<Coord>) => void;
 }): JSX.Element {
-  const currentLevel = useStore((state) => state.currentLevel);
-  const gameOver = useStore((state) => state.gameOver);
-  const tetrominoCoords = useStore((state) => state.tetrominoCoords);
-  const dropInterval = useStore((state) => state.dropInterval);
-  const setDropInterval = useStore((state) => state.setDropInterval);
-  const setIsHardDrop = useStore((state) => state.setIsHardDrop);
+  const currentLevel = useStore((s) => s.currentLevel);
+  const gameOver = useStore((s) => s.gameOver);
+  const tetrominoCoords = useStore((s) => s.tetrominoCoords);
+  const dropInterval = useStore((s) => s.dropInterval);
+  const setDropInterval = useStore((s) => s.setDropInterval);
+  const setIsHardDrop = useStore((s) => s.setIsHardDrop);
 
   const rotateTetromino = useRotate();
 

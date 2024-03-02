@@ -12,17 +12,17 @@ const LOCKDOWN_TIMEOUT = 500;
 export function useLockdown(
   scoreLineClear: ReturnType<typeof useScore>["scoreLineClear"]
 ) {
-  const currentLevel = useStore((state) => state.currentLevel);
-  const gameOver = useStore((state) => state.gameOver);
-  const setGameOver = useStore((state) => state.setGameOver);
-  const setRotationStage = useStore((state) => state.setRotationStage);
-  const nextTetromino = useStore((state) => state.nextTetromino);
-  const tetrominoCoords = useStore((state) => state.tetrominoCoords);
-  const setTetrominoCoords = useStore((state) => state.setTetrominoCoords);
-  const setDropInterval = useStore((state) => state.setDropInterval);
-  const dropIntervalId = useStore((state) => state.dropIntervalId);
-  const isHardDrop = useStore((state) => state.isHardDrop);
-  const setIsHardDrop = useStore((state) => state.setIsHardDrop);
+  const currentLevel = useStore((s) => s.currentLevel);
+  const gameOver = useStore((s) => s.gameOver);
+  const setGameOver = useStore((s) => s.setGameOver);
+  const setRotationStage = useStore((s) => s.setRotationStage);
+  const nextTetromino = useStore((s) => s.nextTetromino);
+  const tetrominoCoords = useStore((s) => s.tetrominoCoords);
+  const setTetrominoCoords = useStore((s) => s.setTetrominoCoords);
+  const setDropInterval = useStore((s) => s.setDropInterval);
+  const dropIntervalId = useStore((s) => s.dropIntervalId);
+  const isHardDrop = useStore((s) => s.isHardDrop);
+  const setIsHardDrop = useStore((s) => s.setIsHardDrop);
 
   const lockdownTimeoutId = useRef<number | null>(null);
 

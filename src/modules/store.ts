@@ -102,7 +102,7 @@ export const useStore = create<GameState>((set, get) => ({
   },
 
   setTetrominoCoords: (cb) => {
-    set((state) => ({ tetrominoCoords: cb(state.tetrominoCoords) }));
+    set((s) => ({ tetrominoCoords: cb(s.tetrominoCoords) }));
   },
 
   resetStore: () => {

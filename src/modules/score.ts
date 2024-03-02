@@ -20,12 +20,12 @@ export function getDropInterval(level: number): number {
 }
 
 export function useScore() {
-  const currentLevel = useStore((state) => state.currentLevel);
-  const setCurrentLevel = useStore((state) => state.setCurrentLevel);
-  const currentScore = useStore((state) => state.currentScore);
-  const setScore = useStore((state) => state.setScore);
-  const lineClearCount = useStore((state) => state.lineClearCount);
-  const setLineClearCount = useStore((state) => state.setLineClearCount);
+  const currentLevel = useStore((s) => s.currentLevel);
+  const setCurrentLevel = useStore((s) => s.setCurrentLevel);
+  const currentScore = useStore((s) => s.currentScore);
+  const setScore = useStore((s) => s.setScore);
+  const lineClearCount = useStore((s) => s.lineClearCount);
+  const setLineClearCount = useStore((s) => s.setLineClearCount);
 
   /** Updates score and level based on passed line clear count. */
   function scoreLineClear(clearCount: keyof typeof SCORES) {

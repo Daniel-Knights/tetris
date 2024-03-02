@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useStore } from "../modules";
 
 function GameOver() {
-  const resetStore = useStore((state) => state.resetStore);
+  const resetStore = useStore((s) => s.resetStore);
 
   // Play again on enter
   useEffect(() => {

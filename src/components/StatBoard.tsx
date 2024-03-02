@@ -1,10 +1,10 @@
 import { useStore } from "../modules";
 
 function StatBoard(): JSX.Element {
-  const currentLevel = useStore((state) => state.currentLevel);
-  const currentScore = useStore((state) => state.currentScore);
-  const highScore = useStore((state) => state.highScore);
-  const lineClearCount = useStore((state) => state.lineClearCount);
+  const currentLevel = useStore((s) => s.currentLevel);
+  const currentScore = useStore((s) => s.currentScore);
+  const highScore = useStore((s) => s.highScore);
+  const lineClearCount = useStore((s) => s.lineClearCount);
 
   return (
     <dl className="w-full text-sm">

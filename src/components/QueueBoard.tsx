@@ -4,7 +4,7 @@ import { TETROMINOES } from "../resources";
 import Matrix from "./Matrix";
 
 function QueueBoard(): JSX.Element {
-  const tetrominoQueue = useStore((state) => state.tetrominoQueue).bag;
+  const tetrominoQueue = useStore((s) => s.tetrominoQueue).bag;
 
   return (
     <div className="grid gap-12 justify-items-center content-center w-36 h-72 bg-primary/5">

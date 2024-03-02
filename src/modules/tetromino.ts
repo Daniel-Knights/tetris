@@ -66,14 +66,14 @@ export function plotTetromino(tetromino: TetrominoType) {
 }
 
 export function useTetromino() {
-  const currentLevel = useStore((state) => state.currentLevel);
-  const gameOver = useStore((state) => state.gameOver);
-  const tetrominoQueue = useStore((state) => state.tetrominoQueue);
-  const tetrominoCoords = useStore((state) => state.tetrominoCoords);
-  const setTetrominoCoords = useStore((state) => state.setTetrominoCoords);
-  const dropInterval = useStore((state) => state.dropInterval);
-  const setDropInterval = useStore((state) => state.setDropInterval);
-  const setDropIntervalId = useStore((state) => state.setDropIntervalId);
+  const currentLevel = useStore((s) => s.currentLevel);
+  const gameOver = useStore((s) => s.gameOver);
+  const tetrominoQueue = useStore((s) => s.tetrominoQueue);
+  const tetrominoCoords = useStore((s) => s.tetrominoCoords);
+  const setTetrominoCoords = useStore((s) => s.setTetrominoCoords);
+  const dropInterval = useStore((s) => s.dropInterval);
+  const setDropInterval = useStore((s) => s.setDropInterval);
+  const setDropIntervalId = useStore((s) => s.setDropIntervalId);
 
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(

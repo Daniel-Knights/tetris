@@ -8,11 +8,11 @@ export type RotationStage = 0 | 1 | 2 | 3;
 
 /** Rotates the current tetromino. */
 export function useRotate() {
-  const tetrominoQueue = useStore((state) => state.tetrominoQueue);
-  const tetrominoCoords = useStore((state) => state.tetrominoCoords);
-  const setTetrominoCoords = useStore((state) => state.setTetrominoCoords);
-  const rotationStage = useStore((state) => state.rotationStage);
-  const setRotationStage = useStore((state) => state.setRotationStage);
+  const tetrominoQueue = useStore((s) => s.tetrominoQueue);
+  const tetrominoCoords = useStore((s) => s.tetrominoCoords);
+  const setTetrominoCoords = useStore((s) => s.setTetrominoCoords);
+  const rotationStage = useStore((s) => s.rotationStage);
+  const setRotationStage = useStore((s) => s.setRotationStage);
 
   return () => {
     if (tetrominoQueue.next === "O") return;
