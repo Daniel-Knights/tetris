@@ -106,7 +106,11 @@ export const useStore = create<GameState>((set, get) => ({
   },
 
   resetStore: () => {
-    set({ ...initialState });
+    set({
+      ...initialState,
+      highScore: Number(localStorage.getItem("highScore")),
+    });
+
     get().tetrominoQueue.reset();
   },
 }));
