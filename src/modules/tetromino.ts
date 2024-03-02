@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { TETROMINOES } from "../resources";
-import { useStore } from "../store";
 import { RepeatingTuple } from "../utils";
 
 import { Coord } from "./coord";
 import { getDropInterval } from "./score";
+import { useStore } from "./store";
 
 export type TetrominoType = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
 export type TetrominoCoords = RepeatingTuple<Coord, 4>;

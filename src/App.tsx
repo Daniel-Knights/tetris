@@ -1,8 +1,7 @@
 import GameBoard from "./components/GameBoard";
 import QueueBoard from "./components/QueueBoard";
 import StatBoard from "./components/StatBoard";
-import { useScore, useTetromino } from "./modules";
-import { useLockdown } from "./modules/lockdown";
+import { useLockdown, useScore, useTetromino } from "./modules";
 
 function App(): JSX.Element {
   const { currentScore, lineClearCount, scoreLineClear } = useScore();

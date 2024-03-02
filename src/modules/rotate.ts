@@ -1,7 +1,7 @@
 import { TETROMINOES, WALL_KICKS } from "../resources";
-import { useStore } from "../store";
 
 import { Coord } from "./coord";
+import { useStore } from "./store";
 import { TetrominoCoords, TetrominoType, willCollide } from "./tetromino";
 
 export type RotationStage = 0 | 1 | 2 | 3;

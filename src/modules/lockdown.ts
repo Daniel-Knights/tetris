@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useRef } from "react";
 
-import { useStore } from "../store";
 import { setCustomInterval } from "../utils";
 
 import { Coord } from "./coord";
 import { getDropInterval, useScore } from "./score";
+import { useStore } from "./store";
 import { isAtBound, MATRIX, plotTetromino, TetrominoType } from "./tetromino";
 
 const LOCKDOWN_TIMEOUT = 500;

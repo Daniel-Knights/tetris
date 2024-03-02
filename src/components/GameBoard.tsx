@@ -6,8 +6,8 @@ import {
   getDropPoint,
   SOFT_DROP_SPEED_MULTIPLIER,
   useRotate,
+  useStore,
 } from "../modules";
-import { useStore } from "../store";
 import { setCustomInterval } from "../utils";
 
 import Matrix from "./Matrix";

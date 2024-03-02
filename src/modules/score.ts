@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { useStore } from "../store";
+import { useStore } from "./store";
 
 export const MAX_LEVEL = 15;
 export const SOFT_DROP_SPEED_MULTIPLIER = 20;

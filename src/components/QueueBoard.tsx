@@ -1,5 +1,5 @@
+import { useStore } from "../modules";
 import { TETROMINOES } from "../resources";
-import { useStore } from "../store";
 
 import Matrix from "./Matrix";
 

@@ -1,8 +1,10 @@
 import { create } from "zustand";
 
-import { RotationStage, TetrominoCoordsState, TetrominoType } from "./modules";
-import { TETROMINOES } from "./resources";
-import { bagShuffle } from "./utils";
+import { TETROMINOES } from "../resources";
+import { bagShuffle } from "../utils";
+
+import { RotationStage } from "./rotate";
+import { TetrominoCoordsState, TetrominoType } from "./tetromino";
 
 type TetrominoQueue = {
   bag: TetrominoType[];
