@@ -134,7 +134,12 @@ export function useLockdown(
 
   // Tetromino has hit lower limit
   useEffect(() => {
-    if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
+    if (
+      gameOver ||
+      !isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })
+    ) {
+      return;
+    }
 
     const allCoords = [...tetrominoCoords.active, ...tetrominoCoords.locked];
 
@@ -151,7 +156,15 @@ export function useLockdown(
     } else {
       lockdown();
     }
-  }, [tetrominoCoords, lockdown, setGameOver, dropIntervalId, isHardDrop, setIsHardDrop]);
+  }, [
+    tetrominoCoords,
+    lockdown,
+    gameOver,
+    setGameOver,
+    dropIntervalId,
+    isHardDrop,
+    setIsHardDrop,
+  ]);
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {

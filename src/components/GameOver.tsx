@@ -1,27 +1,15 @@
 import { useEffect } from "react";
 
-import { plotTetromino, useStore } from "../modules";
+import { useStore } from "../modules";
 
 function GameOver() {
-  function playAgain() {
-    const initialState = useStore.getInitialState();
-
-    useStore.setState(initialState);
-    initialState.tetrominoQueue.reset();
-
-    const newTetromino = initialState.nextTetromino().next;
-
-    initialState.setTetrominoCoords((curr) => ({
-      ...curr,
-      active: plotTetromino(newTetromino),
-    }));
-  }
+  const resetStore = useStore((state) => state.resetStore);
 
   // Play again on enter
   useEffect(() => {
     function handleKeyup(ev: KeyboardEvent) {
       if (ev.key === "Enter") {
-        playAgain();
+        resetStore();
       }
     }
 
@@ -30,17 +18,18 @@ function GameOver() {
     return () => {
       window.removeEventListener("keyup", handleKeyup);
     };
-  }, []);
+  }, [resetStore]);
 
   return (
-    <div
+    <button
       className="cursor-pointer flex justify-center items-center absolute top-0 h-full w-full bg-primary/25"
-      onClick={playAgain}
+      onClick={resetStore}
+      type="button"
     >
       <div className="py-4 w-full text-6xl font-bold text-center tracking-wider text-secondary bg-primary">
         GAME OVER
       </div>
-    </div>
+    </button>
   );
 }
 

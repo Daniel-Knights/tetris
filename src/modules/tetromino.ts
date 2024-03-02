@@ -67,6 +67,7 @@ export function plotTetromino(tetromino: TetrominoType) {
 
 export function useTetromino() {
   const currentLevel = useStore((state) => state.currentLevel);
+  const gameOver = useStore((state) => state.gameOver);
   const tetrominoQueue = useStore((state) => state.tetrominoQueue);
   const tetrominoCoords = useStore((state) => state.tetrominoCoords);
   const setTetrominoCoords = useStore((state) => state.setTetrominoCoords);
@@ -95,23 +96,27 @@ export function useTetromino() {
   const initialTetromino = useRef(tetrominoQueue.next);
 
   useEffect(() => {
+    if (gameOver) return;
+
     setTetrominoCoords((curr) => ({
       ...curr,
       active: plotTetromino(initialTetromino.current),
     }));
-  }, [setTetrominoCoords]);
+  }, [setTetrominoCoords, gameOver]);
 
   // Ghost tetromino
   useEffect(() => {
+    if (gameOver) return;
+
     setTetrominoCoords((curr) => ({
       ...curr,
       ghost: curr.active.length === 0 ? [] : getDropPoint(curr.active, curr.locked),
     }));
-  }, [setTetrominoCoords, tetrominoCoords.active, tetrominoCoords.locked]);
+  }, [gameOver, setTetrominoCoords, tetrominoCoords.active, tetrominoCoords.locked]);
 
   // Drop interval
   useEffect(() => {
-    if (dropInterval === null) return;
+    if (gameOver || dropInterval === null) return;
 
     console.log("dropInterval", dropInterval);
 
@@ -124,7 +129,7 @@ export function useTetromino() {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [moveTetromino, dropInterval, setDropIntervalId, tetrominoQueue.next]);
+  }, [gameOver, moveTetromino, dropInterval, setDropIntervalId, tetrominoQueue.next]);
 
   // Update drop interval on level change
   useEffect(() => {
