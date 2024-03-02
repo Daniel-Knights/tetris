@@ -1,3 +1,9 @@
+## [0.1.0](https://github.com/Daniel-Knights/tetris/compare/v0.0.1...v0.1.0) (02/03/2024)
+
+- feat(stats): high score ([82cc647](https://github.com/Daniel-Knights/tetris/commit/82cc647b25b6f99b092808f3d8d34b4b237bfd44))
+- refactor(store): move to modules dir ([d465306](https://github.com/Daniel-Knights/tetris/commit/d46530648907b748926e750c4b1bc0062d32186b))
+- docs(changelog): v0.0.1 ([0f786ce](https://github.com/Daniel-Knights/tetris/commit/0f786ce0357055596b155c45f1b6d61de44a7650))
+
 ## [0.0.1](https://github.com/Daniel-Knights/tetris/tags) (01/03/2024)
 
 - chore(release): reset ([493b8b2](https://github.com/Daniel-Knights/tetris/commit/493b8b2c5873ceee8eb39adc5706e486dd1d9485))
