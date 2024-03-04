@@ -30,7 +30,6 @@ function GameBoard({
 
   const rotateTetromino = useRotate();
 
-  const leftRightTimeoutId = useRef<number | null>(null);
   const leftRightIntervalClear = useRef<(() => void) | null>(null);
 
   /** Event handler for resetting drop interval after soft drop. */
@@ -44,29 +43,17 @@ function GameBoard({
 
   /** Event handler for moving the current tetromino left or right. */
   function keyLeftRight(ev: KeyboardEvent) {
-    /** Clears left/right keydown timers. */
-    function clearLeftRightTimers() {
-      if (leftRightTimeoutId.current) {
-        window.clearTimeout(leftRightTimeoutId.current);
-
-        leftRightTimeoutId.current = null;
-      }
-
-      leftRightIntervalClear.current?.();
-      leftRightIntervalClear.current = null;
-    }
-
     /** Clear timers on keyup. */
     function leftRightEndListener(keyupEv: KeyboardEvent) {
       if (!/Arrow(?:Left|Right)/.test(keyupEv.key)) return;
 
-      clearLeftRightTimers();
+      leftRightIntervalClear.current?.();
 
       window.removeEventListener("keyup", leftRightEndListener);
     }
 
     // Overwrite existing left/right keydown interval
-    clearLeftRightTimers();
+    leftRightIntervalClear.current?.();
 
     window.addEventListener("keyup", leftRightEndListener);
 
@@ -75,11 +62,15 @@ function GameBoard({
 
     moveTetromino({ x });
 
-    leftRightTimeoutId.current = window.setTimeout(() => {
-      leftRightIntervalClear.current = setCustomInterval(() => {
+    leftRightIntervalClear.current = setCustomInterval(
+      () => {
         moveTetromino({ x });
-      }, LEFT_RIGHT_INTERVAL).clear;
-    }, KEYDOWN_DELAY);
+      },
+      LEFT_RIGHT_INTERVAL,
+      {
+        delay: KEYDOWN_DELAY,
+      }
+    ).clear;
   }
 
   // Keydown
