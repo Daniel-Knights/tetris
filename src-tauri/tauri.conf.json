@@ -19,7 +19,10 @@
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyNjgzNjU2NTY3MTZDQgpSV1RMRm1kbFpZTW1CN1dMMERCcTRMcWhuUzN5Z0g0blNCVTVMb2JSTTBVUFVCVTBIMlVlV2QzUwo="
     },
     "allowlist": {
-      "all": false
+      "all": false,
+      "process": {
+        "exit": true
+      }
     },
     "bundle": {
       "active": true,

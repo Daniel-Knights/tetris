@@ -20,7 +20,7 @@ export function useLockdown(
   const tetrominoCoords = useStore((s) => s.tetrominoCoords);
   const setTetrominoCoords = useStore((s) => s.setTetrominoCoords);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  const dropIntervalId = useStore((s) => s.dropIntervalId);
+  const dropIntervalData = useStore((s) => s.dropIntervalData);
   const isHardDrop = useStore((s) => s.isHardDrop);
   const setIsHardDrop = useStore((s) => s.setIsHardDrop);
 
@@ -147,7 +147,7 @@ export function useLockdown(
     if (allCoords.some((c) => c.y >= MATRIX.rows - 1)) {
       setGameOver(true);
 
-      window.clearInterval(dropIntervalId!);
+      dropIntervalData?.clear();
 
       console.log("GAME OVER");
     } else if (isHardDrop) {
@@ -161,7 +161,7 @@ export function useLockdown(
     lockdown,
     gameOver,
     setGameOver,
-    dropIntervalId,
+    dropIntervalData,
     isHardDrop,
     setIsHardDrop,
   ]);

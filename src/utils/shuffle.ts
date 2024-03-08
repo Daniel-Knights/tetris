@@ -1,5 +1,11 @@
 import { GeneratorYield } from "./types";
 
+export type BagShuffleYield<T> = {
+  bag: T[];
+  next: T;
+  refresh: () => void;
+};
+
 /**
  * Fisher-Yates shuffle. Modifies in place.
  */
@@ -16,18 +22,16 @@ function shuffle<T>(arr: T[]): T[] {
 /**
  * Yields items from passed array in random order.
  */
-export function* bagShuffle<T>(
-  passedArr: T[]
-): GeneratorYield<{ bag: T[]; next: T; reset: () => void }> {
+export function* bagShuffle<T>(passedArr: T[]): GeneratorYield<BagShuffleYield<T>> {
   const memoArr = [...passedArr];
 
   let arr: T[] = [];
 
-  function reset() {
+  function refresh() {
     arr = [...shuffle([...memoArr]), ...shuffle([...memoArr])];
   }
 
-  reset();
+  refresh();
 
   while (true) {
     // Always keep one bag ahead
@@ -38,7 +42,7 @@ export function* bagShuffle<T>(
     yield {
       bag: arr,
       next: arr.shift()!,
-      reset,
+      refresh,
     };
   }
 }

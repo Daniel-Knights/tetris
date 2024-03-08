@@ -1,17 +1,11 @@
 import { create } from "zustand";
 
 import { TETROMINOES } from "../resources";
-import { bagShuffle, PropertiesOnly } from "../utils";
+import { bagShuffle, BagShuffleYield, IntervalData, PropertiesOnly } from "../utils";
 
 import { RotationStage } from "./rotate";
 import { getDropInterval } from "./score";
 import { TetrominoCoordsState, TetrominoType } from "./tetromino";
-
-type TetrominoQueue = {
-  bag: TetrominoType[];
-  next: TetrominoType;
-  reset: () => void;
-};
 
 type GameState = {
   currentLevel: number;
@@ -27,8 +21,8 @@ type GameState = {
   gameOver: boolean;
   setGameOver: (gameOver: boolean) => void;
 
-  tetrominoQueue: TetrominoQueue;
-  nextTetromino: () => TetrominoQueue;
+  tetrominoQueue: BagShuffleYield<TetrominoType>;
+  nextTetromino: () => BagShuffleYield<TetrominoType>;
 
   tetrominoCoords: TetrominoCoordsState;
   setTetrominoCoords: (
@@ -41,13 +35,13 @@ type GameState = {
   dropInterval: number | null;
   setDropInterval: (dropInterval: number | null) => void;
 
-  dropIntervalId: number | null;
-  setDropIntervalId: (dropIntervalId: number | null) => void;
+  dropIntervalData: IntervalData | null;
+  setDropIntervalData: (dropIntervalData: IntervalData | null) => void;
 
   isHardDrop: boolean;
   setIsHardDrop: (isHardDrop: boolean) => void;
 
-  resetStore: () => void;
+  resetStore: () => BagShuffleYield<TetrominoType>;
 };
 
 const INITIAL_LEVEL = 1;
@@ -68,7 +62,7 @@ const initialState = {
   },
   rotationStage: 0,
   dropInterval: getDropInterval(INITIAL_LEVEL),
-  dropIntervalId: null,
+  dropIntervalData: null,
   isHardDrop: false,
 } satisfies PropertiesOnly<GameState>;
 
@@ -80,7 +74,7 @@ export const useStore = create<GameState>((set, get) => ({
   setGameOver: (gameOver) => set({ gameOver }),
   setRotationStage: (rotationStage) => set({ rotationStage }),
   setDropInterval: (dropInterval) => set({ dropInterval }),
-  setDropIntervalId: (dropIntervalId) => set({ dropIntervalId }),
+  setDropIntervalData: (dropIntervalData) => set({ dropIntervalData }),
   setIsHardDrop: (isHardDrop) => set({ isHardDrop }),
 
   setScore: (currentScore) => {
@@ -106,11 +100,16 @@ export const useStore = create<GameState>((set, get) => ({
   },
 
   resetStore: () => {
+    const nextTetrominoQueue = randomTetrominoGen.next().value;
+
+    nextTetrominoQueue.refresh();
+
     set({
       ...initialState,
+      tetrominoQueue: nextTetrominoQueue,
       highScore: Number(localStorage.getItem("highScore")),
     });
 
-    get().tetrominoQueue.reset();
+    return nextTetrominoQueue;
   },
 }));

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { TETROMINOES } from "../resources";
-import { RepeatingTuple } from "../utils";
+import { RepeatingTuple, setCustomInterval } from "../utils";
 
 import { Coord } from "./coord";
 import { getDropInterval } from "./score";
@@ -73,7 +73,7 @@ export function useTetromino() {
   const setTetrominoCoords = useStore((s) => s.setTetrominoCoords);
   const dropInterval = useStore((s) => s.dropInterval);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  const setDropIntervalId = useStore((s) => s.setDropIntervalId);
+  const setDropIntervalData = useStore((s) => s.setDropIntervalData);
 
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
@@ -120,16 +120,20 @@ export function useTetromino() {
 
     console.log("dropInterval", dropInterval);
 
-    const intervalId = window.setInterval(() => {
-      moveTetromino({ y: -1 });
-    }, dropInterval);
+    const intervalData = setCustomInterval(
+      () => {
+        moveTetromino({ y: -1 });
+      },
+      dropInterval,
+      { delay: dropInterval }
+    );
 
-    setDropIntervalId(intervalId);
+    setDropIntervalData(intervalData);
 
     return () => {
-      window.clearInterval(intervalId);
+      intervalData.clear();
     };
-  }, [gameOver, moveTetromino, dropInterval, setDropIntervalId, tetrominoQueue.next]);
+  }, [gameOver, moveTetromino, dropInterval, setDropIntervalData, tetrominoQueue.next]);
 
   // Update drop interval on level change
   useEffect(() => {

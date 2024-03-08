@@ -1,6 +1,7 @@
-type IntervalData = {
+export type IntervalData = {
   count: number;
   clear: () => void;
+  remainingTime: number;
 };
 
 /**
@@ -17,18 +18,23 @@ export function setCustomInterval(
     limit?: number;
   }
 ): IntervalData {
-  let intervalId: number;
-  let timeoutId: number;
+  let timestamp = Date.now();
+
+  const data: IntervalData = {
+    count: 0,
+    clear,
+    get remainingTime() {
+      return interval - (Date.now() - timestamp);
+    },
+  };
+
+  let intervalId: number | undefined;
+  let timeoutId: number | undefined;
 
   function clear() {
     window.clearInterval(intervalId);
     window.clearTimeout(timeoutId);
   }
-
-  const data: IntervalData = {
-    count: 0,
-    clear,
-  };
 
   function commitInterval() {
     cb(data);
@@ -36,6 +42,8 @@ export function setCustomInterval(
     data.count += 1;
 
     intervalId = window.setInterval(() => {
+      timestamp = Date.now();
+
       cb(data);
 
       // Clear if limit is reached
