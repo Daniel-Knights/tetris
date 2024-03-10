@@ -4,6 +4,7 @@ import {
   Coord,
   getDropInterval,
   getDropPoint,
+  MATRIX,
   SOFT_DROP_SPEED_MULTIPLIER,
   useRotate,
   useStore,
@@ -134,7 +135,7 @@ function GameBoard({
   return (
     <div className="relative py-4 border-y-4 border-double border-primary/30">
       <Matrix
-        dimensions={{ rows: 20, columns: 10 }}
+        dimensions={MATRIX}
         highlightedCoords={[...tetrominoCoords.active, ...tetrominoCoords.locked]}
         outlinedCoords={tetrominoCoords.ghost}
         bg
