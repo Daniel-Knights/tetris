@@ -68,7 +68,7 @@ function App(): JSX.Element {
     <>
       <div className="flex justify-evenly items-center h-full w-full bg-secondary text-primary">
         <GameBoard moveTetromino={moveTetromino} />
-        <div className="flex flex-col justify-between items-center py-16 h-full">
+        <div className="flex flex-col justify-center items-center gap-8 h-full">
           <StatBoard />
           <QueueBoard />
         </div>
