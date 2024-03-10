@@ -13,7 +13,7 @@ type GameState = {
 
   currentScore: number;
   highScore: number;
-  setScore: (score: number) => void;
+  setScore: (cb: (curr: number) => number) => void;
 
   lineClearCount: number;
   setLineClearCount: (lineClearCount: number) => void;
@@ -25,9 +25,7 @@ type GameState = {
   nextTetromino: () => BagShuffleYield<TetrominoType>;
 
   tetrominoCoords: TetrominoCoordsState;
-  setTetrominoCoords: (
-    cb: (tetrominoCoords: TetrominoCoordsState) => TetrominoCoordsState
-  ) => void;
+  setTetrominoCoords: (cb: (curr: TetrominoCoordsState) => TetrominoCoordsState) => void;
 
   rotationStage: number;
   setRotationStage: (rotationStage: RotationStage) => void;
@@ -38,8 +36,14 @@ type GameState = {
   dropIntervalData: IntervalData | null;
   setDropIntervalData: (dropIntervalData: IntervalData | null) => void;
 
+  isSoftDrop: boolean;
+  setIsSoftDrop: (isSoftDrop: boolean) => void;
+
   isHardDrop: boolean;
   setIsHardDrop: (isHardDrop: boolean) => void;
+
+  isLockDown: boolean;
+  setIsLockDown: (isLockDown: boolean) => void;
 
   resetStore: () => BagShuffleYield<TetrominoType>;
 };
@@ -63,7 +67,9 @@ const initialState = {
   rotationStage: 0,
   dropInterval: getDropInterval(INITIAL_LEVEL),
   dropIntervalData: null,
+  isSoftDrop: false,
   isHardDrop: false,
+  isLockDown: false,
 } satisfies PropertiesOnly<GameState>;
 
 export const useStore = create<GameState>((set, get) => ({
@@ -75,15 +81,20 @@ export const useStore = create<GameState>((set, get) => ({
   setRotationStage: (rotationStage) => set({ rotationStage }),
   setDropInterval: (dropInterval) => set({ dropInterval }),
   setDropIntervalData: (dropIntervalData) => set({ dropIntervalData }),
+  setIsSoftDrop: (isSoftDrop) => set({ isSoftDrop }),
   setIsHardDrop: (isHardDrop) => set({ isHardDrop }),
+  setIsLockDown: (isLockDown) => set({ isLockDown }),
 
-  setScore: (currentScore) => {
-    set({ currentScore });
+  setScore: (cb) => {
+    const { currentScore, highScore } = get();
+    const newScore = cb(currentScore);
 
-    if (currentScore > get().highScore) {
-      set({ highScore: currentScore });
+    set({ currentScore: newScore });
 
-      localStorage.setItem("highScore", currentScore.toString());
+    if (newScore > highScore) {
+      set({ highScore: newScore });
+
+      localStorage.setItem("highScore", newScore.toString());
     }
   },
 

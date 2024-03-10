@@ -74,6 +74,9 @@ export function useTetromino() {
   const dropInterval = useStore((s) => s.dropInterval);
   const setDropInterval = useStore((s) => s.setDropInterval);
   const setDropIntervalData = useStore((s) => s.setDropIntervalData);
+  const setScore = useStore((s) => s.setScore);
+  const isSoftDrop = useStore((s) => s.isSoftDrop);
+  const isLockDown = useStore((s) => s.isLockDown);
 
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
@@ -123,6 +126,11 @@ export function useTetromino() {
     const intervalData = setCustomInterval(
       () => {
         moveTetromino({ y: -1 });
+
+        if (isSoftDrop && !isLockDown) {
+          // Soft drop score = n lines
+          setScore((curr) => curr + 1);
+        }
       },
       dropInterval,
       { delay: dropInterval }
@@ -133,7 +141,16 @@ export function useTetromino() {
     return () => {
       intervalData.clear();
     };
-  }, [gameOver, moveTetromino, dropInterval, setDropIntervalData, tetrominoQueue.next]);
+  }, [
+    gameOver,
+    moveTetromino,
+    dropInterval,
+    setDropIntervalData,
+    tetrominoQueue.next,
+    isSoftDrop,
+    setScore,
+    isLockDown,
+  ]);
 
   // Update drop interval on level change
   useEffect(() => {

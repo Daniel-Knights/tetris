@@ -25,9 +25,12 @@ function GameBoard({
   const currentLevel = useStore((s) => s.currentLevel);
   const gameOver = useStore((s) => s.gameOver);
   const tetrominoCoords = useStore((s) => s.tetrominoCoords);
-  const dropInterval = useStore((s) => s.dropInterval);
   const setDropInterval = useStore((s) => s.setDropInterval);
+  const isSoftDrop = useStore((s) => s.isSoftDrop);
+  const setIsSoftDrop = useStore((s) => s.setIsSoftDrop);
   const setIsHardDrop = useStore((s) => s.setIsHardDrop);
+  const setScore = useStore((s) => s.setScore);
+  const isLockDown = useStore((s) => s.isLockDown);
 
   const rotateTetromino = useRotate();
 
@@ -37,6 +40,7 @@ function GameBoard({
   function softDropEndListener(keyupEv: KeyboardEvent) {
     if (keyupEv.key !== "ArrowDown") return;
 
+    setIsSoftDrop(false);
     setDropInterval(getDropInterval(currentLevel));
 
     window.removeEventListener("keyup", softDropEndListener);
@@ -88,13 +92,17 @@ function GameBoard({
     switch (ev.key) {
       // Soft drop
       case "ArrowDown": {
+        if (isSoftDrop || isLockDown) return;
+
         const softDropInterval =
           getDropInterval(currentLevel) / SOFT_DROP_SPEED_MULTIPLIER;
 
-        if (dropInterval === softDropInterval) return;
-
+        setIsSoftDrop(true);
         setDropInterval(softDropInterval);
+
+        // Manually move and set score once, drop interval handles subsequent until keyup
         moveTetromino({ y: -1 });
+        setScore((curr) => curr + 1);
 
         window.addEventListener("keyup", softDropEndListener);
 
@@ -104,12 +112,12 @@ function GameBoard({
       case " ": {
         if (tetrominoCoords.active.length === 0) return;
 
-        setIsHardDrop(true);
-
         const dropPoint = getDropPoint(tetrominoCoords.active, tetrominoCoords.locked);
-        const y = -(tetrominoCoords.active[0].y - dropPoint[0].y);
+        const yDiff = tetrominoCoords.active[0].y - dropPoint[0].y;
 
-        moveTetromino({ y });
+        setIsHardDrop(true);
+        moveTetromino({ y: -yDiff });
+        setScore((curr) => curr + yDiff * 2); // Hard drop score = n lines * 2
 
         break;
       }

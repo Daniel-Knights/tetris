@@ -23,6 +23,7 @@ export function useLockdown(
   const dropIntervalData = useStore((s) => s.dropIntervalData);
   const isHardDrop = useStore((s) => s.isHardDrop);
   const setIsHardDrop = useStore((s) => s.setIsHardDrop);
+  const setIsLockDown = useStore((s) => s.setIsLockDown);
 
   const lockdownTimeoutId = useRef<number | null>(null);
 
@@ -107,6 +108,8 @@ export function useLockdown(
   /** Locks down active tetromino. */
   const lockdown = useCallback(
     (instant?: boolean) => {
+      setIsLockDown(true);
+
       if (lockdownTimeoutId.current) {
         window.clearTimeout(lockdownTimeoutId.current);
       }
@@ -121,6 +124,7 @@ export function useLockdown(
 
         setRotationStage(0);
         handleLineClears(next);
+        setIsLockDown(false);
       }
 
       if (instant) {
@@ -129,7 +133,7 @@ export function useLockdown(
         lockdownTimeoutId.current = window.setTimeout(commitLockDown, LOCKDOWN_TIMEOUT);
       }
     },
-    [tetrominoCoords, nextTetromino, setRotationStage, handleLineClears]
+    [tetrominoCoords, nextTetromino, setRotationStage, handleLineClears, setIsLockDown]
   );
 
   // Tetromino has hit lower limit
@@ -168,8 +172,8 @@ export function useLockdown(
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
-    if (gameOver || !lockdownTimeoutId.current) return;
+    if (gameOver) return;
 
-    lockdown();
-  }, [tetrominoCoords.active, lockdown, gameOver]);
+    window.clearTimeout(lockdownTimeoutId.current!);
+  }, [tetrominoCoords.active, gameOver]);
 }
