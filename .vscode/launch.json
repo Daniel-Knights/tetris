@@ -7,7 +7,12 @@
       "type": "msedge",
       "request": "launch",
       "port": 9222,
-      "runtimeExecutable": "${workspaceFolder}/src-tauri/target/debug/Tetris.exe",
+      "windows": {
+        "runtimeExecutable": "${workspaceFolder}/src-tauri/target/debug/Tetris.exe"
+      },
+      "osx": {
+        "runtimeExecutable": "${workspaceFolder}/src-tauri/target/debug/Tetris"
+      },
       "useWebView": true,
       "webRoot": "${workspaceFolder}",
       "preLaunchTask": "dev",
