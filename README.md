@@ -1,6 +1,10 @@
 # Tetris
 
-A Tetris clone desktop app.
+<p align="center">
+  <img src="artwork/icon.svg" width="106" height="106" alt="NoteBoi icon" >
+</p>
+
+<p align="center">A Tetris clone desktop app.</p>
 
 ## Installation
 
