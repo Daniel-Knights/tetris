@@ -45,7 +45,7 @@ type GameState = {
   isLockDown: boolean;
   setIsLockDown: (isLockDown: boolean) => void;
 
-  resetStore: () => BagShuffleYield<TetrominoType>;
+  resetStore: () => void;
 };
 
 const INITIAL_LEVEL = 1;
@@ -120,7 +120,5 @@ export const useStore = create<GameState>((set, get) => ({
       tetrominoQueue: nextTetrominoQueue,
       highScore: Number(localStorage.getItem("highScore")),
     });
-
-    return nextTetrominoQueue;
   },
 }));
