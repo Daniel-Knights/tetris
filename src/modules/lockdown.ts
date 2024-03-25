@@ -63,7 +63,7 @@ export function useLockdown(
         setCustomInterval(
           ({ count }) => {
             // Clear animation
-            if (count < 5) {
+            if (count < 6) {
               setTetrominoCoords((curr) => ({
                 ...curr,
                 active: [],
@@ -73,7 +73,7 @@ export function useLockdown(
                   // With each iteration we clear the two innermost minos
                   return (
                     !linesToClear.has(coord.getRow(MATRIX.rows)) ||
-                    (x !== 4 - count && x !== 5 + count)
+                    (x !== 5 - count && x !== 4 + count)
                   );
                 }),
               }));
@@ -92,7 +92,7 @@ export function useLockdown(
             setDropInterval(getDropInterval(currentLevel));
           },
           60,
-          { limit: 5 }
+          { limit: 6 }
         );
       } else {
         setTetrominoCoords((curr) => ({

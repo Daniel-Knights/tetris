@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 
 import GameBoard from "./components/GameBoard";
 import Menu from "./components/Menu";
@@ -15,16 +15,12 @@ import {
 function App(): JSX.Element {
   const currentLevel = useStore((s) => s.currentLevel);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  const dropIntervalData = useStore((s) => s.dropIntervalData);
   // const resetStore = useStore((s) => s.resetStore);
 
   const { scoreLineClear } = useScore();
   const { moveTetromino } = useTetromino();
 
   const [menuOpen, setMenuOpen] = useState(false);
-
-  // Cache remaining time of the current running interval
-  const remainingDropIntervalTime = useRef<number | undefined>(undefined);
 
   function reset() {
     // TODO
@@ -35,12 +31,7 @@ function App(): JSX.Element {
 
     if (isRestart) return;
 
-    // Resume after remaining interval time
-    window.setTimeout(() => {
-      moveTetromino({ y: -1 });
-
-      setDropInterval(getDropInterval(currentLevel));
-    }, remainingDropIntervalTime.current);
+    setDropInterval(getDropInterval(currentLevel));
   }
 
   useLockdown(scoreLineClear);
@@ -48,10 +39,7 @@ function App(): JSX.Element {
   // Open menu on escape
   useEffect(() => {
     function handleKeyup(ev: KeyboardEvent) {
-      if (ev.key !== "Escape") return;
-
-      // Cache remaining time
-      remainingDropIntervalTime.current = dropIntervalData?.remainingTime;
+      if (ev.key !== "Escape" || menuOpen) return;
 
       setDropInterval(null);
       setMenuOpen(true);
@@ -62,7 +50,7 @@ function App(): JSX.Element {
     return () => {
       window.removeEventListener("keyup", handleKeyup);
     };
-  }, [setDropInterval, remainingDropIntervalTime, dropIntervalData?.remainingTime]);
+  }, [setDropInterval, menuOpen]);
 
   return (
     <>
