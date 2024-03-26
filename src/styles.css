@@ -21,3 +21,13 @@ body,
   width: 100%;
   overflow: hidden;
 }
+
+body {
+  --color-primary: 30 36 36;
+  --color-secondary: 172 184 162;
+}
+
+body[data-theme="hackerman"] {
+  --color-primary: 0 255 0;
+  --color-secondary: 0 0 0;
+}

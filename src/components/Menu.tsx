@@ -14,6 +14,16 @@ function Menu({
       onClick: () => onClose(),
     },
     {
+      label: "THEME",
+      onClick: () => {
+        if (document.body.hasAttribute("data-theme")) {
+          document.body.removeAttribute("data-theme");
+        } else {
+          document.body.setAttribute("data-theme", "hackerman");
+        }
+      },
+    },
+    {
       label: "RESTART",
       onClick: () => {
         onClose(true);
