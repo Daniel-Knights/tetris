@@ -1,5 +1,11 @@
 import { exit } from "@tauri-apps/api/process";
-import { MouseEvent, useEffect } from "react";
+import { MouseEvent, useEffect, useState } from "react";
+
+type MenuItem = {
+  label: string;
+  onClick?: () => void;
+  submenu?: MenuItem[];
+};
 
 function Menu({
   onClose,
@@ -15,13 +21,26 @@ function Menu({
     },
     {
       label: "THEME",
-      onClick: () => {
-        if (document.body.hasAttribute("data-theme")) {
-          document.body.removeAttribute("data-theme");
-        } else {
-          document.body.setAttribute("data-theme", "hackerman");
-        }
-      },
+      submenu: [
+        {
+          label: "DEFAULT",
+          onClick: () => {
+            document.body.removeAttribute("data-theme");
+          },
+        },
+        {
+          label: "HACKERMAN",
+          onClick: () => {
+            document.body.setAttribute("data-theme", "hackerman");
+          },
+        },
+        {
+          label: "FLASHBANG",
+          onClick: () => {
+            document.body.setAttribute("data-theme", "flashbang");
+          },
+        },
+      ],
     },
     {
       label: "RESTART",
@@ -34,7 +53,9 @@ function Menu({
       label: "QUIT",
       onClick: () => exit(),
     },
-  ];
+  ] satisfies MenuItem[];
+
+  const [selectedSubmenu, setSelectedSubmenu] = useState<MenuItem[] | null>(null);
 
   function handleClick(ev: MouseEvent) {
     const evTarget = ev.target as HTMLElement;
@@ -48,9 +69,16 @@ function Menu({
   // Close on escape
   useEffect(() => {
     function handleKeyup(ev: KeyboardEvent) {
-      if (ev.key === "Escape") {
-        onClose();
+      if (ev.key !== "Escape") return;
+
+      // If submenu open, go back instead of closing
+      if (selectedSubmenu) {
+        setSelectedSubmenu(null);
+
+        return;
       }
+
+      onClose();
     }
 
     window.addEventListener("keyup", handleKeyup);
@@ -58,7 +86,7 @@ function Menu({
     return () => {
       window.removeEventListener("keyup", handleKeyup);
     };
-  }, [onClose]);
+  }, [onClose, selectedSubmenu]);
 
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions
@@ -71,12 +99,18 @@ function Menu({
         data-menu-content
       >
         <ul className="flex flex-col justify-center items-center gap-4 text-2xl">
-          {menuItems.map(({ label, onClick }) => (
+          {(selectedSubmenu ?? menuItems).map(({ label, onClick, submenu }) => (
             <li key={label}>
               <button
                 className="w-64 h-12 bg-primary/75 text-secondary hover:bg-primary"
                 type="button"
-                onClick={() => onClick()}
+                onClick={() => {
+                  if (onClick) {
+                    onClick();
+                  } else if (submenu) {
+                    setSelectedSubmenu(submenu);
+                  }
+                }}
               >
                 {label}
               </button>
