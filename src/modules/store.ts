@@ -111,13 +111,11 @@ export const useStore = create<GameState>((set, get) => ({
   },
 
   resetStore: () => {
-    const nextTetrominoQueue = randomTetrominoGen.next().value;
-
-    nextTetrominoQueue.refresh();
+    get().tetrominoQueue.refresh();
 
     set({
       ...initialState,
-      tetrominoQueue: nextTetrominoQueue,
+      tetrominoQueue: randomTetrominoGen.next().value,
       highScore: Number(localStorage.getItem("highScore")),
     });
   },

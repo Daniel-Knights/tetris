@@ -15,15 +15,16 @@ import {
 function App(): JSX.Element {
   const currentLevel = useStore((s) => s.currentLevel);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  // const resetStore = useStore((s) => s.resetStore);
+  const resetStore = useStore((s) => s.resetStore);
 
   const { scoreLineClear } = useScore();
-  const { moveTetromino } = useTetromino();
+  const { moveTetromino, resetTetromino } = useTetromino();
 
   const [menuOpen, setMenuOpen] = useState(false);
 
-  function reset() {
-    // TODO
+  function restart() {
+    resetStore();
+    resetTetromino();
   }
 
   function closeMenu(isRestart?: boolean) {
@@ -55,14 +56,14 @@ function App(): JSX.Element {
   return (
     <>
       <div className="flex justify-evenly items-center h-full w-full bg-secondary text-primary">
-        <GameBoard moveTetromino={moveTetromino} />
+        <GameBoard moveTetromino={moveTetromino} onRestart={() => restart()} />
         <div className="flex flex-col justify-center items-center gap-8 h-full">
           <StatBoard />
           <QueueBoard />
         </div>
       </div>
       {menuOpen && (
-        <Menu onClose={(isRestart) => closeMenu(isRestart)} onRestart={() => reset()} />
+        <Menu onClose={(isRestart) => closeMenu(isRestart)} onRestart={() => restart()} />
       )}
     </>
   );

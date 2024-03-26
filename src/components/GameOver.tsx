@@ -1,15 +1,11 @@
 import { useEffect } from "react";
 
-import { useStore } from "../modules";
-
-function GameOver() {
-  const resetStore = useStore((s) => s.resetStore);
-
+function GameOver({ onRestart }: { onRestart: () => void }) {
   // Play again on enter
   useEffect(() => {
     function handleKeyup(ev: KeyboardEvent) {
       if (ev.key === "Enter") {
-        resetStore();
+        onRestart();
       }
     }
 
@@ -18,12 +14,12 @@ function GameOver() {
     return () => {
       window.removeEventListener("keyup", handleKeyup);
     };
-  }, [resetStore]);
+  }, [onRestart]);
 
   return (
     <button
       className="cursor-pointer flex justify-center items-center absolute top-0 h-full w-full bg-primary/25"
-      onClick={resetStore}
+      onClick={onRestart}
       type="button"
     >
       <div className="py-4 w-full text-6xl font-bold text-center tracking-wider text-secondary bg-primary">

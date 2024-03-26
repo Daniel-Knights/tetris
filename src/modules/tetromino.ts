@@ -78,6 +78,8 @@ export function useTetromino() {
   const isSoftDrop = useStore((s) => s.isSoftDrop);
   const isLockDown = useStore((s) => s.isLockDown);
 
+  const resetTrigger = useRef(0);
+
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
     (coord: Partial<Coord>): void => {
@@ -96,16 +98,16 @@ export function useTetromino() {
   );
 
   // Plot initial tetromino
-  const initialTetromino = useRef(tetrominoQueue.next);
-
   useEffect(() => {
     if (gameOver) return;
 
     setTetrominoCoords((curr) => ({
       ...curr,
-      active: plotTetromino(initialTetromino.current),
+      active: plotTetromino(tetrominoQueue.next),
     }));
-  }, [setTetrominoCoords, gameOver]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setTetrominoCoords, gameOver, resetTrigger.current]);
 
   // Ghost tetromino
   useEffect(() => {
@@ -115,7 +117,15 @@ export function useTetromino() {
       ...curr,
       ghost: curr.active.length === 0 ? [] : getDropPoint(curr.active, curr.locked),
     }));
-  }, [gameOver, setTetrominoCoords, tetrominoCoords.active, tetrominoCoords.locked]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    gameOver,
+    setTetrominoCoords,
+    tetrominoCoords.active,
+    tetrominoCoords.locked,
+    resetTrigger.current,
+  ]);
 
   // Drop interval
   useEffect(() => {
@@ -141,6 +151,8 @@ export function useTetromino() {
     return () => {
       intervalData.clear();
     };
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     gameOver,
     moveTetromino,
@@ -150,14 +162,20 @@ export function useTetromino() {
     isSoftDrop,
     setScore,
     isLockDown,
+    resetTrigger.current,
   ]);
 
   // Update drop interval on level change
   useEffect(() => {
     setDropInterval(getDropInterval(currentLevel));
-  }, [setDropInterval, currentLevel]);
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setDropInterval, currentLevel, resetTrigger.current]);
 
   return {
     moveTetromino,
+    resetTetromino: () => {
+      resetTrigger.current += 1;
+    },
   };
 }

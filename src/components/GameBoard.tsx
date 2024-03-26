@@ -19,8 +19,10 @@ const LEFT_RIGHT_INTERVAL = 50;
 
 function GameBoard({
   moveTetromino,
+  onRestart,
 }: {
   moveTetromino: (coord: Partial<Coord>) => void;
+  onRestart: () => void;
 }): JSX.Element {
   const currentLevel = useStore((s) => s.currentLevel);
   const gameOver = useStore((s) => s.gameOver);
@@ -148,7 +150,7 @@ function GameBoard({
         outlinedCoords={tetrominoCoords.ghost}
         bg
       />
-      {gameOver && <GameOver />}
+      {gameOver && <GameOver onRestart={onRestart} />}
     </div>
   );
 }
