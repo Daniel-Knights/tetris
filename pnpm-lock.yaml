@@ -50,8 +50,8 @@ devDependencies:
     specifier: ^10.4.19
     version: 10.4.19(postcss@8.4.38)
   changenog:
-    specifier: ^0.5.2
-    version: 0.5.2
+    specifier: ^0.6.0
+    version: 0.6.0
   eslint:
     specifier: ^8.57.0
     version: 8.57.0
@@ -1845,8 +1845,8 @@ packages:
       supports-color: 7.2.0
     dev: true
 
-  /changenog@0.5.2:
-    resolution: {integrity: sha512-syVmcnwR+Fswu66bKzMNd7GMlxdLnKXNAxq40AovTywaQQMV7swkg2Kdp8OLR5R/D0B3aT0A/9A12jpv+fNcFQ==}
+  /changenog@0.6.0:
+    resolution: {integrity: sha512-TnIVP80Kgl5thVgD/lAjLp4AhJMV4KcXH4GpscvfDI0+UMeK8ndWYirGGtBTpQn3Hn27jofhNPd771R4NB9few==}
     hasBin: true
     dependencies:
       gitlog: 4.0.8
