@@ -1,6 +1,8 @@
 import { exit } from "@tauri-apps/api/process";
 import { MouseEvent, useEffect, useState } from "react";
 
+import { useTheme } from "../modules";
+
 type MenuItem = {
   label: string;
   onClick?: () => void;
@@ -14,6 +16,8 @@ function Menu({
   onClose: (isRestart?: boolean) => void;
   onRestart: () => void;
 }) {
+  const { setTheme } = useTheme();
+
   const menuItems = [
     {
       label: "RESUME",
@@ -24,21 +28,15 @@ function Menu({
       submenu: [
         {
           label: "DEFAULT",
-          onClick: () => {
-            document.body.removeAttribute("data-theme");
-          },
+          onClick: () => setTheme("default"),
         },
         {
           label: "HACKERMAN",
-          onClick: () => {
-            document.body.setAttribute("data-theme", "hackerman");
-          },
+          onClick: () => setTheme("hackerman"),
         },
         {
           label: "FLASHBANG",
-          onClick: () => {
-            document.body.setAttribute("data-theme", "flashbang");
-          },
+          onClick: () => setTheme("flashbang"),
         },
       ],
     },

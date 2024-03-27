@@ -29,7 +29,7 @@ body {
 
 body[data-theme="hackerman"] {
   --color-primary: 0 255 0;
-  --color-secondary: 30 36 36;
+  --color-secondary: 20 26 26;
 }
 
 body[data-theme="flashbang"] {
