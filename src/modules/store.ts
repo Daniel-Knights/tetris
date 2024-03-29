@@ -48,7 +48,7 @@ type GameState = {
   resetStore: () => void;
 };
 
-const INITIAL_LEVEL = 1;
+const INITIAL_LEVEL = 15;
 
 export const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
 

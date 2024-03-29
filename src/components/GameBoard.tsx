@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import {
   Coord,
@@ -39,26 +39,29 @@ function GameBoard({
   const leftRightIntervalClear = useRef<(() => void) | null>(null);
 
   /** Event handler for resetting drop interval after soft drop. */
-  function softDropEndListener(keyupEv: KeyboardEvent) {
-    if (keyupEv.key !== "ArrowDown") return;
+  const softDropEndListener = useCallback(
+    (keyupEv: KeyboardEvent) => {
+      if (keyupEv.key !== "ArrowDown") return;
 
-    setIsSoftDrop(false);
-    setDropInterval(getDropInterval(currentLevel));
+      setIsSoftDrop(false);
+      setDropInterval(getDropInterval(currentLevel));
 
-    window.removeEventListener("keyup", softDropEndListener);
-  }
+      window.removeEventListener("keyup", softDropEndListener);
+    },
+    [currentLevel, setIsSoftDrop, setDropInterval]
+  );
+
+  /** Clear timers on keyup. */
+  const leftRightEndListener = useCallback((keyupEv: KeyboardEvent) => {
+    if (!/Arrow(?:Left|Right)/.test(keyupEv.key)) return;
+
+    leftRightIntervalClear.current?.();
+
+    window.removeEventListener("keyup", leftRightEndListener);
+  }, []);
 
   /** Event handler for moving the current tetromino left or right. */
   function keyLeftRight(ev: KeyboardEvent) {
-    /** Clear timers on keyup. */
-    function leftRightEndListener(keyupEv: KeyboardEvent) {
-      if (!/Arrow(?:Left|Right)/.test(keyupEv.key)) return;
-
-      leftRightIntervalClear.current?.();
-
-      window.removeEventListener("keyup", leftRightEndListener);
-    }
-
     // Overwrite existing left/right keydown interval
     leftRightIntervalClear.current?.();
 
@@ -141,6 +144,16 @@ function GameBoard({
       window.removeEventListener("keydown", handleKeydown);
     };
   });
+
+  // Clear timers on game over
+  useEffect(() => {
+    if (!gameOver) return;
+
+    leftRightIntervalClear.current?.();
+
+    window.removeEventListener("keyup", leftRightEndListener);
+    window.removeEventListener("keyup", softDropEndListener);
+  }, [gameOver, leftRightEndListener, softDropEndListener]);
 
   return (
     <div className="relative py-4 border-y-4 border-double border-primary/30">
