@@ -61,6 +61,8 @@ function Matrix({
               coord.isIn([...normalisedCoords, ...outlinedCoords]) ? "" : bgOpacity
             }
             viewBox="0 0 20 20"
+            height="20"
+            width="20"
           >
             <path
               stroke="rgb(var(--color-primary))"
