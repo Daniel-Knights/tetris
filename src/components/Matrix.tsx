@@ -55,14 +55,22 @@ function Matrix({
         });
 
         return (
-          <span
+          <svg
             key={window.crypto.randomUUID()}
-            className={`inline-flex justify-center items-center bg-secondary border border-primary before:h-[10px] before:w-[10px] ${
-              coord.isIn(outlinedCoords) && !coord.isIn(normalisedCoords)
-                ? ""
-                : "before:bg-primary"
-            } ${coord.isIn([...normalisedCoords, ...outlinedCoords]) ? "" : bgOpacity}`}
-          />
+            className={
+              coord.isIn([...normalisedCoords, ...outlinedCoords]) ? "" : bgOpacity
+            }
+            viewBox="0 0 20 20"
+          >
+            <path
+              stroke="rgb(var(--color-primary))"
+              fill="rgb(var(--color-secondary))"
+              d="M.701.701H19.3V19.3H.7z"
+            />
+            {(!coord.isIn(outlinedCoords) || coord.isIn(normalisedCoords)) && (
+              <path fill="rgb(var(--color-primary))" d="M5.35 5.35h9.3v9.3h-9.3z" />
+            )}
+          </svg>
         );
       })}
     </div>
