@@ -8,12 +8,10 @@ export type IntervalData = {
  * run immediately by default. A delay can be configured using the `delay` option.
  */
 export function setCustomInterval(
-  cb: (param: IntervalData) => void,
+  cb: (data: IntervalData) => void,
   interval: number,
   options?: {
-    /** Delay before first run in ms. */
     delay?: number;
-    /** Call limit. Once hit, calls `clear` internally. */
     limit?: number;
   }
 ): IntervalData {
@@ -22,11 +20,10 @@ export function setCustomInterval(
     clear,
   };
 
-  let intervalId: number | undefined;
   let timeoutId: number | undefined;
+  let prevTime: number | undefined;
 
   function clear() {
-    window.clearInterval(intervalId);
     window.clearTimeout(timeoutId);
   }
 
@@ -35,18 +32,17 @@ export function setCustomInterval(
 
     cb(data);
 
-    intervalId = window.setInterval(() => {
-      // Clear if limit is reached
-      if (options?.limit && data.count >= options.limit) {
-        clear();
+    if (options?.limit && data.count >= options.limit) {
+      return;
+    }
 
-        return;
-      }
+    // Adjust interval to account for timer imprecision
+    const now = Date.now();
+    const delta = prevTime ? now - prevTime : interval;
+    const adjustedInterval = interval + (interval - delta);
 
-      data.count += 1;
-
-      cb(data);
-    }, interval);
+    prevTime = now;
+    timeoutId = window.setTimeout(commitInterval, adjustedInterval);
   }
 
   if (options?.delay) {
