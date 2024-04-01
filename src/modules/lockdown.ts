@@ -117,6 +117,8 @@ export function useLockdown(
       function commitLockDown() {
         lockdownTimeoutId.current = null;
 
+        setIsLockDown(false);
+
         // Prevent floating tetrominoes
         if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
 
@@ -124,7 +126,6 @@ export function useLockdown(
 
         setRotationStage(0);
         handleLineClears(next);
-        setIsLockDown(false);
       }
 
       if (instant) {
