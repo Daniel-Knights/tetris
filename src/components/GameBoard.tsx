@@ -9,7 +9,7 @@ import {
   useRotate,
   useStore,
 } from "../modules";
-import { setCustomInterval } from "../utils";
+import { setFrameSyncInterval } from "../utils";
 
 import GameOver from "./GameOver";
 import Matrix from "./Matrix";
@@ -72,7 +72,7 @@ function GameBoard({
 
     moveTetromino({ x });
 
-    leftRightIntervalClear.current = setCustomInterval(
+    leftRightIntervalClear.current = setFrameSyncInterval(
       () => {
         moveTetromino({ x });
       },

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef } from "react";
 
-import { setCustomInterval } from "../utils";
+import { setFrameSyncInterval } from "../utils";
 
 import { Coord } from "./coord";
 import { getDropInterval, useScore } from "./score";
@@ -60,7 +60,7 @@ export function useLockdown(
         // Prevent drop interval running during animation
         setDropInterval(null);
 
-        setCustomInterval(
+        setFrameSyncInterval(
           ({ count }) => {
             // Clear animation
             if (count < 6) {
@@ -134,7 +134,14 @@ export function useLockdown(
         lockdownTimeoutId.current = window.setTimeout(commitLockDown, LOCKDOWN_TIMEOUT);
       }
     },
-    [tetrominoCoords, nextTetromino, setRotationStage, handleLineClears, setIsLockDown]
+    [
+      handleLineClears,
+      nextTetromino,
+      setIsLockDown,
+      setRotationStage,
+      tetrominoCoords.active,
+      tetrominoCoords.locked,
+    ]
   );
 
   // Tetromino has hit lower limit
@@ -176,5 +183,6 @@ export function useLockdown(
     if (gameOver) return;
 
     window.clearTimeout(lockdownTimeoutId.current!);
-  }, [tetrominoCoords.active, gameOver]);
+    setIsLockDown(false);
+  }, [tetrominoCoords.active, gameOver, setIsLockDown]);
 }

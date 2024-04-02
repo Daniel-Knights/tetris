@@ -4,52 +4,76 @@ export type IntervalData = {
 };
 
 /**
- * `setInterval` with more options, the only difference being that the callback is first
+ * `setInterval` that uses `requestAnimationFrame` to sync callback calls with the
+ * monitor's frame rate.
+ *
+ * The only functional difference to `setInterval` is that the callback is first
  * run immediately by default. A delay can be configured using the `delay` option.
  */
-export function setCustomInterval(
-  cb: (data: IntervalData) => void,
+export function setFrameSyncInterval(
+  cb: (param: IntervalData) => void,
   interval: number,
   options?: {
     delay?: number;
     limit?: number;
   }
 ): IntervalData {
+  let intervalAccumulator = options?.delay ? interval - options.delay : interval;
+  let animationFrameId: number | null = null;
+  let timeoutId: number | null = null;
+  let prevTime: number | null = null;
+
   const data: IntervalData = {
     count: 0,
-    clear,
+    clear: () => {
+      if (animationFrameId) {
+        window.cancelAnimationFrame(animationFrameId);
+      }
+
+      if (timeoutId) {
+        window.clearTimeout(timeoutId);
+      }
+
+      animationFrameId = null;
+      timeoutId = null;
+    },
   };
 
-  let timeoutId: number | undefined;
-  let prevTime: number | undefined;
-
-  function clear() {
-    window.clearTimeout(timeoutId);
-  }
-
-  function commitInterval() {
-    data.count += 1;
-
-    cb(data);
-
+  function loop(timestamp: number) {
+    // If limit is reached, stop the loop
     if (options?.limit && data.count >= options.limit) {
+      data.clear();
+
       return;
     }
 
-    // Adjust interval to account for timer imprecision
-    const now = Date.now();
-    const delta = prevTime ? now - prevTime : interval;
-    const adjustedInterval = interval + (interval - delta);
+    prevTime ??= timestamp;
 
-    prevTime = now;
-    timeoutId = window.setTimeout(commitInterval, adjustedInterval);
+    const elapsedSincePrev = timestamp - prevTime;
+
+    prevTime = timestamp;
+    intervalAccumulator += elapsedSincePrev;
+
+    if (intervalAccumulator >= interval) {
+      // If the interval is greater than the frame rate, this will be the number of
+      // calls since the previous frame
+      const countSincePrevFrame = Math.floor(intervalAccumulator / interval);
+
+      for (let i = 0; i < countSincePrevFrame; i += 1) {
+        data.count += 1;
+
+        cb(data);
+
+        intervalAccumulator -= interval;
+      }
+
+      prevTime = null;
+    }
+
+    animationFrameId = window.requestAnimationFrame(loop);
   }
 
-  if (options?.delay) {
-    timeoutId = window.setTimeout(commitInterval, options.delay);
-  } else {
-    commitInterval();
-  }
+  animationFrameId = window.requestAnimationFrame(loop);
 
   return data;
 }

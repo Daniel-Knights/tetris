@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { TETROMINOES } from "../resources";
-import { RepeatingTuple, setCustomInterval } from "../utils";
+import { RepeatingTuple, setFrameSyncInterval } from "../utils";
 
 import { Coord } from "./coord";
 import { getDropInterval } from "./score";
@@ -133,7 +133,7 @@ export function useTetromino() {
 
     console.log("dropInterval", dropInterval);
 
-    const intervalData = setCustomInterval(
+    const intervalData = setFrameSyncInterval(
       () => {
         moveTetromino({ y: -1 });
 
