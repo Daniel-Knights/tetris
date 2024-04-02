@@ -1,3 +1,16 @@
+## [0.2.1](https://github.com/Daniel-Knights/tetris/compare/v0.2.0...v0.2.1) (4/2/24)
+
+- chore(deps): bump ([c18449d](https://github.com/Daniel-Knights/tetris/commit/c18449d4e899cf059807805964dafc5584b1170d))
+- perf(timer): use requestAnimationFrame for intervals ([7ed570a](https://github.com/Daniel-Knights/tetris/commit/7ed570a21e1e75bd3ba487dc33989f028235944a))
+- perf(timer): adjust interval to account for timer imprecision ([1cb1ede](https://github.com/Daniel-Knights/tetris/commit/1cb1ede2e1aff6436d18061ab63459d6d87d8e99))
+- fix(lockdown): set isLockDown to false if not at bound ([fe00f0e](https://github.com/Daniel-Knights/tetris/commit/fe00f0e0cc3ad9116fd4b85ce534236db82ff196))
+- perf(matrix): use canvas ([02a155a](https://github.com/Daniel-Knights/tetris/commit/02a155aee8d3bdd5e6a037ea2bbd34d2cce0ef67))
+- fix(matrix): explicit svg height/width ([cc00b21](https://github.com/Daniel-Knights/tetris/commit/cc00b219e07e6861e65fd24158757fc8e649c1c2))
+- chore(matrix): use svg for squares ([7700450](https://github.com/Daniel-Knights/tetris/commit/7700450a35cfb1c74064237a5b94430e1c014aae))
+- fix(store): set initial level back to 1 ([f7eb22d](https://github.com/Daniel-Knights/tetris/commit/f7eb22db4c4d1effad210303796a1720a40cf506))
+- fix(game-board): clear timers on game over ([f9faac6](https://github.com/Daniel-Knights/tetris/commit/f9faac64e07a841890a78aaea3d62599cf110710))
+- docs(changelog): v0.2.0 ([a85294f](https://github.com/Daniel-Knights/tetris/commit/a85294f4ef9b205bf796288f31cc83c0ae3db690))
+
 ## [0.2.0](https://github.com/Daniel-Knights/tetris/compare/v0.1.0...v0.2.0) (3/27/24)
 
 - chore(deps): bump changenog ([a38d5a7](https://github.com/Daniel-Knights/tetris/commit/a38d5a7adc2e5c05dc55e5a49d8294cfe1be5120))
