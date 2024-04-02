@@ -33,11 +33,11 @@
     "@actions/github": "^6.0.0",
     "@tauri-apps/cli": "^1.5.11",
     "@trivago/prettier-plugin-sort-imports": "^4.3.0",
-    "@types/node": "^20.11.30",
-    "@types/react": "^18.2.73",
-    "@types/react-dom": "^18.2.22",
-    "@typescript-eslint/eslint-plugin": "^7.4.0",
-    "@typescript-eslint/parser": "^7.4.0",
+    "@types/node": "^20.12.3",
+    "@types/react": "^18.2.74",
+    "@types/react-dom": "^18.2.23",
+    "@typescript-eslint/eslint-plugin": "^7.5.0",
+    "@typescript-eslint/parser": "^7.5.0",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
     "changenog": "^0.6.0",
@@ -55,6 +55,6 @@
     "tailwindcss": "^3.4.3",
     "tsx": "^4.7.1",
     "typescript": "^5.4.3",
-    "vite": "^5.2.6"
+    "vite": "^5.2.7"
   }
 }
