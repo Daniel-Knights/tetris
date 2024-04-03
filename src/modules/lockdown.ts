@@ -23,6 +23,7 @@ export function useLockdown(
   const dropIntervalData = useStore((s) => s.dropIntervalData);
   const isHardDrop = useStore((s) => s.isHardDrop);
   const setIsHardDrop = useStore((s) => s.setIsHardDrop);
+  const isLockDown = useStore((s) => s.isLockDown);
   const setIsLockDown = useStore((s) => s.setIsLockDown);
 
   const lockdownTimeoutId = useRef<number | null>(null);
@@ -108,6 +109,8 @@ export function useLockdown(
   /** Locks down active tetromino. */
   const lockdown = useCallback(
     (instant?: boolean) => {
+      if (isLockDown) return;
+
       setIsLockDown(true);
 
       if (lockdownTimeoutId.current) {
@@ -136,6 +139,7 @@ export function useLockdown(
     },
     [
       handleLineClears,
+      isLockDown,
       nextTetromino,
       setIsLockDown,
       setRotationStage,
