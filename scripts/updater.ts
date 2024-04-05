@@ -20,8 +20,9 @@ const DUMMY_OCTOKIT = {
 } as const;
 
 const updateData = {
-  name: "",
+  version: "",
   pub_date: new Date().toISOString(),
+  notes: "https://github.com/Daniel-Knights/tetris/blob/main/CHANGELOG.md",
   platforms: {
     windows: {},
     darwin: {},
@@ -48,7 +49,7 @@ const release = getLatestReleaseResult.data as {
   }[];
 };
 
-updateData.name = release.tag_name;
+updateData.version = release.tag_name;
 
 async function getSignature(url: string): Promise<string> {
   const response = await fetch(url, {
