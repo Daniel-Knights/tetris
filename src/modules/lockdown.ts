@@ -20,13 +20,27 @@ export function useLockdown(
   const tetrominoCoords = useStore((s) => s.tetrominoCoords);
   const setTetrominoCoords = useStore((s) => s.setTetrominoCoords);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  const dropIntervalData = useStore((s) => s.dropIntervalData);
   const isHardDrop = useStore((s) => s.isHardDrop);
   const setIsHardDrop = useStore((s) => s.setIsHardDrop);
   const isLockDown = useStore((s) => s.isLockDown);
   const setIsLockDown = useStore((s) => s.setIsLockDown);
+  const dropIntervalData = useStore((s) => s.dropIntervalData);
 
   const lockdownTimeoutId = useRef<number | null>(null);
+
+  const handleGameOver = useCallback(() => {
+    const allCoords = [...tetrominoCoords.active, ...tetrominoCoords.locked];
+
+    if (allCoords.some((c) => c.y >= MATRIX.rows - 1)) {
+      setGameOver(true);
+
+      dropIntervalData?.clear();
+
+      return true;
+    }
+
+    return false;
+  }, [dropIntervalData, setGameOver, tetrominoCoords.active, tetrominoCoords.locked]);
 
   /** Clears full lines and sets new tetromino. */
   const handleLineClears = useCallback(
@@ -101,9 +115,19 @@ export function useLockdown(
           active: nextTetrominoCoords,
           locked: [...curr.active, ...curr.locked],
         }));
+
+        handleGameOver();
       }
     },
-    [tetrominoCoords, scoreLineClear, currentLevel, setTetrominoCoords, setDropInterval]
+    [
+      currentLevel,
+      handleGameOver,
+      scoreLineClear,
+      setDropInterval,
+      setTetrominoCoords,
+      tetrominoCoords.active,
+      tetrominoCoords.locked,
+    ]
   );
 
   /** Locks down active tetromino. */
@@ -125,6 +149,9 @@ export function useLockdown(
         // Prevent floating tetrominoes
         if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
 
+        const isGameOver = handleGameOver();
+        if (isGameOver) return;
+
         const { next } = nextTetromino();
 
         setRotationStage(0);
@@ -138,6 +165,7 @@ export function useLockdown(
       }
     },
     [
+      handleGameOver,
       handleLineClears,
       isLockDown,
       nextTetromino,
@@ -157,29 +185,19 @@ export function useLockdown(
       return;
     }
 
-    const allCoords = [...tetrominoCoords.active, ...tetrominoCoords.locked];
-
-    // GAME OVER
-    if (allCoords.some((c) => c.y >= MATRIX.rows - 1)) {
-      setGameOver(true);
-
-      dropIntervalData?.clear();
-
-      console.log("GAME OVER");
-    } else if (isHardDrop) {
+    if (isHardDrop) {
       lockdown(true);
       setIsHardDrop(false);
     } else {
       lockdown();
     }
   }, [
-    tetrominoCoords,
-    lockdown,
     gameOver,
-    setGameOver,
-    dropIntervalData,
     isHardDrop,
+    lockdown,
     setIsHardDrop,
+    tetrominoCoords.active,
+    tetrominoCoords.locked,
   ]);
 
   // Re-initiate lock down if piece is moved
