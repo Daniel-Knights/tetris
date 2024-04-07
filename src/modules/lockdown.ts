@@ -5,7 +5,13 @@ import { setFrameSyncInterval } from "../utils";
 import { Coord } from "./coord";
 import { getDropInterval, useScore } from "./score";
 import { useStore } from "./store";
-import { isAtBound, MATRIX, plotTetromino, TetrominoType } from "./tetromino";
+import {
+  isAtBound,
+  MATRIX,
+  plotTetromino,
+  TetrominoCoords,
+  TetrominoType,
+} from "./tetromino";
 
 const LOCKDOWN_TIMEOUT = 500;
 
@@ -28,19 +34,44 @@ export function useLockdown(
 
   const lockdownTimeoutId = useRef<number | null>(null);
 
-  const handleGameOver = useCallback(() => {
-    const allCoords = [...tetrominoCoords.active, ...tetrominoCoords.locked];
+  /** Checks if game over and adjusts coords to avoid collision. */
+  const handleGameOver = useCallback(
+    (nextCoords: TetrominoCoords) => {
+      const lockedCoords = [...tetrominoCoords.active, ...tetrominoCoords.locked];
 
-    if (allCoords.some((c) => c.y >= MATRIX.rows - 1)) {
-      setGameOver(true);
+      let isGameOver = false;
+      let nextYAdjustment = 0;
 
-      dropIntervalData?.clear();
+      nextCoords.forEach((c) => {
+        // Can only ever be pushed up by a max of 2 rows
+        if (nextYAdjustment === 2) return;
 
-      return true;
-    }
+        if (c.isIn(lockedCoords)) {
+          isGameOver = true;
+          nextYAdjustment = 1;
+        }
 
-    return false;
-  }, [dropIntervalData, setGameOver, tetrominoCoords.active, tetrominoCoords.locked]);
+        if (c.clone().add({ y: 1 }).isIn(lockedCoords)) {
+          nextYAdjustment = 2;
+        }
+      });
+
+      if (isGameOver) {
+        setGameOver(true);
+
+        dropIntervalData?.clear();
+      }
+
+      if (nextYAdjustment > 0) {
+        return nextCoords.map((c) => {
+          return c.clone().add({ y: nextYAdjustment });
+        }) as TetrominoCoords;
+      }
+
+      return nextCoords;
+    },
+    [dropIntervalData, setGameOver, tetrominoCoords.active, tetrominoCoords.locked]
+  );
 
   /** Clears full lines and sets new tetromino. */
   const handleLineClears = useCallback(
@@ -112,11 +143,9 @@ export function useLockdown(
       } else {
         setTetrominoCoords((curr) => ({
           ...curr,
-          active: nextTetrominoCoords,
+          active: handleGameOver(nextTetrominoCoords),
           locked: [...curr.active, ...curr.locked],
         }));
-
-        handleGameOver();
       }
     },
     [
@@ -149,9 +178,6 @@ export function useLockdown(
         // Prevent floating tetrominoes
         if (!isAtBound(tetrominoCoords.active, tetrominoCoords.locked, { y: -1 })) return;
 
-        const isGameOver = handleGameOver();
-        if (isGameOver) return;
-
         const { next } = nextTetromino();
 
         setRotationStage(0);
@@ -165,7 +191,6 @@ export function useLockdown(
       }
     },
     [
-      handleGameOver,
       handleLineClears,
       isLockDown,
       nextTetromino,
