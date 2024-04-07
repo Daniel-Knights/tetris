@@ -20,9 +20,13 @@ export const MATRIX = {
   columns: 10,
 };
 
-/** Returns true if passed coord will collide with current locked coords. */
+/**
+ * Returns true if passed coord will collide with current locked coords or game board boundaries.
+ */
 export function willCollide(lockedCoords: Coord[], coord: Coord): boolean {
-  return coord.isIn(lockedCoords) || coord.x < 0 || coord.x > 9 || coord.y < 0;
+  return (
+    coord.isIn(lockedCoords) || coord.x < 0 || coord.x > MATRIX.columns - 1 || coord.y < 0
+  );
 }
 
 /** Checks if current tetromino is at the right, left, or bottom bound. */
