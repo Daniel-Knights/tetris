@@ -55,8 +55,8 @@ export function setFrameSyncInterval(
     intervalAccumulator += elapsedSincePrev;
 
     if (intervalAccumulator >= interval) {
-      // If the interval is greater than the frame rate, this will be the number of
-      // calls since the previous frame
+      // If the interval is less than the frame rate, this will be the number of
+      // calls that should've happened since the previous frame
       const countSincePrevFrame = Math.floor(intervalAccumulator / interval);
 
       for (let i = 0; i < countSincePrevFrame; i += 1) {
