@@ -1,4 +1,4 @@
-import { useStore } from "../modules";
+import { useStore } from "../hooks";
 import { TETROMINOES } from "../resources";
 
 import Matrix from "./Matrix";

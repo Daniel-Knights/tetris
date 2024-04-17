@@ -1,4 +1,4 @@
-import { useStore } from "../modules";
+import { useStore } from "../hooks";
 
 function StatBoard(): JSX.Element {
   const currentLevel = useStore((s) => s.currentLevel);

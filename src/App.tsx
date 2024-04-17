@@ -4,13 +4,7 @@ import GameBoard from "./components/GameBoard";
 import Menu from "./components/Menu";
 import QueueBoard from "./components/QueueBoard";
 import StatBoard from "./components/StatBoard";
-import {
-  getDropInterval,
-  useLockdown,
-  useScore,
-  useStore,
-  useTetromino,
-} from "./modules";
+import { getDropInterval, useLockdown, useScore, useStore, useTetromino } from "./hooks";
 
 function App(): JSX.Element {
   const currentLevel = useStore((s) => s.currentLevel);

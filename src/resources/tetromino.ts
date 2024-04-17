@@ -1,5 +1,8 @@
-import { Coord, TetrominoCoords, TetrominoType } from "../modules";
+import { Coord } from "../classes";
 import { RepeatingTuple } from "../utils";
+
+export type TetrominoType = "I" | "J" | "L" | "O" | "S" | "T" | "Z";
+export type TetrominoCoords = RepeatingTuple<Coord, 4>;
 
 export const TETROMINOES = {
   I: {

@@ -1,18 +1,21 @@
 import { useCallback, useEffect, useRef } from "react";
 
+import { Coord } from "../classes";
 import {
-  Coord,
   getDropInterval,
-  getDropPoint,
-  MATRIX,
   SOFT_DROP_SPEED_MULTIPLIER,
   useRotate,
   useStore,
-} from "../modules";
+} from "../hooks";
 import { setFrameSyncInterval } from "../utils";
 
 import GameOver from "./GameOver";
 import Matrix from "./Matrix";
+
+export const MATRIX = {
+  rows: 20,
+  columns: 10,
+};
 
 const KEYDOWN_DELAY = 300;
 const LEFT_RIGHT_INTERVAL = 50;
@@ -27,6 +30,8 @@ function GameBoard({
   const currentLevel = useStore((s) => s.currentLevel);
   const gameOver = useStore((s) => s.gameOver);
   const tetrominoCoords = useStore((s) => s.tetrominoCoords);
+  const activeTetromino = useStore((s) => s.activeTetromino);
+  const lockedCoords = useStore((s) => s.lockedCoords);
   const setDropInterval = useStore((s) => s.setDropInterval);
   const isSoftDrop = useStore((s) => s.isSoftDrop);
   const setIsSoftDrop = useStore((s) => s.setIsSoftDrop);
@@ -53,7 +58,7 @@ function GameBoard({
 
   /** Clear timers on keyup. */
   const leftRightEndListener = useCallback((keyupEv: KeyboardEvent) => {
-    if (!/Arrow(?:Left|Right)/.test(keyupEv.key)) return;
+    if (!/Arrow(Left|Right)/.test(keyupEv.key)) return;
 
     leftRightIntervalClear.current?.();
 
@@ -88,7 +93,7 @@ function GameBoard({
     if (ev.repeat) return; // Ignore held key in favour of our interval solution
 
     // Overwrite existing left/right keydown interval
-    if (/Arrow(?:Left|Right)/.test(ev.key)) {
+    if (/Arrow(Left|Right)/.test(ev.key)) {
       keyLeftRight(ev);
 
       return;
@@ -115,10 +120,10 @@ function GameBoard({
       }
       // Hard drop
       case " ": {
-        if (tetrominoCoords.active.length === 0) return;
+        if (!activeTetromino) return;
 
-        const dropPoint = getDropPoint(tetrominoCoords.active, tetrominoCoords.locked);
-        const yDiff = tetrominoCoords.active[0].y - dropPoint[0].y;
+        const droppedTetromino = activeTetromino.clone().moveToDropPoint(lockedCoords);
+        const yDiff = activeTetromino.coords[0]!.y - droppedTetromino.coords[0]!.y;
 
         setIsHardDrop(true);
         moveTetromino({ y: -yDiff });
@@ -159,8 +164,9 @@ function GameBoard({
     <div className="relative py-4 border-y-4 border-double border-primary/30">
       <Matrix
         dimensions={MATRIX}
-        highlightedCoords={[...tetrominoCoords.active, ...tetrominoCoords.locked]}
-        outlinedCoords={tetrominoCoords.ghost}
+        highlightedCoords={[...(activeTetromino?.coords ?? []), ...lockedCoords]}
+        // Ghost tetromino
+        outlinedCoords={activeTetromino?.clone().moveToDropPoint(lockedCoords).coords}
         bg
       />
       {gameOver && <GameOver onRestart={onRestart} />}

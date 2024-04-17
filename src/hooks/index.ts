@@ -1,4 +1,3 @@
-export * from "./coord";
 export * from "./lockdown";
 export * from "./rotate";
 export * from "./score";

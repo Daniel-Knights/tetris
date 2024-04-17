@@ -1,11 +1,10 @@
 import { create } from "zustand";
 
-import { TETROMINOES } from "../resources";
+import { Coord, Tetromino } from "../classes";
+import { TETROMINOES, TetrominoType } from "../resources";
 import { bagShuffle, BagShuffleYield, IntervalData, PropertiesOnly } from "../utils";
 
-import { RotationStage } from "./rotate";
 import { getDropInterval } from "./score";
-import { TetrominoCoordsState, TetrominoType } from "./tetromino";
 
 type GameState = {
   currentLevel: number;
@@ -22,13 +21,17 @@ type GameState = {
   setGameOver: (gameOver: boolean) => void;
 
   tetrominoQueue: BagShuffleYield<TetrominoType>;
-  nextTetromino: () => BagShuffleYield<TetrominoType>;
+  setNextTetromino: () => BagShuffleYield<TetrominoType>;
 
-  tetrominoCoords: TetrominoCoordsState;
-  setTetrominoCoords: (cb: (curr: TetrominoCoordsState) => TetrominoCoordsState) => void;
+  activeTetromino: Tetromino | null;
+  setActiveTetromino: (
+    cb: (curr: Tetromino | null, lockedCoords: Coord[]) => Tetromino | null
+  ) => void;
 
-  rotationStage: number;
-  setRotationStage: (rotationStage: RotationStage) => void;
+  lockedCoords: Coord[];
+  setLockedCoords: (
+    cb: (curr: Coord[], currActiveTetromino: Tetromino | null) => Coord[]
+  ) => void;
 
   dropInterval: number | null;
   setDropInterval: (dropInterval: number | null) => void;
@@ -52,19 +55,16 @@ const INITIAL_LEVEL = 1;
 
 export const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
 
+const initialTetrominoQueue = randomTetrominoGen.next().value;
 const initialState = {
   currentLevel: INITIAL_LEVEL,
   currentScore: 0,
   highScore: Number(localStorage.getItem("highScore")) || 0,
   lineClearCount: 0,
   gameOver: false,
-  tetrominoQueue: randomTetrominoGen.next().value,
-  tetrominoCoords: {
-    active: [],
-    ghost: [],
-    locked: [],
-  },
-  rotationStage: 0,
+  tetrominoQueue: initialTetrominoQueue,
+  activeTetromino: null,
+  lockedCoords: [],
   dropInterval: getDropInterval(INITIAL_LEVEL),
   dropIntervalData: null,
   isSoftDrop: false,
@@ -78,7 +78,6 @@ export const useStore = create<GameState>((set, get) => ({
   setCurrentLevel: (currentLevel) => set({ currentLevel }),
   setLineClearCount: (lineClearCount) => set({ lineClearCount }),
   setGameOver: (gameOver) => set({ gameOver }),
-  setRotationStage: (rotationStage) => set({ rotationStage }),
   setDropInterval: (dropInterval) => set({ dropInterval }),
   setDropIntervalData: (dropIntervalData) => set({ dropIntervalData }),
   setIsSoftDrop: (isSoftDrop) => set({ isSoftDrop }),
@@ -98,7 +97,7 @@ export const useStore = create<GameState>((set, get) => ({
     }
   },
 
-  nextTetromino: () => {
+  setNextTetromino: () => {
     const tetrominoQueue = randomTetrominoGen.next().value;
 
     set({ tetrominoQueue });
@@ -106,8 +105,16 @@ export const useStore = create<GameState>((set, get) => ({
     return tetrominoQueue;
   },
 
-  setTetrominoCoords: (cb) => {
-    set((s) => ({ tetrominoCoords: cb(s.tetrominoCoords) }));
+  setActiveTetromino: (cb) => {
+    set((s) => {
+      return { activeTetromino: cb(s.activeTetromino, s.lockedCoords) };
+    });
+  },
+
+  setLockedCoords: (cb) => {
+    set((s) => {
+      return { lockedCoords: cb(s.lockedCoords, s.activeTetromino) };
+    });
   },
 
   resetStore: () => {

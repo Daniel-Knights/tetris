@@ -1,7 +1,7 @@
 import { exit } from "@tauri-apps/api/process";
 import { MouseEvent, useEffect, useState } from "react";
 
-import { useTheme } from "../modules";
+import { useTheme } from "../hooks";
 
 type MenuItem = {
   label: string;

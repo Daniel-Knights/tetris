@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef } from "react";
 
-import { Coord } from "../modules";
+import { Coord } from "../classes";
 
 const CELL_SIZE = 20;
 const GAP_SIZE = 4;
