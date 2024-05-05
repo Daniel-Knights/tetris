@@ -28,16 +28,12 @@ function GameBoard({
   onRestart: () => void;
 }): JSX.Element {
   const currentLevel = useStore((s) => s.currentLevel);
-  const gameOver = useStore((s) => s.gameOver);
-  const tetrominoCoords = useStore((s) => s.tetrominoCoords);
+  const gameStatus = useStore((s) => s.gameStatus);
+  const setGameStatus = useStore((s) => s.setGameStatus);
   const activeTetromino = useStore((s) => s.activeTetromino);
   const lockedCoords = useStore((s) => s.lockedCoords);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  const isSoftDrop = useStore((s) => s.isSoftDrop);
-  const setIsSoftDrop = useStore((s) => s.setIsSoftDrop);
-  const setIsHardDrop = useStore((s) => s.setIsHardDrop);
   const setScore = useStore((s) => s.setScore);
-  const isLockDown = useStore((s) => s.isLockDown);
 
   const rotateTetromino = useRotate();
 
@@ -48,12 +44,15 @@ function GameBoard({
     (keyupEv: KeyboardEvent) => {
       if (keyupEv.key !== "ArrowDown") return;
 
-      setIsSoftDrop(false);
+      if (!useStore.getState().gameStatus.is("PAUSED")) {
+        setGameStatus("PLAYING");
+      }
+
       setDropInterval(getDropInterval(currentLevel));
 
       window.removeEventListener("keyup", softDropEndListener);
     },
-    [currentLevel, setIsSoftDrop, setDropInterval]
+    [setDropInterval, currentLevel, setGameStatus]
   );
 
   /** Clear timers on keyup. */
@@ -67,6 +66,10 @@ function GameBoard({
 
   /** Event handler for moving the current tetromino left or right. */
   function keyLeftRight(ev: KeyboardEvent) {
+    if (!gameStatus.is("PLAYING", "SOFT_DROP", "LOCK_DOWN")) {
+      return;
+    }
+
     // Overwrite existing left/right keydown interval
     leftRightIntervalClear.current?.();
 
@@ -91,6 +94,7 @@ function GameBoard({
   // Keydown
   function handleKeydown(ev: KeyboardEvent) {
     if (ev.repeat) return; // Ignore held key in favour of our interval solution
+    if (gameStatus.is("GAME_OVER", "PAUSED")) return;
 
     // Overwrite existing left/right keydown interval
     if (/Arrow(Left|Right)/.test(ev.key)) {
@@ -102,12 +106,12 @@ function GameBoard({
     switch (ev.key) {
       // Soft drop
       case "ArrowDown": {
-        if (isSoftDrop || isLockDown) return;
+        if (!gameStatus.is("PLAYING")) return;
 
         const softDropInterval =
           getDropInterval(currentLevel) / SOFT_DROP_SPEED_MULTIPLIER;
 
-        setIsSoftDrop(true);
+        setGameStatus("SOFT_DROP");
         setDropInterval(softDropInterval);
 
         // Manually move and set score once, drop interval handles subsequent until keyup
@@ -125,7 +129,7 @@ function GameBoard({
         const droppedTetromino = activeTetromino.clone().moveToDropPoint(lockedCoords);
         const yDiff = activeTetromino.coords[0]!.y - droppedTetromino.coords[0]!.y;
 
-        setIsHardDrop(true);
+        setGameStatus("HARD_DROP");
         moveTetromino({ y: -yDiff });
         setScore((curr) => curr + yDiff * 2); // Hard drop score = n lines * 2
 
@@ -141,7 +145,7 @@ function GameBoard({
 
   // External listeners
   useEffect(() => {
-    if (gameOver) return;
+    if (gameStatus.is("GAME_OVER")) return;
 
     window.addEventListener("keydown", handleKeydown);
 
@@ -152,13 +156,13 @@ function GameBoard({
 
   // Clear timers on game over
   useEffect(() => {
-    if (!gameOver) return;
+    if (!gameStatus.is("GAME_OVER")) return;
 
     leftRightIntervalClear.current?.();
 
     window.removeEventListener("keyup", leftRightEndListener);
     window.removeEventListener("keyup", softDropEndListener);
-  }, [gameOver, leftRightEndListener, softDropEndListener]);
+  }, [gameStatus, leftRightEndListener, softDropEndListener]);
 
   return (
     <div className="relative py-4 border-y-4 border-double border-primary/30">
@@ -169,7 +173,7 @@ function GameBoard({
         outlinedCoords={activeTetromino?.clone().moveToDropPoint(lockedCoords).coords}
         bg
       />
-      {gameOver && <GameOver onRestart={onRestart} />}
+      {gameStatus.is("GAME_OVER") && <GameOver onRestart={onRestart} />}
     </div>
   );
 }

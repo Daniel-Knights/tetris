@@ -1,8 +1,14 @@
 import { create } from "zustand";
 
-import { Coord, Tetromino } from "../classes";
+import { Coord, GameStatus, GameStatusType, Tetromino } from "../classes";
 import { TETROMINOES, TetrominoType } from "../resources";
-import { bagShuffle, BagShuffleYield, IntervalData, PropertiesOnly } from "../utils";
+import {
+  bagShuffle,
+  BagShuffleYield,
+  dispatchCustomEvent,
+  IntervalData,
+  PropertiesOnly,
+} from "../utils";
 
 import { getDropInterval } from "./score";
 
@@ -17,8 +23,8 @@ type GameState = {
   lineClearCount: number;
   setLineClearCount: (lineClearCount: number) => void;
 
-  gameOver: boolean;
-  setGameOver: (gameOver: boolean) => void;
+  gameStatus: GameStatus;
+  setGameStatus: (gameStatus: GameStatusType) => void;
 
   tetrominoQueue: BagShuffleYield<TetrominoType>;
   setNextTetromino: () => BagShuffleYield<TetrominoType>;
@@ -39,15 +45,6 @@ type GameState = {
   dropIntervalData: IntervalData | null;
   setDropIntervalData: (dropIntervalData: IntervalData | null) => void;
 
-  isSoftDrop: boolean;
-  setIsSoftDrop: (isSoftDrop: boolean) => void;
-
-  isHardDrop: boolean;
-  setIsHardDrop: (isHardDrop: boolean) => void;
-
-  isLockDown: boolean;
-  setIsLockDown: (isLockDown: boolean) => void;
-
   resetStore: () => void;
 };
 
@@ -61,15 +58,12 @@ const initialState = {
   currentScore: 0,
   highScore: Number(localStorage.getItem("highScore")) || 0,
   lineClearCount: 0,
-  gameOver: false,
+  gameStatus: new GameStatus("PLAYING"),
   tetrominoQueue: initialTetrominoQueue,
   activeTetromino: null,
   lockedCoords: [],
   dropInterval: getDropInterval(INITIAL_LEVEL),
   dropIntervalData: null,
-  isSoftDrop: false,
-  isHardDrop: false,
-  isLockDown: false,
 } satisfies PropertiesOnly<GameState>;
 
 export const useStore = create<GameState>((set, get) => ({
@@ -77,12 +71,25 @@ export const useStore = create<GameState>((set, get) => ({
 
   setCurrentLevel: (currentLevel) => set({ currentLevel }),
   setLineClearCount: (lineClearCount) => set({ lineClearCount }),
-  setGameOver: (gameOver) => set({ gameOver }),
   setDropInterval: (dropInterval) => set({ dropInterval }),
   setDropIntervalData: (dropIntervalData) => set({ dropIntervalData }),
-  setIsSoftDrop: (isSoftDrop) => set({ isSoftDrop }),
-  setIsHardDrop: (isHardDrop) => set({ isHardDrop }),
-  setIsLockDown: (isLockDown) => set({ isLockDown }),
+
+  setGameStatus: (gameStatusValue) => {
+    const gameStatus = new GameStatus(gameStatusValue);
+    const currGameStatus = get().gameStatus;
+
+    // If game over, can only be reset by resetting the entire store
+    if (currGameStatus.is("GAME_OVER")) return;
+
+    set({ gameStatus });
+
+    dispatchCustomEvent("gamestatuschange", {
+      curr: gameStatus,
+      prev: currGameStatus,
+    });
+
+    console.trace(gameStatus.toString());
+  },
 
   setScore: (cb) => {
     const { currentScore, highScore } = get();

@@ -8,15 +8,13 @@ import { useStore } from "./store";
 
 export function useTetromino() {
   const currentLevel = useStore((s) => s.currentLevel);
-  const gameOver = useStore((s) => s.gameOver);
+  const gameStatus = useStore((s) => s.gameStatus);
   const tetrominoQueue = useStore((s) => s.tetrominoQueue);
   const setActiveTetromino = useStore((s) => s.setActiveTetromino);
   const dropInterval = useStore((s) => s.dropInterval);
   const setDropInterval = useStore((s) => s.setDropInterval);
   const setDropIntervalData = useStore((s) => s.setDropIntervalData);
   const setScore = useStore((s) => s.setScore);
-  const isSoftDrop = useStore((s) => s.isSoftDrop);
-  const isLockDown = useStore((s) => s.isLockDown);
 
   const resetTrigger = useRef(0);
 
@@ -45,7 +43,7 @@ export function useTetromino() {
 
   // Drop interval
   useEffect(() => {
-    if (gameOver || dropInterval === null) return;
+    if (gameStatus.is("GAME_OVER") || dropInterval === null) return;
 
     console.log("dropInterval", dropInterval);
 
@@ -53,7 +51,7 @@ export function useTetromino() {
       () => {
         moveTetromino({ y: -1 });
 
-        if (isSoftDrop && !isLockDown) {
+        if (gameStatus.is("SOFT_DROP")) {
           // Soft drop score = n lines
           setScore((curr) => curr + 1);
         }
@@ -70,14 +68,11 @@ export function useTetromino() {
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
-    gameOver,
-    moveTetromino,
     dropInterval,
+    gameStatus,
+    moveTetromino,
     setDropIntervalData,
-    tetrominoQueue.next,
-    isSoftDrop,
     setScore,
-    isLockDown,
     resetTrigger.current,
   ]);
 

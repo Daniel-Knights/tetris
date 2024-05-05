@@ -8,6 +8,7 @@ import { getDropInterval, useLockdown, useScore, useStore, useTetromino } from "
 
 function App(): JSX.Element {
   const currentLevel = useStore((s) => s.currentLevel);
+  const setGameStatus = useStore((s) => s.setGameStatus);
   const setDropInterval = useStore((s) => s.setDropInterval);
   const resetStore = useStore((s) => s.resetStore);
 
@@ -27,6 +28,7 @@ function App(): JSX.Element {
     if (isRestart) return;
 
     setDropInterval(getDropInterval(currentLevel));
+    setGameStatus("PLAYING");
   }
 
   useLockdown(scoreLineClear);
@@ -38,6 +40,7 @@ function App(): JSX.Element {
 
       setDropInterval(null);
       setMenuOpen(true);
+      setGameStatus("PAUSED");
     }
 
     window.addEventListener("keyup", handleKeyup);
@@ -45,7 +48,7 @@ function App(): JSX.Element {
     return () => {
       window.removeEventListener("keyup", handleKeyup);
     };
-  }, [setDropInterval, menuOpen]);
+  }, [setDropInterval, menuOpen, setGameStatus]);
 
   return (
     <>

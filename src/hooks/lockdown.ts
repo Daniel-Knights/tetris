@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { Coord, Tetromino } from "../classes";
 import { MATRIX } from "../components/GameBoard";
-import { setFrameSyncInterval } from "../utils";
+import { addCustomEventListener, setFrameSyncInterval } from "../utils";
 
 import { getDropInterval, useScore } from "./score";
 import { useStore } from "./store";
@@ -13,18 +13,14 @@ export function useLockdown(
   scoreLineClear: ReturnType<typeof useScore>["scoreLineClear"]
 ) {
   const currentLevel = useStore((s) => s.currentLevel);
-  const gameOver = useStore((s) => s.gameOver);
-  const setGameOver = useStore((s) => s.setGameOver);
+  const gameStatus = useStore((s) => s.gameStatus);
+  const setGameStatus = useStore((s) => s.setGameStatus);
   const setNextTetromino = useStore((s) => s.setNextTetromino);
   const activeTetromino = useStore((s) => s.activeTetromino);
   const setActiveTetromino = useStore((s) => s.setActiveTetromino);
   const lockedCoords = useStore((s) => s.lockedCoords);
   const setLockedCoords = useStore((s) => s.setLockedCoords);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  const isHardDrop = useStore((s) => s.isHardDrop);
-  const setIsHardDrop = useStore((s) => s.setIsHardDrop);
-  const isLockDown = useStore((s) => s.isLockDown);
-  const setIsLockDown = useStore((s) => s.setIsLockDown);
   const dropIntervalData = useStore((s) => s.dropIntervalData);
 
   const lockdownTimeoutId = useRef<number | null>(null);
@@ -34,9 +30,10 @@ export function useLockdown(
     (nextTetromino: Tetromino) => {
       // Avoid stale closures
       const currActiveTetromino = useStore.getState().activeTetromino;
+      const currLockedCoords = useStore.getState().lockedCoords;
       const allTetrominoCoords = [
         ...(currActiveTetromino?.coords ?? []),
-        ...lockedCoords,
+        ...currLockedCoords,
       ];
 
       let isGameOver = false;
@@ -57,7 +54,7 @@ export function useLockdown(
       });
 
       if (isGameOver) {
-        setGameOver(true);
+        setGameStatus("GAME_OVER");
 
         dropIntervalData?.clear();
       }
@@ -69,39 +66,41 @@ export function useLockdown(
           : nextTetromino;
       });
     },
-    [dropIntervalData, lockedCoords, setActiveTetromino, setGameOver, setLockedCoords]
+    [dropIntervalData, setActiveTetromino, setGameStatus, setLockedCoords]
   );
 
   /** Clears full lines and sets new tetromino. */
   const handleLineClears = useCallback(() => {
     // Avoid stale closures
     const currActiveTetromino = useStore.getState().activeTetromino;
+    const currLockedCoords = useStore.getState().lockedCoords;
 
     // Prevent floating tetrominoes
-    if (!currActiveTetromino?.isAtBound(lockedCoords, { y: -1 })) {
+    if (!currActiveTetromino?.isAtBound(currLockedCoords, { y: -1 })) {
       return;
     }
 
     const allTetrominoCoords = [
       ...(currActiveTetromino?.coords ?? []),
-      ...lockedCoords,
+      ...currLockedCoords,
     ].sort((a, b) => b.toIndex(MATRIX) - a.toIndex(MATRIX));
     const rows: Coord[][] = [];
     const linesToClear = new Set<number>();
 
     allTetrominoCoords.forEach((coord) => {
-      const row = coord.getRow(MATRIX.rows);
+      const rowNumber = coord.getRow(MATRIX.rows);
+      const rowCoords = rows[rowNumber];
       const adjustedIndex = coord.clone().add({ y: -linesToClear.size });
 
-      if (rows[row]) {
-        rows[row]!.push(adjustedIndex);
+      if (rowCoords) {
+        rowCoords.push(adjustedIndex);
 
-        if (rows[row]!.length === MATRIX.columns) {
-          rows.splice(row, 1);
-          linesToClear.add(row);
+        if (rowCoords.length === MATRIX.columns) {
+          rows.splice(rowNumber, 1);
+          linesToClear.add(rowNumber);
         }
       } else {
-        rows[row] = [adjustedIndex];
+        rows[rowNumber] = [adjustedIndex];
       }
     });
 
@@ -110,6 +109,8 @@ export function useLockdown(
 
     // Clear lines
     if (linesToClear.size > 0) {
+      setGameStatus("LINE_CLEAR");
+
       // Prevent drop interval running during animation
       setDropInterval(null);
 
@@ -139,20 +140,22 @@ export function useLockdown(
           setActiveTetromino(() => nextTetromino);
           scoreLineClear(linesToClear.size as 1 | 2 | 3 | 4);
           setDropInterval(getDropInterval(currentLevel));
+          setGameStatus("PLAYING");
         },
         60,
         { limit: 6 }
       );
     } else {
       handleNewTetromino(nextTetromino);
+      setGameStatus("PLAYING");
     }
   }, [
     currentLevel,
     handleNewTetromino,
-    lockedCoords,
     scoreLineClear,
     setActiveTetromino,
     setDropInterval,
+    setGameStatus,
     setLockedCoords,
     setNextTetromino,
   ]);
@@ -160,9 +163,7 @@ export function useLockdown(
   /** Locks down active tetromino. */
   const lockDown = useCallback(
     (instant?: boolean) => {
-      if (isLockDown) return;
-
-      setIsLockDown(true);
+      setGameStatus("LOCK_DOWN");
 
       if (lockdownTimeoutId.current) {
         window.clearTimeout(lockdownTimeoutId.current);
@@ -177,35 +178,58 @@ export function useLockdown(
       if (instant) {
         commitLockDown();
       } else {
-        lockdownTimeoutId.current = window.setTimeout(commitLockDown, LOCKDOWN_TIMEOUT);
+        // If game is paused, re-initiate lockdown on resume
+        const removePauseListener = addCustomEventListener(
+          "gamestatuschange",
+          (ev, remove) => {
+            switch (ev.detail.curr.toString()) {
+              case "PAUSED":
+                window.clearTimeout(lockdownTimeoutId.current!);
+
+                break;
+              case "PLAYING":
+                if (!ev.detail.prev.is("PAUSED")) return;
+
+                remove();
+                commitLockDown();
+
+                break;
+            }
+          }
+        );
+
+        lockdownTimeoutId.current = window.setTimeout(() => {
+          removePauseListener();
+          commitLockDown();
+        }, LOCKDOWN_TIMEOUT);
       }
     },
-    [handleLineClears, isLockDown, setIsLockDown]
+    [handleLineClears, setGameStatus]
   );
 
   // Tetromino has hit lower limit
   useEffect(() => {
-    if (gameOver || !activeTetromino?.isAtBound(lockedCoords, { y: -1 })) {
+    if (
+      !gameStatus.is("PLAYING", "SOFT_DROP", "HARD_DROP") ||
+      !activeTetromino?.isAtBound(lockedCoords, { y: -1 })
+    ) {
       return;
     }
 
-    if (isHardDrop) {
-      lockDown(true);
-      setIsHardDrop(false);
-    } else {
-      lockDown();
-    }
-  }, [activeTetromino, gameOver, isHardDrop, lockDown, lockedCoords, setIsHardDrop]);
+    const instantLockDown = gameStatus.is("HARD_DROP");
+
+    lockDown(instantLockDown);
+  }, [activeTetromino, gameStatus, lockDown, lockedCoords]);
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
     function handler(ev: KeyboardEvent) {
-      if (!isLockDown || !/Arrow(Up|Left|Right)/.test(ev.key)) {
+      if (!gameStatus.is("LOCK_DOWN") || !/Arrow(Up|Left|Right)/.test(ev.key)) {
         return;
       }
 
       window.clearTimeout(lockdownTimeoutId.current!);
-      setIsLockDown(false);
+      setGameStatus("PLAYING");
     }
 
     window.addEventListener("keyup", handler);
@@ -213,5 +237,5 @@ export function useLockdown(
     return () => {
       window.removeEventListener("keyup", handler);
     };
-  }, [activeTetromino, isLockDown, setIsLockDown]);
+  }, [activeTetromino, gameStatus, setGameStatus]);
 }

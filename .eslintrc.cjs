@@ -56,6 +56,8 @@ module.exports = {
     "no-param-reassign": ["error", { props: false }],
     "max-classes-per-file": "off",
     "default-case": "off",
+    "no-restricted-syntax": "off",
+    "no-continue": "off",
     quotes: "off",
 
     "react/jsx-filename-extension": [1, { extensions: [".js", ".jsx", ".tsx"] }],
