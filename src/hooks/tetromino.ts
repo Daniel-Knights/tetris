@@ -6,6 +6,11 @@ import { setFrameSyncInterval } from "../utils";
 import { getDropInterval } from "./score";
 import { useStore } from "./store";
 
+export const MATRIX_DIMENSIONS = {
+  rows: 20,
+  columns: 10,
+};
+
 export function useTetromino() {
   const currentLevel = useStore((s) => s.currentLevel);
   const gameStatus = useStore((s) => s.gameStatus);

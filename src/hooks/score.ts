@@ -1,7 +1,6 @@
 import { useStore } from "./store";
 
-export const MAX_LEVEL = 15;
-export const SOFT_DROP_SPEED_MULTIPLIER = 20;
+const MAX_LEVEL = 15;
 
 const SCORES = {
   // Single

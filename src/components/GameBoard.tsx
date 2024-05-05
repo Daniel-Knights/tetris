@@ -1,24 +1,15 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { Coord } from "../classes";
-import {
-  getDropInterval,
-  SOFT_DROP_SPEED_MULTIPLIER,
-  useRotate,
-  useStore,
-} from "../hooks";
+import { getDropInterval, MATRIX_DIMENSIONS, useRotate, useStore } from "../hooks";
 import { setFrameSyncInterval } from "../utils";
 
 import GameOver from "./GameOver";
 import Matrix from "./Matrix";
 
-export const MATRIX = {
-  rows: 20,
-  columns: 10,
-};
-
-const KEYDOWN_DELAY = 300;
+const LEFT_RIGHT_DELAY = 300;
 const LEFT_RIGHT_INTERVAL = 50;
+const SOFT_DROP_SPEED_MULTIPLIER = 20;
 
 function GameBoard({
   moveTetromino,
@@ -86,7 +77,7 @@ function GameBoard({
       },
       LEFT_RIGHT_INTERVAL,
       {
-        delay: KEYDOWN_DELAY,
+        delay: LEFT_RIGHT_DELAY,
       }
     ).clear;
   }
@@ -167,7 +158,7 @@ function GameBoard({
   return (
     <div className="relative py-4 border-y-4 border-double border-primary/30">
       <Matrix
-        dimensions={MATRIX}
+        dimensions={MATRIX_DIMENSIONS}
         highlightedCoords={[...(activeTetromino?.coords ?? []), ...lockedCoords]}
         // Ghost tetromino
         outlinedCoords={activeTetromino?.clone().moveToDropPoint(lockedCoords).coords}
