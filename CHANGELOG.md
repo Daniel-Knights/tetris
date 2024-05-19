@@ -1,3 +1,19 @@
+## [0.2.2](https://github.com/Daniel-Knights/tetris/compare/v0.2.1...v0.2.2) (5/19/24)
+
+- chore: remove dev logs ([fe13021](https://github.com/Daniel-Knights/tetris/commit/fe13021fed6ccd6a7300225eb43d6224a859fb07))
+- chore(deps): bump ([536bc32](https://github.com/Daniel-Knights/tetris/commit/536bc3224eed96197a7db17e43c48e2190639407))
+- refactor: reorganise consts, get rid of hmr invalidate warning ([2678fc2](https://github.com/Daniel-Knights/tetris/commit/2678fc2ace827f8aa54cdb39f88f296dd26fdf19))
+- refactor(store): game status ([800bdd0](https://github.com/Daniel-Knights/tetris/commit/800bdd025f8fe076bb6fa5289a4dac846fc2f96e))
+- refactor(tetromino): tetromino class ([5046d8c](https://github.com/Daniel-Knights/tetris/commit/5046d8ca5bb1191ec703c0f15222a797f5008721))
+- docs(timer): correct call count comment ([2e5580d](https://github.com/Daniel-Knights/tetris/commit/2e5580d106338c08d2dd393137deab5e0558f691))
+- refactor(tetromino): use MATRIX const for x check in willCollide ([4d6fafd](https://github.com/Daniel-Knights/tetris/commit/4d6fafd38d583bcc37f8d2bc3655a81f86de1f17))
+- fix(game over): handle game over after lockdown ([3d503fb](https://github.com/Daniel-Knights/tetris/commit/3d503fb7340c047c5db709a853e7a4723bade849))
+- ci(release): throw if uncommitted changes in working tree ([62f95d4](https://github.com/Daniel-Knights/tetris/commit/62f95d417a7be45c14d2ae2d277e2c606e5b2b3c))
+- docs(changelog): v0.2.1 ([33efbe3](https://github.com/Daniel-Knights/tetris/commit/33efbe3f6f8069f491e002c829f3ba126a48d4f8))
+- ci(updater): name to version and release notes ([2b686e1](https://github.com/Daniel-Knights/tetris/commit/2b686e15506c614ce95cc30ce2d395e941387d26))
+- perf(lockdown): return if already locking down ([ff4a7f3](https://github.com/Daniel-Knights/tetris/commit/ff4a7f3bf5bed4b90a997a7b61e273a5d5adc174))
+- docs(changelog): v0.2.1 ([41419ed](https://github.com/Daniel-Knights/tetris/commit/41419edb1dc6a7aaf7cb4984047e295278ac55ee))
+
 ## [0.2.1](https://github.com/Daniel-Knights/tetris/compare/v0.2.0...v0.2.1) (4/2/24)
 
 - chore(deps): bump ([c18449d](https://github.com/Daniel-Knights/tetris/commit/c18449d4e899cf059807805964dafc5584b1170d))
