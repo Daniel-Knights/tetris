@@ -87,8 +87,6 @@ export const useStore = create<GameState>((set, get) => ({
       curr: gameStatus,
       prev: currGameStatus,
     });
-
-    console.trace(gameStatus.toString());
   },
 
   setScore: (cb) => {

@@ -50,8 +50,6 @@ export function useTetromino() {
   useEffect(() => {
     if (gameStatus.is("GAME_OVER") || dropInterval === null) return;
 
-    console.log("dropInterval", dropInterval);
-
     const intervalData = setFrameSyncInterval(
       () => {
         moveTetromino({ y: -1 });
