@@ -1,3 +1,8 @@
+## [0.2.3](https://github.com/Daniel-Knights/tetris/compare/v0.2.2...v0.2.3) (5/20/24)
+
+- ci(updater): replace manual setup for tauri-action version, support both mac chips ([8a10007](https://github.com/Daniel-Knights/tetris/commit/8a1000799bb03de78feee9dc2c7db57882c13eea))
+- docs(changelog): v0.2.2 ([5fbe2e2](https://github.com/Daniel-Knights/tetris/commit/5fbe2e2bc8d4b69ba5983953636c270f6c3bde20))
+
 ## [0.2.2](https://github.com/Daniel-Knights/tetris/compare/v0.2.1...v0.2.2) (5/19/24)
 
 - chore: remove dev logs ([fe13021](https://github.com/Daniel-Knights/tetris/commit/fe13021fed6ccd6a7300225eb43d6224a859fb07))
