@@ -18,7 +18,6 @@
     "lint": "eslint ./**/*.{ts,js,tsx} --no-error-on-unmatched-pattern",
     "checks": "pnpm run lint && tsc --noEmit",
     "format": "prettier --write ./src",
-    "update": "tsx ./scripts/updater.ts",
     "release:patch": "tsx ./scripts/release.ts patch",
     "release:minor": "tsx ./scripts/release.ts minor",
     "release:major": "tsx ./scripts/release.ts major"

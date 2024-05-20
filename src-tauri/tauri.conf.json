@@ -13,7 +13,7 @@
     "updater": {
       "active": true,
       "endpoints": [
-        "https://github.com/Daniel-Knights/tetris/releases/latest/download/update.json"
+        "https://github.com/Daniel-Knights/tetris/releases/latest/download/latest.json"
       ],
       "dialog": true,
       "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyNjgzNjU2NTY3MTZDQgpSV1RMRm1kbFpZTW1CN1dMMERCcTRMcWhuUzN5Z0g0blNCVTVMb2JSTTBVUFVCVTBIMlVlV2QzUwo="
