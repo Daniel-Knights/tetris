@@ -6,7 +6,7 @@ import QueueBoard from "./components/QueueBoard";
 import StatBoard from "./components/StatBoard";
 import { getDropInterval, useLockdown, useScore, useStore, useTetromino } from "./hooks";
 
-function App(): JSX.Element {
+function App() {
   const currentLevel = useStore((s) => s.currentLevel);
   const setGameStatus = useStore((s) => s.setGameStatus);
   const setDropInterval = useStore((s) => s.setDropInterval);
