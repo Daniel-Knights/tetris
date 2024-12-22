@@ -55,8 +55,8 @@ importers:
         specifier: ^10.4.20
         version: 10.4.20(postcss@8.4.49)
       changenog:
-        specifier: ^0.6.0
-        version: 0.6.0
+        specifier: ^1.2.0
+        version: 1.2.0
       eslint:
         specifier: ^9.17.0
         version: 9.17.0(jiti@1.21.7)
@@ -1156,8 +1156,8 @@ packages:
     resolution: {integrity: sha512-oKnbhFyRIXpUuez8iBMmyEa4nbj4IOQyuhc/wy9kY7/WVPcwIO9VA668Pu8RkO7+0G76SLROeyw9CpQ061i4mA==}
     engines: {node: '>=10'}
 
-  changenog@0.6.0:
-    resolution: {integrity: sha512-TnIVP80Kgl5thVgD/lAjLp4AhJMV4KcXH4GpscvfDI0+UMeK8ndWYirGGtBTpQn3Hn27jofhNPd771R4NB9few==}
+  changenog@1.2.0:
+    resolution: {integrity: sha512-OzSnyleNYEJbprFWTCsW3AFQ9LWHH/QBKLbkJH+tyELh2B1q+44kbB6APhMCPJdZIrHjZVZV6edQWYTw4gcuEQ==}
     hasBin: true
 
   chokidar@3.6.0:
@@ -1620,9 +1620,9 @@ packages:
   get-tsconfig@4.7.5:
     resolution: {integrity: sha512-ZCuZCnlqNzjb4QprAzXKdpp/gh6KTxSJuw3IBsPnV/7fV4NxC9ckB+vPTt8w7fJA0TaSD7c55BR47JD6MEDyDw==}
 
-  gitlog@4.0.8:
-    resolution: {integrity: sha512-FcTLP7Rc0H1vWXD+J/aj5JS1uiCEBblcYXlcacRAT73N26OMYFFzrBXYmDozmWlV2K7zwK5PrH16/nuRNhqSlQ==}
-    engines: {node: '>= 10.x'}
+  gitlog@5.1.0:
+    resolution: {integrity: sha512-spyAYX1jeLGvK6mplNvlxb7zETa1DJTL7KKe9c8rwk6Tfmbju0cAk9VZuZx5xe4CkL3q/JkFHgP3eou/aV/31w==}
+    engines: {node: '>= 20.x'}
 
   glob-parent@5.1.2:
     resolution: {integrity: sha512-AOIgSQCepiJYwP3ARnGx+5VnTu2HBYdzbGP45eLw1vr3zB3vZLeyed1sC9hnbcOc9/SrMyM5RPQrkGz4aS9Zow==}
@@ -3752,9 +3752,9 @@ snapshots:
       ansi-styles: 4.3.0
       supports-color: 7.2.0
 
-  changenog@0.6.0:
+  changenog@1.2.0:
     dependencies:
-      gitlog: 4.0.8
+      gitlog: 5.1.0
     transitivePeerDependencies:
       - supports-color
 
@@ -4491,10 +4491,9 @@ snapshots:
     dependencies:
       resolve-pkg-maps: 1.0.0
 
-  gitlog@4.0.8:
+  gitlog@5.1.0:
     dependencies:
       debug: 4.4.0
-      tslib: 2.6.2
     transitivePeerDependencies:
       - supports-color
 
