@@ -1,4 +1,4 @@
-import { exit } from "@tauri-apps/api/process";
+import { exit } from "@tauri-apps/plugin-process";
 import { MouseEvent, useEffect, useState } from "react";
 
 import { useTheme } from "../hooks";

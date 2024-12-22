@@ -1,52 +1,48 @@
 {
-  "package": {
-    "productName": "Tetris",
-    "version": "../package.json"
-  },
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Tetris",
+  "mainBinaryName": "Tetris",
+  "version": "../package.json",
+  "identifier": "com.daniel-knights.tetris",
   "build": {
-    "beforeDevCommand": "pnpm vite:dev",
-    "beforeBuildCommand": "pnpm checks && pnpm vite:build",
-    "devPath": "http://localhost:3000",
-    "distDir": "../dist"
+    "beforeDevCommand": "pnpm run vite:dev",
+    "beforeBuildCommand": "pnpm run vite:build",
+    "frontendDist": "../dist",
+    "devUrl": "http://localhost:3000"
   },
-  "tauri": {
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "createUpdaterArtifacts": "v1Compatible"
+  },
+  "plugins": {
     "updater": {
-      "active": true,
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyNjgzNjU2NTY3MTZDQgpSV1RMRm1kbFpZTW1CN1dMMERCcTRMcWhuUzN5Z0g0blNCVTVMb2JSTTBVUFVCVTBIMlVlV2QzUwo=",
       "endpoints": [
         "https://github.com/Daniel-Knights/tetris/releases/latest/download/latest.json"
-      ],
-      "dialog": true,
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDcyNjgzNjU2NTY3MTZDQgpSV1RMRm1kbFpZTW1CN1dMMERCcTRMcWhuUzN5Z0g0blNCVTVMb2JSTTBVUFVCVTBIMlVlV2QzUwo="
-    },
-    "allowlist": {
-      "all": false,
-      "process": {
-        "exit": true
-      }
-    },
-    "bundle": {
-      "active": true,
-      "targets": "all",
-      "identifier": "com.daniel-knights.tetris",
-      "icon": [
-        "icons/32x32.png",
-        "icons/128x128.png",
-        "icons/128x128@2x.png",
-        "icons/icon.icns",
-        "icons/icon.ico"
       ]
-    },
+    }
+  },
+  "app": {
     "security": {
-      "csp": null
+      "csp": "default-src 'self'"
     },
     "windows": [
       {
         "title": "Tetris",
-        "fullscreen": false,
-        "resizable": false,
         "width": 700,
         "height": 600,
-        "alwaysOnTop": true
+        "resizable": false,
+        "fullscreen": false,
+        "alwaysOnTop": true,
+        "useHttpsScheme": true
       }
     ]
   }

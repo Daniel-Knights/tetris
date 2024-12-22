@@ -12,7 +12,7 @@
     "vite:build": "vite build",
     "vite:preview": "vite preview",
     "dev": "tauri dev",
-    "build": "tauri build",
+    "build": "pnpm run checks && tauri build",
     "icon": "pnpx @tauri-apps/tauricon ./artwork/icon.svg",
     "info": "tauri info",
     "lint": "eslint ./**/*.{ts,js,tsx} --no-error-on-unmatched-pattern",
@@ -23,7 +23,9 @@
     "release:major": "tsx ./scripts/release.ts major"
   },
   "dependencies": {
-    "@tauri-apps/api": "^1.5.6",
+    "@tauri-apps/api": "^2.1.1",
+    "@tauri-apps/plugin-process": "~2",
+    "@tauri-apps/plugin-updater": "~2",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "zustand": "^5.0.2"
@@ -31,7 +33,7 @@
   "devDependencies": {
     "@actions/github": "^6.0.0",
     "@eslint/js": "^9.17.0",
-    "@tauri-apps/cli": "^1.5.14",
+    "@tauri-apps/cli": "^2.1.0",
     "@trivago/prettier-plugin-sort-imports": "^5.2.0",
     "@types/eslint": "^9.6.1",
     "@types/node": "^22.10.2",
