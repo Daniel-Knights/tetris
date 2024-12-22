@@ -1,6 +1,6 @@
 import { useStore } from "../hooks";
 
-function StatBoard(): JSX.Element {
+function StatBoard() {
   const currentLevel = useStore((s) => s.currentLevel);
   const currentScore = useStore((s) => s.currentScore);
   const highScore = useStore((s) => s.highScore);

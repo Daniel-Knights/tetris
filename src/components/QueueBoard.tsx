@@ -3,7 +3,7 @@ import { TETROMINOES } from "../resources";
 
 import Matrix from "./Matrix";
 
-function QueueBoard(): JSX.Element {
+function QueueBoard() {
   const tetrominoQueue = useStore((s) => s.tetrominoQueue).bag;
 
   return (

@@ -17,7 +17,7 @@ function GameBoard({
 }: {
   moveTetromino: (coord: Partial<Coord>) => void;
   onRestart: () => void;
-}): JSX.Element {
+}) {
   const currentLevel = useStore((s) => s.currentLevel);
   const gameStatus = useStore((s) => s.gameStatus);
   const setGameStatus = useStore((s) => s.setGameStatus);

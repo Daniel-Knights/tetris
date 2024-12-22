@@ -18,7 +18,7 @@ function Matrix({
   bg?: boolean;
   highlightedCoords?: Coord[];
   outlinedCoords?: Coord[];
-}): JSX.Element {
+}) {
   const computedBodyStyle = window.getComputedStyle(document.body);
   const colorPrimary = computedBodyStyle.getPropertyValue("--color-primary");
   const colorSecondary = computedBodyStyle.getPropertyValue("--color-secondary");
