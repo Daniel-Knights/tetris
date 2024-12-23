@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { listen } from "@tauri-apps/api/event";
+import { useCallback, useEffect, useState } from "react";
 
 import GameBoard from "./components/GameBoard";
 import Menu from "./components/Menu";
@@ -17,6 +18,12 @@ function App() {
 
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const pause = useCallback(() => {
+    setDropInterval(null);
+    setMenuOpen(true);
+    setGameStatus("PAUSED");
+  }, [setDropInterval, setGameStatus]);
+
   function restart() {
     resetStore();
     resetTetromino();
@@ -33,14 +40,20 @@ function App() {
 
   useLockdown(scoreLineClear);
 
+  useEffect(() => {
+    const unlistenPromise = listen("pause", () => pause());
+
+    return () => {
+      unlistenPromise.then((unlisten) => unlisten());
+    };
+  }, [pause]);
+
   // Open menu on escape
   useEffect(() => {
     function handleKeyup(ev: KeyboardEvent) {
       if (ev.key !== "Escape" || menuOpen) return;
 
-      setDropInterval(null);
-      setMenuOpen(true);
-      setGameStatus("PAUSED");
+      pause();
     }
 
     window.addEventListener("keyup", handleKeyup);
@@ -48,7 +61,7 @@ function App() {
     return () => {
       window.removeEventListener("keyup", handleKeyup);
     };
-  }, [setDropInterval, menuOpen, setGameStatus]);
+  }, [menuOpen, pause]);
 
   return (
     <>
