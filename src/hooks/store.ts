@@ -11,39 +11,6 @@ import {
 
 import { getDropInterval } from "./score";
 
-type GameState = {
-  currentLevel: number;
-  setCurrentLevel: (level: number) => void;
-
-  currentScore: number;
-  highScore: number;
-  setScore: (cb: (curr: number) => number) => void;
-
-  lineClearCount: number;
-  setLineClearCount: (lineClearCount: number) => void;
-
-  gameStatus: GameStatus;
-  setGameStatus: (gameStatus: GameStatusType) => void;
-
-  tetrominoQueue: BagShuffleYield<TetrominoType>;
-  setNextTetromino: () => BagShuffleYield<TetrominoType>;
-
-  activeTetromino: Tetromino | null;
-  setActiveTetromino: (
-    cb: (curr: Tetromino | null, lockedCoords: Coord[]) => Tetromino | null
-  ) => void;
-
-  lockedCoords: Coord[];
-  setLockedCoords: (
-    cb: (curr: Coord[], currActiveTetromino: Tetromino | null) => Coord[]
-  ) => void;
-
-  dropInterval: number | null;
-  setDropInterval: (dropInterval: number | null) => void;
-
-  resetStore: () => void;
-};
-
 const INITIAL_LEVEL = 1;
 
 export const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
@@ -126,3 +93,36 @@ export const useStore = create<GameState>((set, get) => ({
     });
   },
 }));
+
+type GameState = {
+  currentLevel: number;
+  setCurrentLevel: (level: number) => void;
+
+  currentScore: number;
+  highScore: number;
+  setScore: (cb: (curr: number) => number) => void;
+
+  lineClearCount: number;
+  setLineClearCount: (lineClearCount: number) => void;
+
+  gameStatus: GameStatus;
+  setGameStatus: (gameStatus: GameStatusType) => void;
+
+  tetrominoQueue: BagShuffleYield<TetrominoType>;
+  setNextTetromino: () => BagShuffleYield<TetrominoType>;
+
+  activeTetromino: Tetromino | null;
+  setActiveTetromino: (
+    cb: (curr: Tetromino | null, lockedCoords: Coord[]) => Tetromino | null
+  ) => void;
+
+  lockedCoords: Coord[];
+  setLockedCoords: (
+    cb: (curr: Coord[], currActiveTetromino: Tetromino | null) => Coord[]
+  ) => void;
+
+  dropInterval: number | null;
+  setDropInterval: (dropInterval: number | null) => void;
+
+  resetStore: () => void;
+};
