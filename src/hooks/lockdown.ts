@@ -21,7 +21,6 @@ export function useLockdown(
   const lockedCoords = useStore((s) => s.lockedCoords);
   const setLockedCoords = useStore((s) => s.setLockedCoords);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  const dropIntervalData = useStore((s) => s.dropIntervalData);
 
   const lockdownTimeoutId = useRef<number | null>(null);
 
@@ -55,8 +54,6 @@ export function useLockdown(
 
       if (isGameOver) {
         setGameStatus("GAME_OVER");
-
-        dropIntervalData?.clear();
       }
 
       setLockedCoords((curr, currActive) => [...(currActive?.coords ?? []), ...curr]);
@@ -66,7 +63,7 @@ export function useLockdown(
           : nextTetromino;
       });
     },
-    [dropIntervalData, setActiveTetromino, setGameStatus, setLockedCoords]
+    [setActiveTetromino, setGameStatus, setLockedCoords]
   );
 
   /** Clears full lines and sets new tetromino. */

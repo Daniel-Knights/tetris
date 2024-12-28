@@ -6,7 +6,6 @@ import {
   bagShuffle,
   BagShuffleYield,
   dispatchCustomEvent,
-  IntervalData,
   PropertiesOnly,
 } from "../utils";
 
@@ -42,13 +41,10 @@ type GameState = {
   dropInterval: number | null;
   setDropInterval: (dropInterval: number | null) => void;
 
-  dropIntervalData: IntervalData | null;
-  setDropIntervalData: (dropIntervalData: IntervalData | null) => void;
-
   resetStore: () => void;
 };
 
-const INITIAL_LEVEL = 1;
+const INITIAL_LEVEL = 15;
 
 export const randomTetrominoGen = bagShuffle(Object.keys(TETROMINOES) as TetrominoType[]);
 
@@ -63,7 +59,6 @@ const initialState = {
   activeTetromino: null,
   lockedCoords: [],
   dropInterval: getDropInterval(INITIAL_LEVEL),
-  dropIntervalData: null,
 } satisfies PropertiesOnly<GameState>;
 
 export const useStore = create<GameState>((set, get) => ({
@@ -72,7 +67,6 @@ export const useStore = create<GameState>((set, get) => ({
   setCurrentLevel: (currentLevel) => set({ currentLevel }),
   setLineClearCount: (lineClearCount) => set({ lineClearCount }),
   setDropInterval: (dropInterval) => set({ dropInterval }),
-  setDropIntervalData: (dropIntervalData) => set({ dropIntervalData }),
 
   setGameStatus: (gameStatusValue) => {
     const gameStatus = new GameStatus(gameStatusValue);

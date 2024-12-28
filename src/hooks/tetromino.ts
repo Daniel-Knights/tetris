@@ -18,7 +18,6 @@ export function useTetromino() {
   const setActiveTetromino = useStore((s) => s.setActiveTetromino);
   const dropInterval = useStore((s) => s.dropInterval);
   const setDropInterval = useStore((s) => s.setDropInterval);
-  const setDropIntervalData = useStore((s) => s.setDropIntervalData);
   const setScore = useStore((s) => s.setScore);
 
   const resetTrigger = useRef(0);
@@ -63,8 +62,6 @@ export function useTetromino() {
       { delay: dropInterval }
     );
 
-    setDropIntervalData(intervalData);
-
     return () => {
       intervalData.clear();
     };
@@ -74,7 +71,6 @@ export function useTetromino() {
     dropInterval,
     gameStatus,
     moveTetromino,
-    setDropIntervalData,
     setScore,
     resetTrigger.current,
   ]);
