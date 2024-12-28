@@ -20,22 +20,16 @@ export function setFrameSyncInterval(
 ): IntervalData {
   let intervalAccumulator = options?.delay ? interval - options.delay : interval;
   let animationFrameId: number | null = null;
-  let timeoutId: number | null = null;
   let prevTime: number | null = null;
 
   const data: IntervalData = {
     count: 0,
     clear: () => {
-      if (animationFrameId) {
-        window.cancelAnimationFrame(animationFrameId);
-      }
+      if (!animationFrameId) return;
 
-      if (timeoutId) {
-        window.clearTimeout(timeoutId);
-      }
+      window.cancelAnimationFrame(animationFrameId);
 
       animationFrameId = null;
-      timeoutId = null;
     },
   };
 
