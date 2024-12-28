@@ -27,13 +27,11 @@ function App() {
   function restart() {
     resetStore();
     resetTetromino();
+    setMenuOpen(false);
   }
 
-  function closeMenu(isRestart?: boolean) {
+  function resume() {
     setMenuOpen(false);
-
-    if (isRestart) return;
-
     setDropInterval(getDropInterval(currentLevel));
     setGameStatus("PLAYING");
   }
@@ -48,7 +46,7 @@ function App() {
     };
   }, [pause]);
 
-  // Open menu on escape
+  // Pause on escape
   useEffect(() => {
     function handleKeyup(ev: KeyboardEvent) {
       if (ev.key !== "Escape" || menuOpen) return;
@@ -73,7 +71,11 @@ function App() {
         </div>
       </div>
       {menuOpen && (
-        <Menu onClose={(isRestart) => closeMenu(isRestart)} onRestart={() => restart()} />
+        <Menu
+          onClose={() => setMenuOpen(false)}
+          onResume={() => resume()}
+          onRestart={() => restart()}
+        />
       )}
     </>
   );

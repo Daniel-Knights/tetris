@@ -11,9 +11,11 @@ type MenuItem = {
 
 function Menu({
   onClose,
+  onResume,
   onRestart,
 }: {
-  onClose: (isRestart?: boolean) => void;
+  onClose: () => void;
+  onResume: () => void;
   onRestart: () => void;
 }) {
   const { setTheme } = useTheme();
@@ -21,7 +23,7 @@ function Menu({
   const menuItems = [
     {
       label: "RESUME",
-      onClick: () => onClose(),
+      onClick: () => onResume(),
     },
     {
       label: "THEME",
@@ -43,7 +45,6 @@ function Menu({
     {
       label: "RESTART",
       onClick: () => {
-        onClose(true);
         onRestart();
       },
     },
