@@ -18,9 +18,10 @@ export function setFrameSyncInterval(
     limit?: number;
   }
 ): IntervalData {
-  let intervalAccumulator = options?.delay ? interval - options.delay : interval;
+  // Set to interval initially, so the first call is immediate
+  let elapsedAccumulator = interval - (options?.delay ?? 0);
   let animationFrameId: number | null = null;
-  let prevTime: number | null = null;
+  let prevTimestamp: number | null = null;
 
   const data: IntervalData = {
     count: 0,
@@ -41,27 +42,26 @@ export function setFrameSyncInterval(
       return;
     }
 
-    prevTime ??= timestamp;
+    const elapsedSincePrevFrame = timestamp - (prevTimestamp ?? timestamp);
 
-    const elapsedSincePrev = timestamp - prevTime;
+    elapsedAccumulator += elapsedSincePrevFrame;
 
-    prevTime = timestamp;
-    intervalAccumulator += elapsedSincePrev;
-
-    if (intervalAccumulator >= interval) {
+    if (elapsedAccumulator >= interval) {
       // If the interval is less than the frame rate, this will be the number of
       // calls that should've happened since the previous frame
-      const countSincePrevFrame = Math.floor(intervalAccumulator / interval);
+      const countSincePrevFrame = Math.floor(elapsedAccumulator / interval);
 
       for (let i = 0; i < countSincePrevFrame; i += 1) {
         data.count += 1;
 
         cb(data);
 
-        intervalAccumulator -= interval;
+        elapsedAccumulator -= interval;
       }
 
-      prevTime = null;
+      prevTimestamp = null;
+    } else {
+      prevTimestamp = timestamp;
     }
 
     animationFrameId = window.requestAnimationFrame(loop);
