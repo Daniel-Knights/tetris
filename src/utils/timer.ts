@@ -1,5 +1,6 @@
 type IntervalData = {
   count: number;
+  remainingMs: number;
   clear: () => void;
 };
 
@@ -25,6 +26,9 @@ export function setFrameSyncInterval(
 
   const data: IntervalData = {
     count: 0,
+    get remainingMs() {
+      return interval - elapsedAccumulator;
+    },
     clear: () => {
       if (!animationFrameId) return;
 

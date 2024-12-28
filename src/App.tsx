@@ -70,13 +70,7 @@ function App() {
           <QueueBoard />
         </div>
       </div>
-      {menuOpen && (
-        <Menu
-          onClose={() => setMenuOpen(false)}
-          onResume={() => resume()}
-          onRestart={() => restart()}
-        />
-      )}
+      {menuOpen && <Menu onResume={() => resume()} onRestart={() => restart()} />}
     </>
   );
 }

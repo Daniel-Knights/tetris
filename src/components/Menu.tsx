@@ -9,15 +9,7 @@ type MenuItem = {
   submenu?: MenuItem[];
 };
 
-function Menu({
-  onClose,
-  onResume,
-  onRestart,
-}: {
-  onClose: () => void;
-  onResume: () => void;
-  onRestart: () => void;
-}) {
+function Menu({ onResume, onRestart }: { onResume: () => void; onRestart: () => void }) {
   const { setTheme } = useTheme();
 
   const menuItems = [
@@ -61,7 +53,7 @@ function Menu({
 
     // Close if click outside
     if (!evTarget.closest("[data-menu-content]")) {
-      onClose();
+      onResume();
     }
   }
 
@@ -77,7 +69,7 @@ function Menu({
         return;
       }
 
-      onClose();
+      onResume();
     }
 
     window.addEventListener("keyup", handleKeyup);
@@ -85,7 +77,7 @@ function Menu({
     return () => {
       window.removeEventListener("keyup", handleKeyup);
     };
-  }, [onClose, selectedSubmenu]);
+  }, [onResume, selectedSubmenu]);
 
   return (
     // eslint-disable-next-line jsx-a11y/no-static-element-interactions

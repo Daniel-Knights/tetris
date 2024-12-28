@@ -23,7 +23,7 @@ const initialState = {
   lineClearCount: 0,
   gameStatus: new GameStatus("PLAYING"),
   tetrominoQueue: initialTetrominoQueue,
-  activeTetromino: null,
+  activeTetromino: new Tetromino({ type: initialTetrominoQueue.next }).plot(),
   lockedCoords: [],
   dropInterval: getDropInterval(INITIAL_LEVEL),
 } satisfies PropertiesOnly<GameState>;
