@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 import { Coord } from "../classes";
 import { addCustomEventListener, setFrameSyncInterval } from "../utils";
@@ -14,7 +14,7 @@ export function useTetromino() {
   const setDropInterval = useStore((s) => s.setDropInterval);
   const setScore = useStore((s) => s.setScore);
 
-  const [remainingInterval, setRemainingInterval] = useState<number>();
+  const remainingInterval = useRef<number | undefined>(undefined);
 
   /** Moves the current tetromino in the passed direction. */
   const moveTetromino = useCallback(
@@ -32,12 +32,12 @@ export function useTetromino() {
 
   // Drop interval
   useEffect(() => {
-    if (gameStatus.is("GAME_OVER", "PAUSED") || dropInterval === null) return;
+    if (dropInterval === null || gameStatus.is("GAME_OVER", "PAUSED")) return;
 
     const intervalData = setFrameSyncInterval(
       () => {
-        if (remainingInterval) {
-          setRemainingInterval(undefined);
+        if (remainingInterval.current) {
+          remainingInterval.current = undefined;
         }
 
         moveTetromino({ y: -1 });
@@ -48,20 +48,22 @@ export function useTetromino() {
         }
       },
       dropInterval,
-      { delay: remainingInterval ?? dropInterval }
+      {
+        delay: remainingInterval.current ?? dropInterval,
+      }
     );
 
     const removePauseListener = addCustomEventListener("gamestatuschange", (ev) => {
       if (!ev.detail.curr.is("PAUSED")) return;
 
-      setRemainingInterval(intervalData.remainingMs);
+      remainingInterval.current = intervalData.remainingMs;
     });
 
     return () => {
       intervalData.clear();
       removePauseListener();
     };
-  }, [dropInterval, gameStatus, moveTetromino, setScore, remainingInterval]);
+  }, [dropInterval, gameStatus, moveTetromino, setScore]);
 
   // Update drop interval on level change
   useEffect(() => {
@@ -71,7 +73,7 @@ export function useTetromino() {
   return {
     moveTetromino,
     resetTetromino: () => {
-      setRemainingInterval(undefined);
+      remainingInterval.current = undefined;
     },
   };
 }
