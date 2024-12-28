@@ -29,8 +29,6 @@ export function setFrameSyncInterval(
       if (!animationFrameId) return;
 
       window.cancelAnimationFrame(animationFrameId);
-
-      animationFrameId = null;
     },
   };
 
@@ -58,12 +56,9 @@ export function setFrameSyncInterval(
 
         elapsedAccumulator -= interval;
       }
-
-      prevTimestamp = null;
-    } else {
-      prevTimestamp = timestamp;
     }
 
+    prevTimestamp = timestamp;
     animationFrameId = window.requestAnimationFrame(loop);
   }
 
