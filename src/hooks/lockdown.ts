@@ -1,11 +1,11 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { Coord, Tetromino } from "../classes";
+import { MATRIX_DIMENSIONS } from "../constant";
 import { addCustomEventListener, setFrameSyncInterval } from "../utils";
 
 import { getDropInterval, useScore } from "./score";
 import { useStore } from "./store";
-import { MATRIX_DIMENSIONS } from "./tetromino";
 
 const LOCKDOWN_TIMEOUT = 500;
 
@@ -82,22 +82,27 @@ export function useLockdown(
       ...currLockedCoords,
     ];
 
+    const matrixDimensions = {
+      rows: MATRIX_DIMENSIONS.ROWS,
+      columns: MATRIX_DIMENSIONS.COLUMNS,
+    };
+
     allTetrominoCoords.sort(
-      (a, b) => b.toIndex(MATRIX_DIMENSIONS) - a.toIndex(MATRIX_DIMENSIONS)
+      (a, b) => b.toIndex(matrixDimensions) - a.toIndex(matrixDimensions)
     );
 
     const rows: Coord[][] = [];
     const linesToClear = new Set<number>();
 
     allTetrominoCoords.forEach((coord) => {
-      const rowNumber = coord.getRow(MATRIX_DIMENSIONS.rows);
+      const rowNumber = coord.getRow(MATRIX_DIMENSIONS.ROWS);
       const rowCoords = rows[rowNumber];
       const adjustedIndex = coord.clone().add({ y: -linesToClear.size });
 
       if (rowCoords) {
         rowCoords.push(adjustedIndex);
 
-        if (rowCoords.length === MATRIX_DIMENSIONS.columns) {
+        if (rowCoords.length === MATRIX_DIMENSIONS.COLUMNS) {
           rows.splice(rowNumber, 1);
           linesToClear.add(rowNumber);
         }
@@ -126,7 +131,7 @@ export function useLockdown(
 
                 // With each iteration we clear the two innermost minos
                 return (
-                  !linesToClear.has(coord.getRow(MATRIX_DIMENSIONS.rows)) ||
+                  !linesToClear.has(coord.getRow(MATRIX_DIMENSIONS.ROWS)) ||
                   (x !== 5 - count && x !== 4 + count)
                 );
               });

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 
 import { Coord } from "../classes";
-import { getDropInterval, MATRIX_DIMENSIONS, useRotate, useStore } from "../hooks";
+import { MATRIX_DIMENSIONS } from "../constant";
+import { getDropInterval, useRotate, useStore } from "../hooks";
 import { setFrameSyncInterval } from "../utils";
 
 import GameOver from "./GameOver";
@@ -158,7 +159,7 @@ function GameBoard({
   return (
     <div className="relative py-4 border-y-4 border-double border-primary/30">
       <Matrix
-        dimensions={MATRIX_DIMENSIONS}
+        dimensions={{ rows: MATRIX_DIMENSIONS.ROWS, columns: MATRIX_DIMENSIONS.COLUMNS }}
         highlightedCoords={[...(activeTetromino?.coords ?? []), ...lockedCoords]}
         // Ghost tetromino
         outlinedCoords={activeTetromino?.clone().moveToDropPoint(lockedCoords).coords}

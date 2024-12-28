@@ -1,4 +1,5 @@
-import { MATRIX_DIMENSIONS, RotationStage } from "../hooks";
+import { MATRIX_DIMENSIONS } from "../constant";
+import { RotationStage } from "../hooks";
 import { TetrominoCoords, TETROMINOES, TetrominoType } from "../resources";
 
 import { Coord } from "./Coord";
@@ -43,7 +44,7 @@ export class Tetromino {
       this.coords.forEach((c) => {
         c.add({
           x: this.startX,
-          y: MATRIX_DIMENSIONS.rows - 1,
+          y: MATRIX_DIMENSIONS.ROWS - 1,
         });
       });
 
@@ -102,7 +103,7 @@ export class Tetromino {
       return (
         nextCoord.isIn(lockedCoords) ||
         nextCoord.x < 0 ||
-        nextCoord.x > MATRIX_DIMENSIONS.columns - 1 ||
+        nextCoord.x > MATRIX_DIMENSIONS.COLUMNS - 1 ||
         nextCoord.y < 0
       );
     });
