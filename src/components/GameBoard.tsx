@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef } from "react";
 import { Coord } from "../classes";
 import { MATRIX_DIMENSIONS } from "../constant";
 import { getDropInterval, useRotate, useStore } from "../hooks";
-import { setFrameSyncInterval } from "../utils";
+import { IntervalData, setFrameSyncInterval } from "../utils";
 
 import GameOver from "./GameOver";
 import Matrix from "./Matrix";
@@ -29,10 +29,11 @@ function GameBoard({
 
   const rotateTetromino = useRotate();
 
-  const leftRightIntervalClear = useRef<(() => void) | null>(null);
+  const leftRightIntervalData = useRef<IntervalData>(null);
+  const currentKey = useRef<string | null>(null);
 
   /** Event handler for resetting drop interval after soft drop. */
-  const softDropEndListener = useCallback(
+  const handleSoftDropEnd = useCallback(
     (keyupEv: KeyboardEvent) => {
       if (keyupEv.key !== "ArrowDown") return;
 
@@ -42,37 +43,39 @@ function GameBoard({
 
       setDropInterval(getDropInterval(currentLevel));
 
-      window.removeEventListener("keyup", softDropEndListener);
+      window.removeEventListener("keyup", handleSoftDropEnd);
     },
     [setDropInterval, currentLevel, setGameStatus]
   );
 
   /** Clear timers on keyup. */
-  const leftRightEndListener = useCallback((keyupEv: KeyboardEvent) => {
-    if (!/Arrow(Left|Right)/.test(keyupEv.key)) return;
+  const handleLeftRightEnd = useCallback((ev: KeyboardEvent) => {
+    if (ev.key !== currentKey.current) return;
 
-    leftRightIntervalClear.current?.();
+    leftRightIntervalData.current?.clear();
 
-    window.removeEventListener("keyup", leftRightEndListener);
+    window.removeEventListener("keyup", handleLeftRightEnd);
   }, []);
 
   /** Event handler for moving the current tetromino left or right. */
-  function keyLeftRight(ev: KeyboardEvent) {
+  function handleKeyLeftRight(ev: KeyboardEvent) {
     if (!gameStatus.is("PLAYING", "SOFT_DROP", "LOCK_DOWN")) {
       return;
     }
 
-    // Overwrite existing left/right keydown interval
-    leftRightIntervalClear.current?.();
+    currentKey.current = ev.key;
 
-    window.addEventListener("keyup", leftRightEndListener);
+    // Clear existing left/right keydown interval
+    leftRightIntervalData.current?.clear();
+
+    window.addEventListener("keyup", handleLeftRightEnd);
 
     // Move
     const x = ev.key === "ArrowLeft" ? -1 : 1;
 
     moveTetromino({ x });
 
-    leftRightIntervalClear.current = setFrameSyncInterval(
+    leftRightIntervalData.current = setFrameSyncInterval(
       () => {
         moveTetromino({ x });
       },
@@ -80,22 +83,19 @@ function GameBoard({
       {
         delay: LEFT_RIGHT_DELAY,
       }
-    ).clear;
+    );
   }
 
   // Keydown
   function handleKeydown(ev: KeyboardEvent) {
     if (ev.repeat) return; // Ignore held key in favour of our interval solution
-    if (gameStatus.is("GAME_OVER", "PAUSED")) return;
-
-    // Overwrite existing left/right keydown interval
-    if (/Arrow(Left|Right)/.test(ev.key)) {
-      keyLeftRight(ev);
-
-      return;
-    }
 
     switch (ev.key) {
+      case "ArrowLeft":
+      case "ArrowRight":
+        handleKeyLeftRight(ev);
+
+        break;
       // Soft drop
       case "ArrowDown": {
         if (!gameStatus.is("PLAYING")) return;
@@ -110,7 +110,7 @@ function GameBoard({
         moveTetromino({ y: -1 });
         setScore((curr) => curr + 1);
 
-        window.addEventListener("keyup", softDropEndListener);
+        window.addEventListener("keyup", handleSoftDropEnd);
 
         break;
       }
@@ -137,7 +137,7 @@ function GameBoard({
 
   // External listeners
   useEffect(() => {
-    if (gameStatus.is("GAME_OVER")) return;
+    if (gameStatus.is("GAME_OVER", "PAUSED")) return;
 
     window.addEventListener("keydown", handleKeydown);
 
@@ -150,11 +150,11 @@ function GameBoard({
   useEffect(() => {
     if (!gameStatus.is("GAME_OVER")) return;
 
-    leftRightIntervalClear.current?.();
+    leftRightIntervalData.current?.clear();
 
-    window.removeEventListener("keyup", leftRightEndListener);
-    window.removeEventListener("keyup", softDropEndListener);
-  }, [gameStatus, leftRightEndListener, softDropEndListener]);
+    window.removeEventListener("keyup", handleLeftRightEnd);
+    window.removeEventListener("keyup", handleSoftDropEnd);
+  }, [gameStatus, handleLeftRightEnd, handleSoftDropEnd]);
 
   return (
     <div className="relative py-4 border-y-4 border-double border-primary/30">

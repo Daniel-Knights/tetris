@@ -1,4 +1,4 @@
-type IntervalData = {
+export type IntervalData = {
   count: number;
   remainingMs: number;
   clear: () => void;
