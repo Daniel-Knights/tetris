@@ -5,5 +5,8 @@
   "[toml]": {
     "editor.defaultFormatter": "tamasfe.even-better-toml"
   },
-  "cSpell.words": ["mino", "Tetris", "Tetromino", "tetrominoes"]
+  "cSpell.words": ["mino", "Tetris", "Tetromino", "tetrominoes"],
+  "search.exclude": {
+    "src-tauri/gen": true
+  }
 }
