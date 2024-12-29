@@ -5,7 +5,14 @@ import GameBoard from "./components/GameBoard";
 import Menu from "./components/Menu";
 import QueueBoard from "./components/QueueBoard";
 import StatBoard from "./components/StatBoard";
-import { getDropInterval, useLockdown, useScore, useStore, useTetromino } from "./hooks";
+import {
+  getDropInterval,
+  useControls,
+  useDrop,
+  useLockdown,
+  useScore,
+  useStore,
+} from "./hooks";
 
 function App() {
   const currentLevel = useStore((s) => s.currentLevel);
@@ -14,7 +21,9 @@ function App() {
   const resetStore = useStore((s) => s.resetStore);
 
   const { scoreLineClear } = useScore();
-  const { moveTetromino, resetTetromino } = useTetromino();
+  const { moveTetromino } = useControls();
+  const { resetTetromino } = useDrop(moveTetromino);
+  useLockdown(scoreLineClear);
 
   const [menuOpen, setMenuOpen] = useState(false);
 
@@ -35,8 +44,6 @@ function App() {
     setDropInterval(getDropInterval(currentLevel));
     setGameStatus("PLAYING");
   }
-
-  useLockdown(scoreLineClear);
 
   useEffect(() => {
     const unlistenPromise = listen("pause", () => pause());
@@ -64,7 +71,7 @@ function App() {
   return (
     <>
       <div className="flex justify-evenly items-center h-full w-full bg-secondary text-primary">
-        <GameBoard moveTetromino={moveTetromino} onRestart={() => restart()} />
+        <GameBoard onRestart={() => restart()} />
         <div className="flex flex-col justify-center items-center gap-8 h-full">
           <StatBoard />
           <QueueBoard />

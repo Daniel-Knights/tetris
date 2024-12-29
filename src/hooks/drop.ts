@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 
 import { Coord } from "../classes";
 import { addCustomEventListener, setFrameSyncInterval } from "../utils";
@@ -6,29 +6,14 @@ import { addCustomEventListener, setFrameSyncInterval } from "../utils";
 import { getDropInterval } from "./score";
 import { useStore } from "./store";
 
-export function useTetromino() {
+export function useDrop(moveTetromino: (coord: Partial<Coord>) => void) {
   const currentLevel = useStore((s) => s.currentLevel);
   const gameStatus = useStore((s) => s.gameStatus);
-  const setActiveTetromino = useStore((s) => s.setActiveTetromino);
   const dropInterval = useStore((s) => s.dropInterval);
   const setDropInterval = useStore((s) => s.setDropInterval);
   const setScore = useStore((s) => s.setScore);
 
   const remainingInterval = useRef<number | undefined>(undefined);
-
-  /** Moves the current tetromino in the passed direction. */
-  const moveTetromino = useCallback(
-    (coord: Partial<Coord>): void => {
-      setActiveTetromino((curr, lockedCoords) => {
-        if (!curr || curr.isAtBound(lockedCoords, coord)) {
-          return curr;
-        }
-
-        return curr.clone().move(coord);
-      });
-    },
-    [setActiveTetromino]
-  );
 
   // Drop interval
   useEffect(() => {
@@ -71,7 +56,6 @@ export function useTetromino() {
   }, [currentLevel, setDropInterval]);
 
   return {
-    moveTetromino,
     resetTetromino: () => {
       remainingInterval.current = undefined;
     },
