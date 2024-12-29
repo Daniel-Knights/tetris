@@ -1,3 +1,7 @@
+## [0.2.3](https://github.com/Daniel-Knights/tetris/compare/v0.2.2...v0.2.3) (20/05/2024)
+
+- ci(updater): replace manual setup for tauri-action version, support both mac chips ([8a10007](https://github.com/Daniel-Knights/tetris/commit/8a1000799bb03de78feee9dc2c7db57882c13eea))
+
 ## [0.2.2](https://github.com/Daniel-Knights/tetris/compare/v0.2.1...v0.2.2) (19/05/2024)
 
 - fix(game over): handle game over after lockdown ([3d503fb](https://github.com/Daniel-Knights/tetris/commit/3d503fb7340c047c5db709a853e7a4723bade849))
