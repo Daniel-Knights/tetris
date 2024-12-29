@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
 
-export type Theme = "default" | "hackerman" | "flashbang";
+export type Theme = "hackerman" | "handheld" | "flashbang";
 
 function getTheme(): Theme {
-  return (localStorage.getItem("theme") as Theme | null) ?? "default";
+  return (localStorage.getItem("theme") as Theme | null) ?? "hackerman";
 }
 
 document.body.setAttribute("data-theme", getTheme());

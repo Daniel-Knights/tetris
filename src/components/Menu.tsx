@@ -21,12 +21,12 @@ function Menu({ onResume, onRestart }: { onResume: () => void; onRestart: () => 
       label: "THEME",
       submenu: [
         {
-          label: "DEFAULT",
-          onClick: () => setTheme("default"),
-        },
-        {
           label: "HACKERMAN",
           onClick: () => setTheme("hackerman"),
+        },
+        {
+          label: "HANDHELD",
+          onClick: () => setTheme("handheld"),
         },
         {
           label: "FLASHBANG",

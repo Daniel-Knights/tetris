@@ -1,55 +1,57 @@
 <svg
   xmlns="http://www.w3.org/2000/svg"
   viewBox="0 0 52 52"
+  height="1024"
+  width="1024"
 >
   <path
-    fill="#acb8a2"
+    fill="#141a1a"
     d="M4.5 4.5h19v19h-19z"
   />
   <path
     d="M23 5v18H5V5h18m1-1H4v20h20V4z"
-    fill="#1e2424"
+    fill="#00ff00"
   />
   <path
-    fill="#1e2424"
+    fill="#00ff00"
     d="M9 9h10v10H9z"
   />
   <g opacity=".2">
     <path
-      fill="#acb8a2"
+      fill="#141a1a"
       d="M28.5 28.5h19v19h-19z"
     />
     <path
       d="M47 29v18H29V29h18m1-1H28v20h20V28z"
-      fill="#1e2424"
+      fill="#00ff00"
     />
     <path
-      fill="#1e2424"
+      fill="#00ff00"
       d="M33 33h10v10H33z"
     />
   </g>
   <path
-    fill="#acb8a2"
+    fill="#141a1a"
     d="M4.5 28.5h19v19h-19z"
   />
   <path
     d="M23 29v18H5V29h18m1-1H4v20h20V28z"
-    fill="#1e2424"
+    fill="#00ff00"
   />
   <path
-    fill="#1e2424"
+    fill="#00ff00"
     d="M9 33h10v10H9z"
   />
   <path
-    fill="#acb8a2"
+    fill="#141a1a"
     d="M28.5 4.5h19v19h-19z"
   />
   <path
     d="M47 5v18H29V5h18m1-1H28v20h20V4z"
-    fill="#1e2424"
+    fill="#00ff00"
   />
   <path
-    fill="#1e2424"
+    fill="#00ff00"
     d="M33 9h10v10H33z"
   />
 </svg>
