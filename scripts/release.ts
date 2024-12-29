@@ -20,7 +20,7 @@ fs.rmSync("dist", { recursive: true, force: true });
 // This is here purely to check the build works before triggering a release
 run("pnpm", ["build"]);
 run("pnpm", ["version", args[0]]);
-run("npx", [
+run("pnpm", [
   "changenog",
   "--filter-preset=angular",
   "--filter-preset=angular-readme-only-docs",
