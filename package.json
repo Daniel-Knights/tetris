@@ -15,7 +15,7 @@
     "build": "pnpm run checks && tauri build",
     "icon": "tauri icon ./artwork/icon.png",
     "info": "tauri info",
-    "lint": "eslint ./**/*.{ts,js,tsx} --no-error-on-unmatched-pattern",
+    "lint": "eslint",
     "checks": "pnpm run lint && tsc --noEmit",
     "format": "prettier --write ./src",
     "release:patch": "tsx ./scripts/release.ts patch",
