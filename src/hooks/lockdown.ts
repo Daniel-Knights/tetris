@@ -185,7 +185,7 @@ export function useLockdown(
       if (instant) {
         commitLockDown();
       } else {
-        // If game is paused, re-initiate lockdown on resume
+        // If game is paused, commit lockdown on resume
         const removePauseListener = addCustomEventListener(
           "gamestatuschange",
           (ev, remove) => {
@@ -230,19 +230,9 @@ export function useLockdown(
 
   // Re-initiate lock down if piece is moved
   useEffect(() => {
-    function handler(ev: KeyboardEvent) {
-      if (!gameStatus.is("LOCK_DOWN") || !/Arrow(Up|Left|Right)/.test(ev.key)) {
-        return;
-      }
+    if (!lockdownTimeoutId.current) return;
 
-      window.clearTimeout(lockdownTimeoutId.current!);
-      setGameStatus("PLAYING");
-    }
-
-    window.addEventListener("keyup", handler);
-
-    return () => {
-      window.removeEventListener("keyup", handler);
-    };
-  }, [activeTetromino, gameStatus, setGameStatus]);
+    window.clearTimeout(lockdownTimeoutId.current);
+    setGameStatus("PLAYING");
+  }, [activeTetromino?.coords, setGameStatus]);
 }
