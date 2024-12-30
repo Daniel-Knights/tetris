@@ -1,6 +1,7 @@
 import { MATRIX_DIMENSIONS } from "../constant";
 import { RotationStage } from "../hooks";
 import { TetrominoCoords, TETROMINOES, TetrominoType } from "../resources";
+import { Nullish } from "../utils";
 
 import { Coord } from "./Coord";
 
@@ -107,5 +108,16 @@ export class Tetromino {
         nextCoord.y < 0
       );
     });
+  }
+
+  /**
+   * Returns the coordinate difference between current and passed tetromino.
+   * Returns `undefined` if the tetromino types or rotation stages are different.
+   */
+  difference(tetromino: Tetromino | Nullish) {
+    if (this.type !== tetromino?.type) return;
+    if (this.rotationStage !== tetromino.rotationStage) return;
+
+    return this.coords[0].clone().subtract(tetromino.coords[0]);
   }
 }

@@ -1,3 +1,5 @@
+export type Nullish = null | undefined;
+
 export type GeneratorYield<T> = Generator<T, never, T[]>;
 
 type Repeat<T, N extends number, R extends unknown[] = []> = R["length"] extends N

@@ -1,3 +1,5 @@
+import { useCallback } from "react";
+
 import { useStore } from "./store";
 
 const MAX_LEVEL = 15;
@@ -26,16 +28,19 @@ export function useScore() {
   const setLineClearCount = useStore((s) => s.setLineClearCount);
 
   /** Updates score and level based on passed line clear count. */
-  function scoreLineClear(clearCount: keyof typeof SCORES) {
-    const newLineClearCount = lineClearCount + clearCount;
+  const scoreLineClear = useCallback(
+    (clearCount: keyof typeof SCORES) => {
+      const newLineClearCount = lineClearCount + clearCount;
 
-    setLineClearCount(newLineClearCount);
-    setScore((curr) => curr + SCORES[clearCount] * currentLevel);
+      setLineClearCount(newLineClearCount);
+      setScore((curr) => curr + SCORES[clearCount] * currentLevel);
 
-    if (newLineClearCount >= currentLevel * 10 && currentLevel < MAX_LEVEL) {
-      setCurrentLevel(currentLevel + 1);
-    }
-  }
+      if (newLineClearCount >= currentLevel * 10 && currentLevel < MAX_LEVEL) {
+        setCurrentLevel(currentLevel + 1);
+      }
+    },
+    [currentLevel, lineClearCount, setCurrentLevel, setLineClearCount, setScore]
+  );
 
   return {
     scoreLineClear,

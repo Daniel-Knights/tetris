@@ -8,6 +8,7 @@ import { getDropInterval, useScore } from "./score";
 import { useStore } from "./store";
 
 const LOCKDOWN_TIMEOUT = 500;
+const MAX_MOVE_COUNT = 15;
 
 export function useLockdown(
   scoreLineClear: ReturnType<typeof useScore>["scoreLineClear"]
@@ -23,6 +24,8 @@ export function useLockdown(
   const setDropInterval = useStore((s) => s.setDropInterval);
 
   const lockdownTimeoutId = useRef<number | null>(null);
+  const prevTetromino = useRef<Tetromino>(null);
+  const moveCount = useRef(0);
 
   /** Checks if game over and adjusts coords to avoid collision. */
   const handleNewTetromino = useCallback(
@@ -178,6 +181,7 @@ export function useLockdown(
 
       function commitLockDown() {
         lockdownTimeoutId.current = null;
+        moveCount.current = 0;
 
         handleLineClears();
       }
@@ -232,7 +236,25 @@ export function useLockdown(
   useEffect(() => {
     if (!lockdownTimeoutId.current) return;
 
+    const differenceFromPrev = activeTetromino?.difference(prevTetromino.current);
+
+    // Reset move count if piece has moved down
+    if (differenceFromPrev && differenceFromPrev.y < 0) {
+      moveCount.current = 0;
+      // Reset move count if piece has reached count limit
+    } else if (moveCount.current === MAX_MOVE_COUNT) {
+      moveCount.current = 0;
+
+      lockDown(true);
+
+      return;
+    } else {
+      moveCount.current += 1;
+    }
+
+    prevTetromino.current = activeTetromino;
+
     window.clearTimeout(lockdownTimeoutId.current);
     setGameStatus("PLAYING");
-  }, [activeTetromino?.coords, setGameStatus]);
+  }, [activeTetromino, setGameStatus, lockDown]);
 }
