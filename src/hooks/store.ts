@@ -35,17 +35,17 @@ export const useStore = create<GameState>((set, get) => ({
   setLineClearCount: (lineClearCount) => set({ lineClearCount }),
   setDropInterval: (dropInterval) => set({ dropInterval }),
 
-  setGameStatus: (gameStatusValue) => {
-    const gameStatus = new GameStatus(gameStatusValue);
+  setGameStatus: (newStatusString) => {
+    const newStatus = new GameStatus(newStatusString);
     const currGameStatus = get().gameStatus;
 
     // If game over, can only be reset by resetting the entire store
-    if (currGameStatus.is("GAME_OVER")) return;
+    if (currGameStatus.is(newStatusString, "GAME_OVER")) return;
 
-    set({ gameStatus });
+    set({ gameStatus: newStatus });
 
     dispatchCustomEvent("gamestatuschange", {
-      curr: gameStatus,
+      curr: newStatus,
       prev: currGameStatus,
     });
   },
