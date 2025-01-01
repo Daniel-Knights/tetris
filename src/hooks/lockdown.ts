@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from "react";
 
 import { Coord, Tetromino } from "../classes";
 import { MATRIX_DIMENSIONS } from "../constant";
-import { addCustomEventListener, setFrameSyncInterval } from "../utils";
+import { addCustomEventListener, Nullish, setFrameSyncInterval } from "../utils";
 
 import { getDropInterval, useScore } from "./score";
 import { useStore } from "./store";
@@ -24,18 +24,18 @@ export function useLockdown(
   const setDropInterval = useStore((s) => s.setDropInterval);
 
   const lockdownTimeoutId = useRef<number | null>(null);
-  const prevTetromino = useRef<Tetromino>(null);
+  const lowestY = useRef<number | Nullish>(null);
   const moveCount = useRef(0);
 
   /** Checks if game over and adjusts coords to avoid collision. */
   const handleNewTetromino = useCallback(
     (nextTetromino: Tetromino) => {
       // Avoid stale closures
-      const currActiveTetromino = useStore.getState().activeTetromino;
-      const currLockedCoords = useStore.getState().lockedCoords;
+      const currState = useStore.getState();
+
       const allTetrominoCoords = [
-        ...(currActiveTetromino?.coords ?? []),
-        ...currLockedCoords,
+        ...(currState.activeTetromino?.coords ?? []),
+        ...currState.lockedCoords,
       ];
 
       let isGameOver = false;
@@ -72,17 +72,11 @@ export function useLockdown(
   /** Clears full lines and sets new tetromino. */
   const handleLineClears = useCallback(() => {
     // Avoid stale closures
-    const currActiveTetromino = useStore.getState().activeTetromino;
-    const currLockedCoords = useStore.getState().lockedCoords;
-
-    // Prevent floating tetrominoes
-    if (!currActiveTetromino?.isAtBound(currLockedCoords, { y: -1 })) {
-      return;
-    }
+    const currState = useStore.getState();
 
     const allTetrominoCoords = [
-      ...(currActiveTetromino?.coords ?? []),
-      ...currLockedCoords,
+      ...(currState.activeTetromino?.coords ?? []),
+      ...currState.lockedCoords,
     ];
 
     const matrixDimensions = {
@@ -171,7 +165,7 @@ export function useLockdown(
   ]);
 
   /** Locks down active tetromino. */
-  const lockDown = useCallback(
+  const lockdown = useCallback(
     (instant?: boolean) => {
       setGameStatus("LOCK_DOWN");
 
@@ -179,15 +173,27 @@ export function useLockdown(
         window.clearTimeout(lockdownTimeoutId.current);
       }
 
-      function commitLockDown() {
+      function commitLockdown() {
         lockdownTimeoutId.current = null;
+
+        // Avoid stale closures
+        const currState = useStore.getState();
+
+        // Prevent floating tetrominoes
+        if (!currState.activeTetromino?.isAtBound(currState.lockedCoords, { y: -1 })) {
+          setGameStatus("PLAYING");
+
+          return;
+        }
+
         moveCount.current = 0;
+        lowestY.current = null;
 
         handleLineClears();
       }
 
       if (instant) {
-        commitLockDown();
+        commitLockdown();
       } else {
         // If game is paused, commit lockdown on resume
         const removePauseListener = addCustomEventListener(
@@ -202,7 +208,7 @@ export function useLockdown(
                 if (!ev.detail.prev.is("PAUSED")) return;
 
                 remove();
-                commitLockDown();
+                commitLockdown();
 
                 break;
             }
@@ -211,50 +217,70 @@ export function useLockdown(
 
         lockdownTimeoutId.current = window.setTimeout(() => {
           removePauseListener();
-          commitLockDown();
+          commitLockdown();
         }, LOCKDOWN_TIMEOUT);
       }
     },
     [handleLineClears, setGameStatus]
   );
 
-  // Tetromino has hit lower limit
+  // Lockdown triggering logic
   useEffect(() => {
-    if (
-      !gameStatus.is("PLAYING", "SOFT_DROP", "HARD_DROP") ||
-      !activeTetromino?.isAtBound(lockedCoords, { y: -1 })
-    ) {
+    if (!activeTetromino) return;
+
+    if (gameStatus.is("HARD_DROP")) {
+      lockdown(true);
+
       return;
     }
 
-    const instantLockDown = gameStatus.is("HARD_DROP");
+    const isAtBound = activeTetromino.isAtBound(lockedCoords, { y: -1 });
 
-    lockDown(instantLockDown);
-  }, [activeTetromino, gameStatus, lockDown, lockedCoords]);
+    switch (gameStatus.toString()) {
+      case "PLAYING":
+      case "SOFT_DROP":
+        if (isAtBound) {
+          if (moveCount.current >= MAX_MOVE_COUNT) {
+            lockdown(true);
+          } else {
+            lockdown();
+          }
+        } else if (moveCount.current > 0) {
+          if (activeTetromino.coords.some((c) => c.y < lowestY.current!)) {
+            moveCount.current = 0;
+            lowestY.current = null;
+          } else if (moveCount.current < MAX_MOVE_COUNT) {
+            moveCount.current += 1;
+          }
+        }
 
-  // Re-initiate lock down if piece is moved
-  useEffect(() => {
-    if (!lockdownTimeoutId.current) return;
+        break;
+      case "LOCK_DOWN":
+        if (isAtBound) {
+          if (moveCount.current >= MAX_MOVE_COUNT) {
+            lockdown(true);
+          } else {
+            lockdown();
 
-    const differenceFromPrev = activeTetromino?.difference(prevTetromino.current);
+            moveCount.current += 1;
+          }
+        } else {
+          setGameStatus("PLAYING");
+          window.clearTimeout(lockdownTimeoutId.current!);
+          lockdownTimeoutId.current = null;
+        }
 
-    // Reset move count if piece has moved down
-    if (differenceFromPrev && differenceFromPrev.y < 0) {
-      moveCount.current = 0;
-      // Reset move count if piece has reached count limit
-    } else if (moveCount.current === MAX_MOVE_COUNT) {
-      moveCount.current = 0;
-
-      lockDown(true);
-
-      return;
-    } else {
-      moveCount.current += 1;
+        break;
     }
 
-    prevTetromino.current = activeTetromino;
-
-    window.clearTimeout(lockdownTimeoutId.current);
-    setGameStatus("PLAYING");
-  }, [activeTetromino, setGameStatus, lockDown]);
+    if (isAtBound) {
+      // Lowest at-bound coord
+      lowestY.current = Math.min(
+        lowestY.current ?? Infinity,
+        ...activeTetromino.coords
+          .filter((c) => c.y <= 0 || c.clone().subtract({ y: 1 }).isIn(lockedCoords))
+          .map((c) => c.y)
+      );
+    }
+  }, [activeTetromino, gameStatus, lockdown, lockedCoords, setGameStatus]);
 }
