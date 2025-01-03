@@ -46,10 +46,18 @@ function App() {
   }
 
   useEffect(() => {
-    const unlistenPromise = listen("pause", () => pause());
+    if (process.env.APP_ENV === "desktop") {
+      const unlistenPromise = listen("pause", () => pause());
+
+      return () => {
+        unlistenPromise.then((unlisten) => unlisten());
+      };
+    }
+
+    window.addEventListener("blur", pause);
 
     return () => {
-      unlistenPromise.then((unlisten) => unlisten());
+      window.removeEventListener("blur", pause);
     };
   }, [pause]);
 

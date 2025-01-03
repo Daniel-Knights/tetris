@@ -14,16 +14,16 @@ pluginReact.configs.flat = pluginReact.configs.flat ?? {};
 
 export default typescriptEslint.config(
   js.configs.recommended,
+  // @ts-expect-error - incorrect types
   configPrettier,
   pluginImport.flatConfigs.recommended,
   pluginImport.flatConfigs.typescript,
   ...typescriptEslintConfigs.recommended,
-  // @ts-expect-error - incorrect types
   pluginReact.configs.flat.recommended,
   pluginReact.configs.flat["jsx-runtime"],
   pluginJsxA11y.flatConfigs.recommended,
   {
-    ignores: ["**/node_modules/**/*", "**/dist/**/*", "**/src-tauri"],
+    ignores: ["**/node_modules/**/*", "**/dist/**/*", "**/dist-web/**/*", "**/src-tauri"],
   },
   {
     plugins: {
@@ -121,6 +121,7 @@ export default typescriptEslint.config(
             "scripts/**",
             "tailwind.config.js",
             "vite.config.ts",
+            "vite.config.web.ts",
           ],
         },
       ],

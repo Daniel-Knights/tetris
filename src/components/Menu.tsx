@@ -12,7 +12,7 @@ type MenuItem = {
 function Menu({ onResume, onRestart }: { onResume: () => void; onRestart: () => void }) {
   const { setTheme } = useTheme();
 
-  const menuItems = [
+  const menuItems: MenuItem[] = [
     {
       label: "RESUME",
       onClick: () => onResume(),
@@ -40,11 +40,14 @@ function Menu({ onResume, onRestart }: { onResume: () => void; onRestart: () => 
         onRestart();
       },
     },
-    {
+  ];
+
+  if (process.env.APP_ENV === "desktop") {
+    menuItems.push({
       label: "QUIT",
       onClick: () => exit(),
-    },
-  ] satisfies MenuItem[];
+    });
+  }
 
   const [selectedSubmenu, setSelectedSubmenu] = useState<MenuItem[] | null>(null);
 

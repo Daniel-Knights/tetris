@@ -16,6 +16,7 @@ if (run("git", ["status", "-s"], { stdio: "pipe" }).stdout.toString()) {
 }
 
 fs.rmSync("dist", { recursive: true, force: true });
+fs.rmSync("dist-web", { recursive: true, force: true });
 
 // This is here purely to check the build works before triggering a release
 run("pnpm", ["build"]);
