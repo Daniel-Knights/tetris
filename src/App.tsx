@@ -79,7 +79,9 @@ function App() {
 
   return (
     <>
-      <div className="flex justify-evenly items-center h-full w-full bg-secondary text-primary">
+      <div
+        className={`flex ${isDesktop() ? "justify-evenly" : "justify-center gap-24"} items-center h-full w-full bg-secondary text-primary`}
+      >
         <GameBoard onRestart={() => restart()} />
         <div className="flex flex-col justify-center items-center gap-8 h-full">
           <StatBoard />
