@@ -1,10 +1,10 @@
 import { MATRIX_DIMENSIONS } from "../constant";
 import { useStore } from "../hooks";
 
-import GameOver from "./GameOver";
-import Matrix from "./Matrix";
+import { GameOver } from "./GameOver";
+import { Matrix } from "./Matrix";
 
-function GameBoard({ onRestart }: { onRestart: () => void }) {
+export function GameBoard({ onRestart }: { onRestart: () => void }) {
   const gameStatus = useStore((s) => s.gameStatus);
   const activeTetromino = useStore((s) => s.activeTetromino);
   const lockedCoords = useStore((s) => s.lockedCoords);
@@ -22,5 +22,3 @@ function GameBoard({ onRestart }: { onRestart: () => void }) {
     </div>
   );
 }
-
-export default GameBoard;

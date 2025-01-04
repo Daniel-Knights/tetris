@@ -5,7 +5,7 @@ import { Coord } from "../classes";
 const CELL_SIZE = 20;
 const GAP_SIZE = 4;
 
-function Matrix({
+export function Matrix({
   dimensions,
   bg,
   highlightedCoords = [],
@@ -128,5 +128,3 @@ function Matrix({
     />
   );
 }
-
-export default Matrix;

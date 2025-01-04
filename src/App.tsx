@@ -1,10 +1,10 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useState } from "react";
 
-import GameBoard from "./components/GameBoard";
-import Menu from "./components/Menu";
-import QueueBoard from "./components/QueueBoard";
-import StatBoard from "./components/StatBoard";
+import { GameBoard } from "./components/GameBoard";
+import { Menu } from "./components/Menu";
+import { QueueBoard } from "./components/QueueBoard";
+import { StatBoard } from "./components/StatBoard";
 import {
   getDropInterval,
   useControls,
@@ -15,7 +15,7 @@ import {
 } from "./hooks";
 import { isDesktop } from "./utils/env";
 
-function App() {
+export function App() {
   const currentLevel = useStore((s) => s.currentLevel);
   const setGameStatus = useStore((s) => s.setGameStatus);
   const setDropInterval = useStore((s) => s.setDropInterval);
@@ -92,5 +92,3 @@ function App() {
     </>
   );
 }
-
-export default App;

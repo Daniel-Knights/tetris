@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-function GameOver({ onRestart }: { onRestart: () => void }) {
+export function GameOver({ onRestart }: { onRestart: () => void }) {
   // Play again on enter
   useEffect(() => {
     function handleKeyup(ev: KeyboardEvent) {
@@ -28,5 +28,3 @@ function GameOver({ onRestart }: { onRestart: () => void }) {
     </button>
   );
 }
-
-export default GameOver;

@@ -1,9 +1,9 @@
 import { useStore } from "../hooks";
 import { TETROMINOES } from "../resources";
 
-import Matrix from "./Matrix";
+import { Matrix } from "./Matrix";
 
-function QueueBoard() {
+export function QueueBoard() {
   const tetrominoQueue = useStore((s) => s.tetrominoQueue).bag;
 
   return (
@@ -19,5 +19,3 @@ function QueueBoard() {
     </div>
   );
 }
-
-export default QueueBoard;

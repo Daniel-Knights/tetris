@@ -10,7 +10,13 @@ type MenuItem = {
   submenu?: MenuItem[];
 };
 
-function Menu({ onResume, onRestart }: { onResume: () => void; onRestart: () => void }) {
+export function Menu({
+  onResume,
+  onRestart,
+}: {
+  onResume: () => void;
+  onRestart: () => void;
+}) {
   const { setTheme } = useTheme();
 
   const menuItems: MenuItem[] = [
@@ -116,5 +122,3 @@ function Menu({ onResume, onRestart }: { onResume: () => void; onRestart: () => 
     </div>
   );
 }
-
-export default Menu;
