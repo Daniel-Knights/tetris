@@ -13,6 +13,7 @@ import {
   useScore,
   useStore,
 } from "./hooks";
+import { isDesktop } from "./utils/env";
 
 function App() {
   const currentLevel = useStore((s) => s.currentLevel);
@@ -46,7 +47,7 @@ function App() {
   }
 
   useEffect(() => {
-    if (process.env.APP_ENV === "desktop") {
+    if (isDesktop()) {
       const unlistenPromise = listen("pause", () => pause());
 
       return () => {

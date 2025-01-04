@@ -2,6 +2,7 @@ import { exit } from "@tauri-apps/plugin-process";
 import { MouseEvent, useEffect, useState } from "react";
 
 import { useTheme } from "../hooks";
+import { isDesktop } from "../utils/env";
 
 type MenuItem = {
   label: string;
@@ -42,7 +43,7 @@ function Menu({ onResume, onRestart }: { onResume: () => void; onRestart: () => 
     },
   ];
 
-  if (process.env.APP_ENV === "desktop") {
+  if (isDesktop()) {
     menuItems.push({
       label: "QUIT",
       onClick: () => exit(),
