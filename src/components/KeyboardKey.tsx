@@ -16,9 +16,7 @@ export function KeyboardKey({
       onPointerUp={(ev) => dispatchKey(ev, "keyup", eventKey)}
       onContextMenu={(ev) => ev.preventDefault()}
     >
-      <kbd className="select-none text-secondary text-center leading-none">
-        {children}
-      </kbd>
+      <kbd className="text-secondary text-center leading-none">{children}</kbd>
     </button>
   );
 }

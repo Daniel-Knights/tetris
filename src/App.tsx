@@ -81,7 +81,7 @@ export function App() {
 
   return (
     <>
-      <div className="flex flex-col justify-center h-full w-full bg-secondary text-primary">
+      <div className="flex flex-col justify-center h-full w-full bg-secondary text-primary select-none">
         <div
           className={`flex ${isDesktop() ? "justify-evenly" : "justify-center gap-4"} items-center`}
         >
