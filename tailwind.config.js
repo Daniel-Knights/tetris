@@ -7,6 +7,9 @@ export default {
         primary: "rgb(var(--color-primary) / <alpha-value>)",
         secondary: "rgb(var(--color-secondary) / <alpha-value>)",
       },
+      screens: {
+        sm: "500px",
+      },
     },
   },
   plugins: [],

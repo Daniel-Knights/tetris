@@ -7,7 +7,7 @@ export function StatBoard() {
   const lineClearCount = useStore((s) => s.lineClearCount);
 
   return (
-    <dl className="w-full text-sm">
+    <dl className="w-full text-xs sm:text-sm">
       <dt>Level:</dt>
       <dd className="pl-4 font-bold">{currentLevel}</dd>
       <dt>Score:</dt>

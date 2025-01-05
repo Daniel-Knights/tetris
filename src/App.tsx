@@ -2,6 +2,7 @@ import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useState } from "react";
 
 import { GameBoard } from "./components/GameBoard";
+import { Keyboard } from "./components/Keyboard";
 import { Menu } from "./components/Menu";
 import { QueueBoard } from "./components/QueueBoard";
 import { StatBoard } from "./components/StatBoard";
@@ -13,7 +14,7 @@ import {
   useScore,
   useStore,
 } from "./hooks";
-import { isDesktop } from "./utils/env";
+import { isDesktop, isWeb } from "./utils/env";
 
 export function App() {
   const currentLevel = useStore((s) => s.currentLevel);
@@ -80,14 +81,17 @@ export function App() {
 
   return (
     <>
-      <div
-        className={`flex ${isDesktop() ? "justify-evenly" : "justify-center gap-24"} items-center h-full w-full bg-secondary text-primary`}
-      >
-        <GameBoard onRestart={() => restart()} />
-        <div className="flex flex-col justify-center items-center gap-8 h-full">
-          <StatBoard />
-          <QueueBoard />
+      <div className="flex flex-col justify-center h-full w-full bg-secondary text-primary">
+        <div
+          className={`flex ${isDesktop() ? "justify-evenly" : "justify-center gap-4"} items-center`}
+        >
+          <GameBoard onRestart={() => restart()} />
+          <div className="flex flex-col justify-center items-center gap-4 h-full sm:gap-8">
+            <StatBoard />
+            <QueueBoard />
+          </div>
         </div>
+        {isWeb() && <Keyboard className="mt-4" />}
       </div>
       {menuOpen && <Menu onResume={() => resume()} onRestart={() => restart()} />}
     </>

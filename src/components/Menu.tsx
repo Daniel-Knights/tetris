@@ -19,7 +19,14 @@ export function Menu({
 }) {
   const { setTheme } = useTheme();
 
-  const menuItems: MenuItem[] = [
+  const [selectedSubmenu, setSelectedSubmenu] = useState<MenuItem[] | null>(null);
+
+  const backItem = {
+    label: "BACK",
+    onClick: () => setSelectedSubmenu(null),
+  } satisfies MenuItem;
+
+  const menuItems = [
     {
       label: "RESUME",
       onClick: () => onResume(),
@@ -47,7 +54,7 @@ export function Menu({
         onRestart();
       },
     },
-  ];
+  ] satisfies MenuItem[];
 
   if (isDesktop()) {
     menuItems.push({
@@ -56,9 +63,7 @@ export function Menu({
     });
   }
 
-  const [selectedSubmenu, setSelectedSubmenu] = useState<MenuItem[] | null>(null);
-
-  function handleClick(ev: MouseEvent) {
+  function handlePointerUp(ev: MouseEvent) {
     const evTarget = ev.target as HTMLElement;
 
     // Close if click outside
@@ -90,33 +95,35 @@ export function Menu({
   }, [onResume, selectedSubmenu]);
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className="cursor-pointer fixed inset-0 flex items-center justify-center bg-primary"
-      onClick={handleClick}
+      // `onClick` prevents clicked escape key menu open
+      onPointerUp={handlePointerUp}
     >
       <div
-        className="cursor-default flex justify-center p-4 h-96 w-96 bg-secondary"
+        className="cursor-default flex justify-center p-4 h-96 w-96 max-w-[95vw] bg-secondary"
         data-menu-content
       >
         <ul className="flex flex-col justify-center items-center gap-4 text-2xl">
-          {(selectedSubmenu ?? menuItems).map(({ label, onClick, submenu }) => (
-            <li key={label}>
-              <button
-                className="w-64 h-12 bg-primary/75 text-secondary hover:bg-primary"
-                type="button"
-                onClick={() => {
-                  if (onClick) {
-                    onClick();
-                  } else if (submenu) {
-                    setSelectedSubmenu(submenu);
-                  }
-                }}
-              >
-                {label}
-              </button>
-            </li>
-          ))}
+          {(selectedSubmenu ? selectedSubmenu.concat(backItem) : menuItems).map(
+            ({ label, onClick, submenu }) => (
+              <li key={label}>
+                <button
+                  className="w-64 h-12 bg-primary/75 text-secondary hover:bg-primary"
+                  type="button"
+                  onClick={() => {
+                    if (onClick) {
+                      onClick();
+                    } else if (submenu) {
+                      setSelectedSubmenu(submenu);
+                    }
+                  }}
+                >
+                  {label}
+                </button>
+              </li>
+            )
+          )}
         </ul>
       </div>
     </div>

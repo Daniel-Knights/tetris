@@ -22,7 +22,7 @@ export function GameOver({ onRestart }: { onRestart: () => void }) {
       onClick={onRestart}
       type="button"
     >
-      <div className="py-4 w-full text-6xl font-bold text-center tracking-wider text-secondary bg-primary">
+      <div className="py-4 w-full text-5xl font-bold text-center tracking-wider text-secondary bg-primary sm:text-6xl">
         GAME OVER
       </div>
     </button>

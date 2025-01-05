@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef } from "react";
 
 import { Coord } from "../classes";
+import { isWeb } from "../utils";
 
-const CELL_SIZE = 20;
 const GAP_SIZE = 4;
 
 export function Matrix({
@@ -23,6 +23,8 @@ export function Matrix({
   const colorPrimary = computedBodyStyle.getPropertyValue("--color-primary");
   const colorSecondary = computedBodyStyle.getPropertyValue("--color-secondary");
   const bgOpacity = bg ? 0.1 : 0;
+  // Tailwind sm:* breakpoint is set to 500px
+  const cellSize = !isWeb() || window.matchMedia("(min-width: 500px)").matches ? 20 : 15;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -66,8 +68,8 @@ export function Matrix({
 
     for (let row = 0; row < adjustedRows; row += 1) {
       for (let col = 0; col < adjustedColumns; col += 1) {
-        const x = col * (CELL_SIZE + GAP_SIZE);
-        const y = row * (CELL_SIZE + GAP_SIZE);
+        const x = col * (cellSize + GAP_SIZE);
+        const y = row * (cellSize + GAP_SIZE);
 
         const coord = Coord.fromIndex(row * adjustedColumns + col, {
           rows: adjustedRows,
@@ -81,12 +83,12 @@ export function Matrix({
         ctx.strokeStyle = `rgb(${colorPrimary})`;
         ctx.lineWidth = 1;
 
-        ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
-        ctx.strokeRect(x, y, CELL_SIZE, CELL_SIZE);
+        ctx.fillRect(x, y, cellSize, cellSize);
+        ctx.strokeRect(x, y, cellSize, cellSize);
 
         // Center square
         if (!coord.isIn(outlinedCoords) || coord.isIn(normalisedCoords)) {
-          const centerSquareDimensions = CELL_SIZE / 2;
+          const centerSquareDimensions = cellSize / 2;
 
           ctx.fillStyle = `rgb(${colorPrimary})`;
           ctx.fillRect(
@@ -106,14 +108,15 @@ export function Matrix({
     adjustedColumns,
     adjustedRows,
     bgOpacity,
+    cellSize,
     colorPrimary,
     colorSecondary,
     normalisedCoords,
     outlinedCoords,
   ]);
 
-  const canvasHeight = adjustedRows * (CELL_SIZE + GAP_SIZE);
-  const canvasWidth = adjustedColumns * (CELL_SIZE + GAP_SIZE);
+  const canvasHeight = adjustedRows * (cellSize + GAP_SIZE);
+  const canvasWidth = adjustedColumns * (cellSize + GAP_SIZE);
 
   return (
     <canvas

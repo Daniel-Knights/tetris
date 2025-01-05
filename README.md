@@ -20,9 +20,9 @@ Go to the [releases page](https://github.com/Daniel-Knights/tetris/releases), do
 
 ## Controls
 
-<kbd>←</kbd> - Move left  
-<kbd>→</kbd> - Move right  
-<kbd>↑</kbd> - Rotate  
-<kbd>↓</kbd> - Soft drop  
-<kbd>Space</kbd> - Hard drop  
-<kbd>Esc</kbd> - Pause/Resume
+<kbd>◀</kbd> - Move left  
+<kbd>▶</kbd> - Move right  
+<kbd>▲</kbd> - Rotate  
+<kbd>▼</kbd> - Soft drop  
+<kbd>space</kbd> - Hard drop  
+<kbd>esc</kbd> - Pause/Resume
