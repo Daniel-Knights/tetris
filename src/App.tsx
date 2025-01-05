@@ -46,9 +46,10 @@ export function App() {
     setGameStatus("PLAYING");
   }
 
+  // Pause on blur
   useEffect(() => {
     if (isDesktop()) {
-      const unlistenPromise = listen("pause", () => pause());
+      const unlistenPromise = listen("tauri://blur", () => pause());
 
       return () => {
         unlistenPromise.then((unlisten) => unlisten());
