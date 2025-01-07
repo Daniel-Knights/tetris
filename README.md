@@ -8,7 +8,7 @@
 
 ## Web
 
-[Click here](https://daniel-knights.github.io/tetris/).
+[Click here](https://dk-tetris.netlify.app/).
 
 ## Desktop
 
