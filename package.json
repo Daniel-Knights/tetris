@@ -15,6 +15,7 @@
     "dev:web": "vite --config vite.config.web.ts",
     "build": "pnpm run checks && tauri build",
     "build:web": "pnpm run checks && vite build --config vite.config.web.ts",
+    "preview:web": "pnpm run build:web && vite preview --config vite.config.web.ts",
     "icon": "tauri icon ./artwork/icon.png",
     "info": "tauri info",
     "lint": "eslint",
