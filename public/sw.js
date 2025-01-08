@@ -1,15 +1,6 @@
 const CACHE_NAME = "tetris-v1";
 
 const APP_STATIC_RESOURCES = [
-  "/",
-  "/index.html",
-  "/favicon.ico",
-  "/icon.svg",
-  "/maskable-icon-512x512.png",
-  "/pwa-64x64.png",
-  "/pwa-192x192.png",
-  "/pwa-512x512.png",
-  "/apple-touch-icon-180x180.png",
   /* <INJECTED> */
 ];
 
@@ -22,9 +13,6 @@ self.addEventListener("install", (ev) => {
     })()
   );
 });
-
-// TODO: sync event https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation#handling_a_sync_event
-// TODO: periodic sync event https://developer.mozilla.org/en-US/docs/Web/Progressive_web_apps/Guides/Offline_and_background_operation#registering_a_periodic_sync_event
 
 self.addEventListener("activate", (ev) => {
   ev.waitUntil(
@@ -43,7 +31,6 @@ self.addEventListener("activate", (ev) => {
 });
 
 self.addEventListener("fetch", (ev) => {
-  console.log(ev);
   if (ev.request.method !== "GET") return;
 
   ev.respondWith(

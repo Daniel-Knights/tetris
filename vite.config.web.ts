@@ -28,12 +28,14 @@ export default defineConfig(() => ({
 
 const pwaPlugin = {
   name: "pwa",
-  async writeBundle(_, bundle) {
-    // TODO: read files from dist-web and use excludes array
-    const sw = await fs.promises.readFile("./public/sw.js", "utf-8");
+  async writeBundle() {
+    const outFiles = await fs.promises.readdir("./dist-web", { recursive: true });
+    const sw = await fs.promises.readFile("./dist-web/sw.js", "utf-8");
+    const excludeFiles = ["sw.js", "assets"];
 
-    const injectFilenames = Object.keys(bundle)
-      .filter((f) => f !== "index.html")
+    const injectFilenames = outFiles
+      .filter((f) => !excludeFiles.includes(f))
+      .concat("") // Root
       .map((f) => `"/${f}"`)
       .join(",\n");
 
