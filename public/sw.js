@@ -1,3 +1,10 @@
+/*
+  Some notes on this:
+  - Offline functionality doesn't work in dev, it can only be tested by running `pnpm run preview:web`
+  - The scope when registered must be the root. If you register it at a subpath, it will hang on 'trying to install'.
+  - The static resources are read from `dist-web` and injected by the build script
+*/
+
 const CACHE_NAME = "tetris-v1";
 
 const APP_STATIC_RESOURCES = [
