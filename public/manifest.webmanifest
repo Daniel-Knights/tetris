@@ -1,12 +1,9 @@
 {
   "name": "Tetris",
   "short_name": "Tetris",
-  "start_url": "/",
-  "display": "standalone",
-  "background_color": "#ffffff",
-  "lang": "en",
-  "scope": "/",
   "description": "A simple Tetris clone.",
+  "lang": "en",
+  "display": "standalone",
   "theme_color": "#141a1a",
   "icons": [
     { "src": "pwa-64x64.png", "sizes": "64x64", "type": "image/png" },
