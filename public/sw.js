@@ -45,7 +45,17 @@ self.addEventListener("fetch", (ev) => {
       const cache = await caches.open(CACHE_NAME);
       const cachedResponse = await cache.match(ev.request);
 
-      return cachedResponse || fetch(ev.request);
+      if (cachedResponse) {
+        try {
+          await cache.add(ev.request);
+        } catch {
+          // Offline
+        }
+
+        return cachedResponse;
+      }
+
+      return fetch(ev.request);
     })()
   );
 });
