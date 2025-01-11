@@ -4,7 +4,6 @@
   "description": "A simple Tetris clone.",
   "lang": "en",
   "display": "standalone",
-  "scope": "/",
   "start_url": "/",
   "theme_color": "#141a1a",
   "icons": [
