@@ -9,7 +9,7 @@ export function Keyboard(props: JSX.IntrinsicElements["div"]) {
     <div
       {...props}
       className={`flex justify-center ${GAP} px-4 w-full ${props.className ?? ""}`}
-      onContextMenu={(ev) => ev.preventDefault()} // Prevent iOS magnifier
+      onTouchEnd={(ev) => ev.preventDefault()} // Prevent iOS magnifier
     >
       <KeyboardKey eventKey={"Escape"}>esc</KeyboardKey>
       <KeyboardKey eventKey={" "} className="grow max-w-48">
