@@ -8,12 +8,21 @@ export function KeyboardKey({
   children: ReactNode;
   eventKey: EventKey;
 } & JSX.IntrinsicElements["button"]) {
+  function handlePointerDown(ev: ReactPointerEvent<HTMLButtonElement>) {
+    dispatchKey(ev, "keydown", eventKey);
+  }
+
+  function handlePointerUp(ev: ReactPointerEvent<HTMLButtonElement>) {
+    dispatchKey(ev, "keyup", eventKey);
+  }
+
   return (
     <button
       {...restProps}
       className={`cursor-pointer py-2 px-4 bg-primary/75 ${restProps.className ?? ""}`}
-      onPointerDown={(ev) => dispatchKey(ev, "keydown", eventKey)}
-      onPointerUp={(ev) => dispatchKey(ev, "keyup", eventKey)}
+      onPointerDown={handlePointerDown}
+      onPointerUp={handlePointerUp}
+      onPointerOut={handlePointerUp}
     >
       <kbd className="text-secondary text-center leading-none">{children}</kbd>
     </button>
