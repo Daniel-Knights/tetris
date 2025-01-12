@@ -82,7 +82,7 @@ export const TETROMINOES = {
     /** Starting adjustment for the x-axis. */
     startX: number;
     /** Index of the coord to pivot around. */
-    pivotIndex: number;
+    pivotIndex: 0 | 1 | 2 | 3;
   }
 >;
 
@@ -153,6 +153,15 @@ export const WALL_KICKS = [
       ],
     ],
   },
+  {
+    appliesTo: ["O"],
+    offsets: [
+      [new Coord({ x: 0, y: 0 })],
+      [new Coord({ x: 0, y: -1 })],
+      [new Coord({ x: -1, y: -1 })],
+      [new Coord({ x: -1, y: 0 })],
+    ],
+  },
 ] satisfies {
   appliesTo: TetrominoType[];
   /**
@@ -164,9 +173,8 @@ export const WALL_KICKS = [
    * rotation stage. For counter-clockwise rotations, subtracting 'a' from 'b' should
    * be equivalent.
    *
-   * **Note:** the 'I' tetromino has offsets for unobstructed rotations, because its
-   * pivot point isn't aligned centrally. Same with the 'O' tetromino, but, as rotating
-   * it doesn't make a difference visually, we ignore it.
+   * **Note:** the 'I' and 'O' tetrominoes have offsets for unobstructed rotations,
+   * because their pivot points aren't aligned centrally.
    *
    * See here for more details: https://tetris.wiki/Super_Rotation_System
    */

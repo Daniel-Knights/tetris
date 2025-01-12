@@ -24,8 +24,15 @@ export function useLockdown(
   const setDropInterval = useStore((s) => s.setDropInterval);
 
   const lockdownTimeoutId = useRef<number | null>(null);
+
+  // Lowest y coord is to prevent rotation from infinitely resetting move count
   const lowestY = useRef<number | Nullish>(null);
-  const moveCount = useRef(0);
+  const moveCount = useRef(-1); // -1 = not initiated
+
+  function resetMoveCount() {
+    moveCount.current = -1;
+    lowestY.current = null;
+  }
 
   /** Checks if game over and adjusts coords to avoid collision. */
   const handleNewTetromino = useCallback(
@@ -186,9 +193,7 @@ export function useLockdown(
           return;
         }
 
-        moveCount.current = 0;
-        lowestY.current = null;
-
+        resetMoveCount();
         handleLineClears();
       }
 
@@ -235,35 +240,42 @@ export function useLockdown(
     }
 
     const isAtBound = activeTetromino.isAtBound(lockedCoords, { y: -1 });
+    const hasHitMoveLimit = () => moveCount.current >= MAX_MOVE_COUNT;
+
+    // Make an exception for O tetromino as it has uneven pivot
+    const pivotCoord =
+      activeTetromino.type === "O"
+        ? activeTetromino.coords[0]
+        : activeTetromino.coords[activeTetromino.pivotIndex];
 
     switch (gameStatus.toString()) {
       case "PLAYING":
-      case "SOFT_DROP":
+      case "SOFT_DROP": {
+        const moveCountIsInitiated = moveCount.current > -1;
+
+        function hasDroppedBelowLowestY() {
+          return pivotCoord.y < lowestY.current!;
+        }
+
+        if (moveCountIsInitiated && hasDroppedBelowLowestY()) {
+          resetMoveCount();
+        } else if (!isAtBound && moveCountIsInitiated && !hasHitMoveLimit()) {
+          moveCount.current += 1;
+        }
+
         if (isAtBound) {
-          if (moveCount.current >= MAX_MOVE_COUNT) {
-            lockdown(true);
-          } else {
-            lockdown();
-          }
-        } else if (moveCount.current > 0) {
-          if (activeTetromino.coords.some((c) => c.y < lowestY.current!)) {
-            moveCount.current = 0;
-            lowestY.current = null;
-          } else if (moveCount.current < MAX_MOVE_COUNT) {
-            moveCount.current += 1;
-          }
+          lockdown(hasHitMoveLimit());
         }
 
         break;
+      }
       case "LOCK_DOWN":
         if (isAtBound) {
-          if (moveCount.current >= MAX_MOVE_COUNT) {
-            lockdown(true);
-          } else {
-            lockdown();
-
+          if (!hasHitMoveLimit()) {
             moveCount.current += 1;
           }
+
+          lockdown(hasHitMoveLimit());
         } else {
           setGameStatus("PLAYING");
           window.clearTimeout(lockdownTimeoutId.current!);
@@ -273,14 +285,8 @@ export function useLockdown(
         break;
     }
 
-    if (isAtBound) {
-      // Lowest at-bound coord
-      lowestY.current = Math.min(
-        lowestY.current ?? Infinity,
-        ...activeTetromino.coords
-          .filter((c) => c.y <= 0 || c.clone().subtract({ y: 1 }).isIn(lockedCoords))
-          .map((c) => c.y)
-      );
+    if (isAtBound || lowestY.current !== null) {
+      lowestY.current = Math.min(lowestY.current ?? Infinity, pivotCoord!.y);
     }
   }, [activeTetromino, gameStatus, lockdown, lockedCoords, setGameStatus]);
 }

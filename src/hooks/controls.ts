@@ -45,8 +45,14 @@ export function useControls() {
     (keyupEv: KeyboardEvent) => {
       if (keyupEv.key !== "ArrowDown") return;
 
-      if (!useStore.getState().gameStatus.is("PAUSED")) {
-        setGameStatus("PLAYING");
+      const currState = useStore.getState();
+
+      if (!currState.gameStatus.is("PAUSED")) {
+        const isAtBound = currState.activeTetromino?.isAtBound(currState.lockedCoords, {
+          y: -1,
+        });
+
+        setGameStatus(isAtBound ? "LOCK_DOWN" : "PLAYING");
       }
 
       setDropInterval(getDropInterval(currentLevel));

@@ -12,7 +12,7 @@ export function useRotate() {
   const lockedCoords = useStore((s) => s.lockedCoords);
 
   return () => {
-    if (tetrominoQueue.next === "O" || !activeTetromino) return;
+    if (!activeTetromino) return;
 
     const { rotationStage } = activeTetromino;
     const nextRotationStage = ((rotationStage + 1) % 4) as RotationStage;
