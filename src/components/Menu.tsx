@@ -63,7 +63,7 @@ export function Menu({
     });
   }
 
-  function handlePointerUp(ev: MouseEvent) {
+  function handleClick(ev: MouseEvent) {
     const evTarget = ev.target as HTMLElement;
 
     // Close if click outside
@@ -95,10 +95,10 @@ export function Menu({
   }, [onResume, selectedSubmenu]);
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       className="cursor-pointer fixed inset-0 flex items-center justify-center bg-primary"
-      // `onClick` prevents clicked escape key menu open
-      onPointerUp={handlePointerUp}
+      onClick={handleClick}
     >
       <div
         className="cursor-default flex justify-center p-4 h-96 w-96 max-w-[95vw] bg-secondary"

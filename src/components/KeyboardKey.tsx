@@ -1,4 +1,4 @@
-import { JSX, ReactNode, PointerEvent as ReactPointerEvent } from "react";
+import { JSX, ReactNode, PointerEvent as ReactPointerEvent, useRef } from "react";
 
 export function KeyboardKey({
   children,
@@ -8,11 +8,19 @@ export function KeyboardKey({
   children: ReactNode;
   eventKey: EventKey;
 } & JSX.IntrinsicElements["button"]) {
+  const isHolding = useRef(false);
+
   function handlePointerDown(ev: ReactPointerEvent<HTMLButtonElement>) {
+    isHolding.current = true;
+
     dispatchKey(ev, "keydown", eventKey);
   }
 
   function handlePointerUp(ev: ReactPointerEvent<HTMLButtonElement>) {
+    if (!isHolding.current) return;
+
+    isHolding.current = false;
+
     dispatchKey(ev, "keyup", eventKey);
   }
 
