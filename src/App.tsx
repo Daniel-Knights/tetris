@@ -3,7 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { GameBoard } from "./components/GameBoard";
 import { Keyboard } from "./components/Keyboard";
-import { Menu } from "./components/Menu";
+import { PauseMenu } from "./components/PauseMenu";
 import { QueueBoard } from "./components/QueueBoard";
 import { StatBoard } from "./components/StatBoard";
 import {
@@ -93,7 +93,7 @@ export function App() {
         </div>
         {isWeb() && <Keyboard className="mt-4" />}
       </div>
-      {menuOpen && <Menu onResume={() => resume()} onRestart={() => restart()} />}
+      {menuOpen && <PauseMenu onResume={() => resume()} onRestart={() => restart()} />}
     </>
   );
 }

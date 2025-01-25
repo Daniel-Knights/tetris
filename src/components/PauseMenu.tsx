@@ -10,7 +10,7 @@ type MenuItem = {
   submenu?: MenuItem[];
 };
 
-export function Menu({
+export function PauseMenu({
   onResume,
   onRestart,
 }: {
