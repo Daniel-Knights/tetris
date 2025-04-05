@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { GameBoard } from "./components/GameBoard";
 import { Keyboard } from "./components/Keyboard";
+import { Loading } from "./components/Loading";
 import { PauseMenu } from "./components/PauseMenu";
 import { QueueBoard } from "./components/QueueBoard";
 import { StatBoard } from "./components/StatBoard";
@@ -14,6 +15,7 @@ import {
   useScore,
   useStore,
 } from "./hooks";
+import { useUpdate } from "./hooks/update";
 import { isDesktop, isWeb } from "./utils/env";
 
 export function App() {
@@ -22,18 +24,19 @@ export function App() {
   const setDropInterval = useStore((s) => s.setDropInterval);
   const resetStore = useStore((s) => s.resetStore);
 
+  const pause = useCallback(() => {
+    setDropInterval(null);
+    setMenuOpen(true);
+    setGameStatus("PAUSED");
+  }, [setDropInterval, setGameStatus]);
+
+  const { updateIsDownloading } = useUpdate(pause);
   const { scoreLineClear } = useScore();
   const { moveTetromino } = useControls();
   const { resetTetromino } = useDrop(moveTetromino);
   useLockdown(scoreLineClear);
 
   const [menuOpen, setMenuOpen] = useState(false);
-
-  const pause = useCallback(() => {
-    setDropInterval(null);
-    setMenuOpen(true);
-    setGameStatus("PAUSED");
-  }, [setDropInterval, setGameStatus]);
 
   function restart() {
     resetStore();
@@ -79,7 +82,13 @@ export function App() {
     };
   }, [menuOpen, pause]);
 
-  return (
+  return updateIsDownloading ? (
+    <div className="flex justify-center items-center fixed h-full w-full bg-secondary">
+      <div className="w-12">
+        <Loading />
+      </div>
+    </div>
+  ) : (
     <>
       <div className="flex flex-col justify-center h-full w-full bg-secondary text-primary select-none">
         <div

@@ -1,1 +1,1 @@
-{"default":{"identifier":"default","description":"","local":true,"windows":["main"],"permissions":["core:default","process:allow-exit","process:default","updater:default"],"platforms":["macOS","windows","linux"]}}
+{"default":{"identifier":"default","description":"","local":true,"windows":["main"],"permissions":["core:default","process:allow-exit","process:default","updater:default","dialog:default","process:default","updater:default"],"platforms":["macOS","windows","linux"]}}
