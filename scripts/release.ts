@@ -23,8 +23,8 @@ run("pnpm", ["build"]);
 run("pnpm", ["version", args[0]]);
 run("pnpm", [
   "changenog",
-  "--filter-preset=angular",
-  "--filter-preset=angular-readme-only-docs",
+  "--commit-filter-preset=angular",
+  "--commit-filter-preset=angular-readme-only-docs",
 ]);
 run("git", ["add", "."]);
 

@@ -14,7 +14,6 @@ pluginReact.configs.flat = pluginReact.configs.flat ?? {};
 
 export default typescriptEslint.config(
   js.configs.recommended,
-  // @ts-expect-error - incorrect types
   configPrettier,
   pluginImport.flatConfigs.recommended,
   pluginImport.flatConfigs.typescript,
