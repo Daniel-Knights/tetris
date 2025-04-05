@@ -8,8 +8,6 @@
     "process:allow-exit",
     "process:default",
     "updater:default",
-    "dialog:default",
-    "process:default",
-    "updater:default"
+    "dialog:default"
   ]
 }
