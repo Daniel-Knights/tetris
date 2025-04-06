@@ -1,8 +1,8 @@
-## [0.3.1](https://github.com/Daniel-Knights/tetris/compare/v0.3.0...v0.3.1) (25/01/2025)
+## [v0.3.1](https://github.com/Daniel-Knights/tetris/compare/v0.3.0...v0.3.1) (25/01/2025)
 
 - fix(keyboard): pointerout triggering when pointerdown not fire ([c342dc9](https://github.com/Daniel-Knights/tetris/commit/c342dc918ed13a06616c46b0b33b9fa944050d8a))
 
-## [0.3.0](https://github.com/Daniel-Knights/tetris/compare/v0.2.3...v0.3.0) (13/01/2025)
+## [v0.3.0](https://github.com/Daniel-Knights/tetris/compare/v0.2.3...v0.3.0) (13/01/2025)
 
 - fix(keyboard): keyup on pointerout ([328c8b1](https://github.com/Daniel-Knights/tetris/commit/328c8b1e0c38107973858e21513ee887dbb559a0))
 - fix(lockdown): move count tracking issues ([cc09f80](https://github.com/Daniel-Knights/tetris/commit/cc09f804a2d2898553a86f0ff81471fdd689eb04))
@@ -31,16 +31,16 @@
 - fix(timer): timestamp tracking causing slower intervals ([3270371](https://github.com/Daniel-Knights/tetris/commit/32703711393ac737c7657e04fc7de0e7d0e47b3a))
 - feat(status): pause on window blur ([1fbc6fc](https://github.com/Daniel-Knights/tetris/commit/1fbc6fcf5b9c3ba929773ddf266040e11e0b5064))
 
-## [0.2.3](https://github.com/Daniel-Knights/tetris/compare/v0.2.2...v0.2.3) (20/05/2024)
+## [v0.2.3](https://github.com/Daniel-Knights/tetris/compare/v0.2.2...v0.2.3) (20/05/2024)
 
 - ci(updater): replace manual setup for tauri-action version, support both mac chips ([8a10007](https://github.com/Daniel-Knights/tetris/commit/8a1000799bb03de78feee9dc2c7db57882c13eea))
 
-## [0.2.2](https://github.com/Daniel-Knights/tetris/compare/v0.2.1...v0.2.2) (19/05/2024)
+## [v0.2.2](https://github.com/Daniel-Knights/tetris/compare/v0.2.1...v0.2.2) (19/05/2024)
 
 - fix(game over): handle game over after lockdown ([3d503fb](https://github.com/Daniel-Knights/tetris/commit/3d503fb7340c047c5db709a853e7a4723bade849))
 - perf(lockdown): return if already locking down ([ff4a7f3](https://github.com/Daniel-Knights/tetris/commit/ff4a7f3bf5bed4b90a997a7b61e273a5d5adc174))
 
-## [0.2.1](https://github.com/Daniel-Knights/tetris/compare/v0.2.0...v0.2.1) (02/04/2024)
+## [v0.2.1](https://github.com/Daniel-Knights/tetris/compare/v0.2.0...v0.2.1) (02/04/2024)
 
 - perf(timer): use requestAnimationFrame for intervals ([7ed570a](https://github.com/Daniel-Knights/tetris/commit/7ed570a21e1e75bd3ba487dc33989f028235944a))
 - perf(timer): adjust interval to account for timer imprecision ([1cb1ede](https://github.com/Daniel-Knights/tetris/commit/1cb1ede2e1aff6436d18061ab63459d6d87d8e99))
@@ -50,7 +50,7 @@
 - fix(store): set initial level back to 1 ([f7eb22d](https://github.com/Daniel-Knights/tetris/commit/f7eb22db4c4d1effad210303796a1720a40cf506))
 - fix(game-board): clear timers on game over ([f9faac6](https://github.com/Daniel-Knights/tetris/commit/f9faac64e07a841890a78aaea3d62599cf110710))
 
-## [0.2.0](https://github.com/Daniel-Knights/tetris/compare/v0.1.0...v0.2.0) (27/03/2024)
+## [v0.2.0](https://github.com/Daniel-Knights/tetris/compare/v0.1.0...v0.2.0) (27/03/2024)
 
 - feat(theme): useTheme ([d1aca4d](https://github.com/Daniel-Knights/tetris/commit/d1aca4d95297900a71f33d7fdb7c8190616e596e))
 - feat(menu): submenu setup, flashbang theme ([1a7fe81](https://github.com/Daniel-Knights/tetris/commit/1a7fe81e16571a5f06c9d13cf9192fa01a8f8db8))
@@ -66,11 +66,11 @@
 - fix(game over): store reset, unnecessary re-renders ([a110335](https://github.com/Daniel-Knights/tetris/commit/a110335320a0f160fef3d333eb679f0440bd8f19))
 - feat(game over): game over component and functionality ([96aa125](https://github.com/Daniel-Knights/tetris/commit/96aa125d537c27f6936080762da7386607821c0a))
 
-## [0.1.0](https://github.com/Daniel-Knights/tetris/compare/v0.0.1...v0.1.0) (02/03/2024)
+## [v0.1.0](https://github.com/Daniel-Knights/tetris/compare/v0.0.1...v0.1.0) (02/03/2024)
 
 - feat(stats): high score ([82cc647](https://github.com/Daniel-Knights/tetris/commit/82cc647b25b6f99b092808f3d8d34b4b237bfd44))
 
-## [0.0.1](https://github.com/Daniel-Knights/tetris/tags) (01/03/2024)
+## [v0.0.1](https://github.com/Daniel-Knights/tetris/tags) (01/03/2024)
 
 - feat(hard drop): instant lock down ([f1ce234](https://github.com/Daniel-Knights/tetris/commit/f1ce2344490d154eec980987c94abf101a5aaf13))
 - feat(layout): thinner window, stack stat and queue boards ([4062769](https://github.com/Daniel-Knights/tetris/commit/4062769c97b79e78cb1f7c7e2827f42e5af24b74))
