@@ -1,3 +1,7 @@
+## [v0.4.0](https://github.com/Daniel-Knights/tetris/compare/v0.3.1...v0.4.0) (06/04/2025)
+
+- feat(updater): updater ([d089457](https://github.com/Daniel-Knights/tetris/commit/d0894575b44cdba1a6dcdebac761e7bcbea136ac))
+
 ## [v0.3.1](https://github.com/Daniel-Knights/tetris/compare/v0.3.0...v0.3.1) (25/01/2025)
 
 - fix(keyboard): pointerout triggering when pointerdown not fire ([c342dc9](https://github.com/Daniel-Knights/tetris/commit/c342dc918ed13a06616c46b0b33b9fa944050d8a))
