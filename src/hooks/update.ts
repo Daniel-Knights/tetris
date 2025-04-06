@@ -17,7 +17,7 @@ export function useUpdate(pause: () => void) {
 
     (async () => {
       const update = await check();
-      if (!update?.available) return;
+      if (!update) return;
 
       const newVersion = update.version;
 
