@@ -1,3 +1,7 @@
+## [v0.4.1](https://github.com/Daniel-Knights/tetris/compare/v0.4.0...v0.4.1) (24/09/2025)
+
+- chore(deps): bump ([f1fbad1](https://github.com/Daniel-Knights/tetris/commit/f1fbad1ffa59d1d9494e47e88a4e2bdea76b834d))
+
 ## [v0.4.0](https://github.com/Daniel-Knights/tetris/compare/v0.3.1...v0.4.0) (06/04/2025)
 
 - feat(updater): updater ([d089457](https://github.com/Daniel-Knights/tetris/commit/d0894575b44cdba1a6dcdebac761e7bcbea136ac))
