@@ -67,6 +67,6 @@ jobs:
         with:
           tagName: v__VERSION__
           releaseName: v__VERSION__
-          releaseBody: "See CHANGELOG.md: https://github.com/Daniel-Knights/tetris/blob/main/CHANGELOG.md."
+          releaseBody: "See [CHANGELOG.md](https://github.com/Daniel-Knights/tetris/blob/main/CHANGELOG.md) for details."
           prerelease: false
           args: ${{ matrix.args }}
