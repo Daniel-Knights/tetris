@@ -1,7 +1,6 @@
 // @ts-check
 import js from "@eslint/js";
 import configPrettier from "eslint-config-prettier";
-// @ts-expect-error - eslint-plugin-import does not have types
 import pluginImport from "eslint-plugin-import";
 import pluginJsxA11y from "eslint-plugin-jsx-a11y";
 import pluginPrettierRecommended from "eslint-plugin-prettier/recommended";
