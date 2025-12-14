@@ -1,3 +1,8 @@
+## [v0.4.2](https://github.com/Daniel-Knights/tetris/compare/v0.4.1...v0.4.2) (14/12/2025)
+
+- chore(deps): bump ([5ae2e9a](https://github.com/Daniel-Knights/tetris/commit/5ae2e9aa4c659e89759d36b2737b8206fd063cc5))
+- fix(html): update favicon links ([588d6d7](https://github.com/Daniel-Knights/tetris/commit/588d6d7f00618fe94716e1d2de242f24e42da9ea))
+
 ## [v0.4.1](https://github.com/Daniel-Knights/tetris/compare/v0.4.0...v0.4.1) (24/09/2025)
 
 - chore(deps): bump ([f1fbad1](https://github.com/Daniel-Knights/tetris/commit/f1fbad1ffa59d1d9494e47e88a4e2bdea76b834d))
