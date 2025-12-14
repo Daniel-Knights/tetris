@@ -42,7 +42,7 @@ export function useControls() {
 
   /** Event handler for resetting drop interval after soft drop. */
   const handleSoftDropEnd = useCallback(
-    (keyupEv: KeyboardEvent) => {
+    function handleSoftDropEnd(keyupEv: KeyboardEvent) {
       if (keyupEv.key !== "ArrowDown") return;
 
       const currState = useStore.getState();
@@ -63,7 +63,7 @@ export function useControls() {
   );
 
   /** Clear timers on keyup. */
-  const handleLeftRightEnd = useCallback((ev: KeyboardEvent) => {
+  const handleLeftRightEnd = useCallback(function handleLeftRightEnd(ev: KeyboardEvent) {
     if (ev.key !== currentKey.current) return;
 
     leftRightIntervalData.current?.clear();

@@ -24,6 +24,8 @@ export function App() {
   const setDropInterval = useStore((s) => s.setDropInterval);
   const resetStore = useStore((s) => s.resetStore);
 
+  const [menuOpen, setMenuOpen] = useState(false);
+
   const pause = useCallback(() => {
     setDropInterval(null);
     setMenuOpen(true);
@@ -35,8 +37,6 @@ export function App() {
   const { moveTetromino } = useControls();
   const { resetTetromino } = useDrop(moveTetromino);
   useLockdown(scoreLineClear);
-
-  const [menuOpen, setMenuOpen] = useState(false);
 
   function restart() {
     resetStore();
