@@ -18,6 +18,10 @@ Go to the [releases page](https://github.com/Daniel-Knights/tetris/releases), do
 - Windows: `.msi`, `-setup.exe`
 - Linux: `.deb`, `.AppImage`
 
+## Mobile
+
+[Follow the instructions here](https://www.installpwa.com/from/dk-tetris.netlify.app).
+
 ## Controls
 
 <kbd>◀</kbd> - Move left  
