@@ -10,6 +10,10 @@
 
 [Click here](https://dk-tetris.netlify.app/).
 
+## Mobile
+
+[Follow the instructions here](https://www.installpwa.com/from/dk-tetris.netlify.app).
+
 ## Desktop
 
 Go to the [releases page](https://github.com/Daniel-Knights/tetris/releases), download and run the appropriate installer:
@@ -17,10 +21,6 @@ Go to the [releases page](https://github.com/Daniel-Knights/tetris/releases), do
 - MacOS: `.dmg`, `.app`
 - Windows: `.msi`, `-setup.exe`
 - Linux: `.deb`, `.AppImage`
-
-## Mobile
-
-[Follow the instructions here](https://www.installpwa.com/from/dk-tetris.netlify.app).
 
 ## Controls
 
