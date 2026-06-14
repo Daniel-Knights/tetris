@@ -41,35 +41,32 @@ export function useControls() {
   );
 
   /** Event handler for resetting drop interval after soft drop. */
-  const handleSoftDropEnd = useCallback(
-    function handleSoftDropEnd(keyupEv: KeyboardEvent) {
-      if (keyupEv.key !== "ArrowDown") return;
+  const handleSoftDropEnd = useRef((keyupEv: KeyboardEvent) => {
+    if (keyupEv.key !== "ArrowDown") return;
 
-      const currState = useStore.getState();
+    const currState = useStore.getState();
 
-      if (!currState.gameStatus.is("PAUSED")) {
-        const isAtBound = currState.activeTetromino?.isAtBound(currState.lockedCoords, {
-          y: -1,
-        });
+    if (!currState.gameStatus.is("PAUSED")) {
+      const isAtBound = currState.activeTetromino?.isAtBound(currState.lockedCoords, {
+        y: -1,
+      });
 
-        setGameStatus(isAtBound ? "LOCK_DOWN" : "PLAYING");
-      }
+      setGameStatus(isAtBound ? "LOCK_DOWN" : "PLAYING");
+    }
 
-      setDropInterval(getDropInterval(currentLevel));
+    setDropInterval(getDropInterval(useStore.getState().currentLevel));
 
-      window.removeEventListener("keyup", handleSoftDropEnd);
-    },
-    [setDropInterval, currentLevel, setGameStatus]
-  );
+    window.removeEventListener("keyup", handleSoftDropEnd.current);
+  });
 
   /** Clear timers on keyup. */
-  const handleLeftRightEnd = useCallback(function handleLeftRightEnd(ev: KeyboardEvent) {
+  const handleLeftRightEnd = useRef((ev: KeyboardEvent) => {
     if (ev.key !== currentKey.current) return;
 
     leftRightIntervalData.current?.clear();
 
-    window.removeEventListener("keyup", handleLeftRightEnd);
-  }, []);
+    window.removeEventListener("keyup", handleLeftRightEnd.current);
+  });
 
   /** Event handler for moving the current tetromino left or right. */
   function handleKeyLeftRight(ev: KeyboardEvent) {
@@ -82,7 +79,7 @@ export function useControls() {
     // Clear existing left/right keydown interval
     leftRightIntervalData.current?.clear();
 
-    window.addEventListener("keyup", handleLeftRightEnd);
+    window.addEventListener("keyup", handleLeftRightEnd.current);
 
     // Move
     const x = ev.key === "ArrowLeft" ? -1 : 1;
@@ -124,7 +121,7 @@ export function useControls() {
         moveTetromino({ y: -1 });
         setScore((curr) => curr + 1);
 
-        window.addEventListener("keyup", handleSoftDropEnd);
+        window.addEventListener("keyup", handleSoftDropEnd.current);
 
         break;
       }
@@ -166,9 +163,9 @@ export function useControls() {
 
     leftRightIntervalData.current?.clear();
 
-    window.removeEventListener("keyup", handleLeftRightEnd);
-    window.removeEventListener("keyup", handleSoftDropEnd);
-  }, [gameStatus, handleLeftRightEnd, handleSoftDropEnd]);
+    window.removeEventListener("keyup", handleLeftRightEnd.current);
+    window.removeEventListener("keyup", handleSoftDropEnd.current);
+  }, [gameStatus, handleSoftDropEnd]);
 
   return {
     moveTetromino,
