@@ -19,7 +19,7 @@ export default defineConfig(() => ({
     minify: false,
     sourcemap: true,
   },
-  esbuild: {
+  oxc: {
     define: {
       "process.env.APP_ENV": "'web'",
     },
