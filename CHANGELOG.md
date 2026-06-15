@@ -1,3 +1,7 @@
+## [v0.4.5](https://github.com/Daniel-Knights/tetris/compare/v0.4.4...v0.4.5) (15/06/2026)
+
+- fix(env): fix env flags ([f68978e](https://github.com/Daniel-Knights/tetris/commit/f68978e2164644edf5a86ad78478979e208d8006))
+
 ## [v0.4.4](https://github.com/Daniel-Knights/tetris/compare/v0.4.3...v0.4.4) (15/06/2026)
 
 - chore(deps): bump ([de91825](https://github.com/Daniel-Knights/tetris/commit/de918259428ce9d9b04a6efa8c6f82a456e793a7))
