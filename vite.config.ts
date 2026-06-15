@@ -21,9 +21,7 @@ export default defineConfig(() => ({
     // produce sourcemaps for debug builds
     sourcemap: !!process.env.TAURI_ENV_DEBUG,
   },
-  oxc: {
-    define: {
-      "process.env.APP_ENV": "'desktop'",
-    },
+  define: {
+    "process.env.APP_ENV": "'desktop'",
   },
 }));

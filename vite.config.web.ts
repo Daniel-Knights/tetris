@@ -19,10 +19,8 @@ export default defineConfig(() => ({
     minify: false,
     sourcemap: true,
   },
-  oxc: {
-    define: {
-      "process.env.APP_ENV": "'web'",
-    },
+  define: {
+    "process.env.APP_ENV": "'web'",
   },
 }));
 
