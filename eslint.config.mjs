@@ -6,12 +6,13 @@ import pluginJsxA11y from "eslint-plugin-jsx-a11y";
 import pluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import pluginReact from "eslint-plugin-react";
 import pluginReactHooks from "eslint-plugin-react-hooks";
+import { defineConfig } from "eslint/config";
 import globals from "globals";
-import typescriptEslint, { configs as typescriptEslintConfigs } from "typescript-eslint";
+import { configs as typescriptEslintConfigs } from "typescript-eslint";
 
 pluginReact.configs.flat = pluginReact.configs.flat ?? {};
 
-export default typescriptEslint.config(
+export default defineConfig(
   js.configs.recommended,
   configPrettier,
   pluginImport.flatConfigs.recommended,
@@ -19,6 +20,7 @@ export default typescriptEslint.config(
   ...typescriptEslintConfigs.recommended,
   pluginReact.configs.flat.recommended,
   pluginReact.configs.flat["jsx-runtime"],
+  pluginReactHooks.configs.flat.recommended,
   pluginJsxA11y.flatConfigs.recommended,
   {
     ignores: [
@@ -30,9 +32,6 @@ export default typescriptEslint.config(
     ],
   },
   {
-    plugins: {
-      "react-hooks": pluginReactHooks,
-    },
     linterOptions: {
       reportUnusedDisableDirectives: "warn",
     },
@@ -67,7 +66,6 @@ export default typescriptEslint.config(
       "no-console": process.env.NODE_ENV === "production" ? "warn" : "off",
       "no-debugger": process.env.NODE_ENV === "production" ? "error" : "off",
 
-      ...pluginReactHooks.configs.recommended.rules,
       "react/jsx-filename-extension": [1, { extensions: [".js", ".jsx", ".tsx"] }],
       "react/react-in-jsx-scope": "off",
       "react/require-default-props": "off",
