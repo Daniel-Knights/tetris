@@ -21,7 +21,13 @@ export default typescriptEslint.config(
   pluginReact.configs.flat["jsx-runtime"],
   pluginJsxA11y.flatConfigs.recommended,
   {
-    ignores: ["**/node_modules/**/*", "**/dist/**/*", "**/dist-web/**/*", "**/src-tauri"],
+    ignores: [
+      "**/node_modules/**/*",
+      "**/dist/**/*",
+      "**/dist-web/**/*",
+      "**/src-tauri",
+      "**/.netlify",
+    ],
   },
   {
     plugins: {
