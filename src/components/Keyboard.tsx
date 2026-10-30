@@ -18,10 +18,10 @@ export function Keyboard(props: JSX.IntrinsicElements["div"]) {
       <div className={`flex flex-col ${GAP}`}>
         <KeyboardKey eventKey={"ArrowUp"}>▲</KeyboardKey>
         <div className={`flex ${GAP}`}>
-          <KeyboardKey eventKey={"ArrowLeft"} className="self-end py-7 px-8">
+          <KeyboardKey eventKey={"ArrowLeft"} className="self-end px-8">
             ◀
           </KeyboardKey>
-          <KeyboardKey eventKey={"ArrowRight"} className="self-end py-7 px-8">
+          <KeyboardKey eventKey={"ArrowRight"} className="self-end px-8">
             ▶
           </KeyboardKey>
         </div>
