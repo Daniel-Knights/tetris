@@ -13,9 +13,7 @@
 
 const CACHE_NAME = "tetris-v1";
 
-const APP_STATIC_RESOURCES = [
-  /* <INJECTED> */
-];
+const APP_STATIC_RESOURCES = [/* <INJECTED> */];
 
 self.addEventListener("install", (ev) => {
   ev.waitUntil(
