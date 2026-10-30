@@ -2,6 +2,9 @@ export type IntervalData = {
   count: number;
   remainingMs: number;
   clear: () => void;
+  /** Halts the interval, preserving the count and time until the next call. */
+  pause: () => void;
+  resume: () => void;
 };
 
 /**
@@ -23,6 +26,7 @@ export function setFrameSyncInterval(
   let elapsedAccumulator = interval - (options?.delay ?? 0);
   let animationFrameId: number | null = null;
   let prevTimestamp: number | null = null;
+  let isCleared = false;
 
   const data: IntervalData = {
     count: 0,
@@ -30,9 +34,22 @@ export function setFrameSyncInterval(
       return interval - elapsedAccumulator;
     },
     clear: () => {
+      isCleared = true;
+      data.pause();
+    },
+    pause: () => {
       if (!animationFrameId) return;
 
       window.cancelAnimationFrame(animationFrameId);
+
+      animationFrameId = null;
+      // Time spent paused shouldn't count towards the interval
+      prevTimestamp = null;
+    },
+    resume: () => {
+      if (isCleared || animationFrameId) return;
+
+      animationFrameId = window.requestAnimationFrame(loop);
     },
   };
 

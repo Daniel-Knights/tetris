@@ -125,37 +125,60 @@ export function useLockdown(
       // Prevent drop interval running during animation
       setDropInterval(null);
 
-      setFrameSyncInterval(
-        ({ count }) => {
-          // Clear animation
-          if (count < 6) {
-            setLockedCoords((curr, currActive) => {
-              return [...(currActive?.coords ?? []), ...curr].filter((coord) => {
-                const { x } = coord;
+      // Read after setNextTetromino so it only changes if the store is reset
+      const queueRef = useStore.getState().tetrominoQueue;
 
-                // With each iteration we clear the two innermost minos
-                return (
-                  !linesToClear.has(coord.getRow(MATRIX_DIMENSIONS.ROWS)) ||
-                  (x !== 5 - count && x !== 4 + count)
-                );
-              });
+      function step(count: number) {
+        // Clear animation
+        if (count < 6) {
+          setLockedCoords((curr, currActive) => {
+            return [...(currActive?.coords ?? []), ...curr].filter((coord) => {
+              const { x } = coord;
+
+              // With each iteration we clear the two innermost minos
+              return (
+                !linesToClear.has(coord.getRow(MATRIX_DIMENSIONS.ROWS)) ||
+                (x !== 5 - count && x !== 4 + count)
+              );
             });
+          });
 
-            setActiveTetromino(() => null);
+          setActiveTetromino(() => null);
+
+          return;
+        }
+
+        // Push rows down and set new tetromino
+        removePauseListener();
+        setLockedCoords(() => rows.flat());
+        setActiveTetromino(() => nextTetromino);
+        scoreLineClear(linesToClear.size as 1 | 2 | 3 | 4);
+        setDropInterval(getDropInterval(currentLevel));
+        setGameStatus("PLAYING");
+      }
+
+      const intervalData = setFrameSyncInterval(({ count }) => step(count), 60, {
+        limit: 6,
+      });
+
+      // Halt the animation while paused, and continue it on resume
+      const removePauseListener = addCustomEventListener("gamestatuschange", (ev) => {
+        if (ev.detail.curr.is("PAUSED")) {
+          intervalData.pause();
+        } else if (ev.detail.curr.is("PLAYING") && ev.detail.prev.is("PAUSED")) {
+          // Store was reset (restart), so abandon the animation
+          if (useStore.getState().tetrominoQueue !== queueRef) {
+            intervalData.clear();
+            removePauseListener();
 
             return;
           }
 
-          // Push rows down and set new tetromino
-          setLockedCoords(() => rows.flat());
-          setActiveTetromino(() => nextTetromino);
-          scoreLineClear(linesToClear.size as 1 | 2 | 3 | 4);
-          setDropInterval(getDropInterval(currentLevel));
-          setGameStatus("PLAYING");
-        },
-        60,
-        { limit: 6 }
-      );
+          setDropInterval(null);
+          setGameStatus("LINE_CLEAR");
+          intervalData.resume();
+        }
+      });
     } else {
       handleNewTetromino(nextTetromino);
       setGameStatus("PLAYING");
@@ -200,6 +223,8 @@ export function useLockdown(
       if (instant) {
         commitLockdown();
       } else {
+        const queueRef = useStore.getState().tetrominoQueue;
+
         // If game is paused, commit lockdown on resume
         const removePauseListener = addCustomEventListener(
           "gamestatuschange",
@@ -213,6 +238,14 @@ export function useLockdown(
                 if (!ev.detail.prev.is("PAUSED")) return;
 
                 remove();
+
+                // Store was reset (restart), so the lockdown no longer applies
+                if (useStore.getState().tetrominoQueue !== queueRef) {
+                  lockdownTimeoutId.current = null;
+
+                  return;
+                }
+
                 commitLockdown();
 
                 break;
