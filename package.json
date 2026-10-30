@@ -36,7 +36,7 @@
     "zustand": "^5.0.16"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.3",
+    "@eslint/js": "^9.39.5",
     "@tauri-apps/cli": "2.12.4",
     "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/eslint": "^9.6.1",
@@ -47,7 +47,7 @@
     "@vitejs/plugin-react": "^6.1.2",
     "autoprefixer": "^10.6.2",
     "changenog": "^2.0.8",
-    "eslint": "^9.39.3",
+    "eslint": "^9.39.5",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-import": "^2.32.0",
