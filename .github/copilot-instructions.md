@@ -12,8 +12,8 @@ This is a Tetris clone that ships as both a **web app** (PWA deployed to Netlify
 | Styling | Tailwind CSS 3, PostCSS |
 | Build | Vite 8 |
 | Desktop | Tauri 2 (Rust) |
-| Package manager | pnpm 11.4 (required, enforced via `packageManager` field) |
-| Node | >=22 |
+| Package manager | pnpm 12.16 (required, enforced via `packageManager` field) |
+| Node | >=26.13 |
 
 ## Repository Layout
 
@@ -21,7 +21,7 @@ This is a Tetris clone that ships as both a **web app** (PWA deployed to Netlify
 src/                  # React/TypeScript frontend source
   classes/            # Core domain models (Coord, Tetromino, GameStatus)
   components/         # React UI components
-  hooks/              # Game logic hooks (controls, drop, rotation, scoring, store)
+  hooks/              # Game logic hooks (controls, drop, lockdown, rotate, score, store, theme, update)
   resources/          # Static game data (tetromino shapes)
   utils/              # Shared utilities (events, timers, shuffle)
   constant.ts         # Global constants (matrix dimensions)
