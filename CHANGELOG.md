@@ -1,3 +1,7 @@
+## [v0.4.6](https://github.com/Daniel-Knights/tetris/compare/v0.4.5...v0.4.6) (31/10/2026)
+
+- fix(lockdown): pause line clear animation when game is paused ([6f2da14](https://github.com/Daniel-Knights/tetris/commit/6f2da14223181d2a63e5fe7b9a34fef9b618ea1b))
+
 ## [v0.4.5](https://github.com/Daniel-Knights/tetris/compare/v0.4.4...v0.4.5) (15/06/2026)
 
 - fix(env): fix env flags ([f68978e](https://github.com/Daniel-Knights/tetris/commit/f68978e2164644edf5a86ad78478979e208d8006))
